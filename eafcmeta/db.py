@@ -56,18 +56,37 @@ def _add_history(conn, card_id: int, price: int) -> None:
     conn.execute("INSERT INTO price_history (card_id, price, ts) VALUES (?,?,?)", (card_id, price, _now()))
 
 
+def _words(name: str) -> set[str]:
+    return set(name.lower().replace(".", " ").replace("-", " ").split())
+
+
+def find_card(conn, card) -> sqlite3.Row | None:
+    """Stessa carta: nome+versione+posizione uguali; oppure stesso ruolo/versione e nome contenuto nell'altro
+    ('Kelly' su FUTBIN = 'Chloe Kelly' su FUT.GG), purché il candidato sia uno solo."""
+    row = conn.execute("SELECT id, name, price FROM cards WHERE name = ? COLLATE NOCASE AND version = ? COLLATE NOCASE "
+                       "AND position = ?", (card.name, card.version, card.position)).fetchone()
+    if row is not None:
+        return row
+    mine = _words(card.name)
+    cands = [r for r in conn.execute("SELECT id, name, price FROM cards WHERE version = ? COLLATE NOCASE AND position = ?",
+                                     (card.version, card.position))
+             if mine and _words(r["name"]) and (mine <= _words(r["name"]) or _words(r["name"]) <= mine)]
+    return cands[0] if len(cands) == 1 else None
+
+
 def upsert_card(conn, card) -> tuple[int, str]:
     """Inserisce o aggiorna (chiave: nome+versione+posizione). Non fa commit. Ritorna (id, 'new'|'updated')."""
     data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
                        "weak_foot": card.weak_foot, "skill_moves": card.skill_moves})
-    row = conn.execute("SELECT id, price FROM cards WHERE name = ? COLLATE NOCASE AND version = ? COLLATE NOCASE "
-                       "AND position = ?", (card.name, card.version, card.position)).fetchone()
+    row = find_card(conn, card)
     if row is None:
         cur = conn.execute("INSERT INTO cards (name, version, position, price, is_sbc, data) VALUES (?,?,?,?,?,?)",
                            (card.name, card.version, card.position, card.price, int(card.is_sbc), data))
         _add_history(conn, cur.lastrowid, card.price)
         return cur.lastrowid, "new"
-    conn.execute("UPDATE cards SET price=?, is_sbc=?, data=? WHERE id=?", (card.price, int(card.is_sbc), data, row["id"]))
+    name = card.name if len(card.name) > len(row["name"]) else row["name"]  # tiene il nome più completo
+    conn.execute("UPDATE cards SET name=?, price=?, is_sbc=?, data=? WHERE id=?",
+                 (name, card.price, int(card.is_sbc), data, row["id"]))
     if row["price"] != card.price:
         _add_history(conn, row["id"], card.price)
     return row["id"], "updated"

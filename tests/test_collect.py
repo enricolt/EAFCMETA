@@ -11,14 +11,15 @@ GG_STATS = ("Attributes|Chemistry Style|Pace|87|Acceleration|83|Sprint Speed|90|
             "Slide Tackle|68|Physical|83|Jumping|89|Stamina|91|Strength|81|Aggression|74|Basic|C")
 
 
-def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4"):
-    ld = [{"@type": "BreadcrumbList", "itemListElement": [{"name": "Players"}, {"name": "Kika Nazareth"},
-                                                            {"name": "Destined for Glory 86 OVR"}]},
-          {"@type": "WebPage", "description": "Kika Nazareth Destined for Glory 86 OVR CM (FC Barcelona) on EA FC 27."}]
+def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4", plus=(), name="Kika Nazareth", rating=86, rarity="Destined for Glory"):
+    ld = [{"@type": "BreadcrumbList", "itemListElement": [{"name": "Players"}, {"name": name},
+                                                            {"name": f"{rarity} {rating} OVR"}]},
+          {"@type": "WebPage", "description": f"{name} {rarity} {rating} OVR CM (FC Barcelona) on EA FC 27."}]
     scripts = "".join(f'<script type="application/ld+json">{json.dumps(x)}</script>' for x in ld)
     body = "|".join(["Players", "Skill Moves", skills, "Weak Foot", "4", "Body Type", "Lean Short", GG_STATS,
                      price, "Current price", "· Updated"])
-    icons = "".join(f'<div title="{p}"><svg height="42"></svg></div>' for p in ps)
+    shape = lambda p: "M12.8,104.9L68.1,21" if p in plus else "M128,12.808L243.192,128,12.8,128Z"
+    icons = "".join(f'<div title="{p}"><svg height="42"><path d="{shape(p)}"/></svg></div>' for p in ps)
     divs = "".join(f"<div>{t}</div>" for t in body.split("|"))
     return f"<html><head><title>x FUT.GG</title>{scripts}</head><body>{icons}{divs}</body></html>"
 
@@ -30,11 +31,11 @@ FB_STATS = ("Player Stats|Pace|85|Acceleration|81|Sprint Speed|88|Shooting|82|At
             "Slide Tackle|65|Physical|80|Jumping|86|Stamina|88|Strength|78|Aggression|71|Total Chem. style added:")
 
 
-def fb_page(price="80,000", plus=False):
-    head = "|".join(["83", "CM", "++", "R", "4", "4", "83.4", "Kika Nazareth", "85", "Pac", "82", "Sho"])
-    info = "|".join(["Portugal", "FC Barcelona", "Gold", "Skills", "4", "Weak Foot", "4", "B.Type", "Short & Lean"])
-    f = "chipshotplus.png" if plus else "chipshot.png"
-    ps = (f'<a class="playStyle-table-icon column active" href="x"><img class="ps-logo" src="{f}">'
+def fb_page(price="80,000", plus=False, name="Kika Nazareth", rating="83", rarity="Gold"):
+    head = "|".join([rating, "CM", "++", "R", "4", "4", "83.4", name, "85", "Pac", "82", "Sho"])
+    info = "|".join(["Portugal", "FC Barcelona", rarity, "Skills", "4", "Weak Foot", "4", "B.Type", "Short & Lean"])
+    f = "27_plus_scoring-chipshot.png" if plus else "27_scoring-chipshot.png"
+    ps = (f'<a class="playStyle-table-icon column active{" psplus" if plus else ""}" href="x"><img class="ps-logo" src="{f}">'
           '<div>Chip Shot</div></a><a class="playStyle-table-icon column" href="y"><div>Inattivo</div></a>')
     mk = lambda s: "".join(f"<div>{t}</div>" for t in s.split("|"))
     return (f'<html><head><title>FUTBIN</title></head><body><div class="price-box platform-ps-only">'
@@ -86,3 +87,24 @@ def test_cli_reads_folder(tmp_path):
     (tmp_path / "x.html").write_text(gg_page(), encoding="utf-8")
     (tmp_path / "y.txt").write_text("ignorato")
     assert [n for n, _ in collect.read_paths([str(tmp_path)])] == ["x.html"]
+
+
+def test_playstyle_plus_detection():
+    assert sources.parse_page(gg_page(plus=("Tiki Taka",)))["playstyles"] == ["Chip Shot", "Tiki Taka+"]
+    d = sources.parse_page(fb_page(plus=True))
+    assert d["playstyles"] == ["Chip Shot+"]
+
+
+def test_rare_and_gold_versions_unify():
+    assert sources.parse_page(gg_page(rarity="Rare", rating=86))["version"] == "Gold 86"
+    assert sources.parse_page(fb_page(rating="86", rarity="Gold"))["version"] == "Gold 86"
+    assert sources.parse_page(gg_page())["version"] == "Destined for Glory 86"
+
+
+def test_same_card_from_both_sites_is_not_duplicated(client):
+    pages = [{"name": "gg.html", "html": gg_page(name="Chloe Kelly", rarity="Rare", rating=86, price="11,750")},
+             {"name": "fb.html", "html": fb_page(name="Kelly", rating="86", price="12,000")}]
+    r = client.post("/api/v1/import/pages", json={"pages": pages, "dry_run": False}).json()
+    assert (r["new"], r["updated"]) == (1, 1)
+    cards = client.get("/api/v1/cards").json()
+    assert len(cards) == 1 and cards[0]["name"] == "Chloe Kelly" and cards[0]["cost_credits"] == 12000

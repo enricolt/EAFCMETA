@@ -39,7 +39,7 @@ Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
 - **Importa → Pagine salvate** (carte vere): salva col browser (Ctrl+S → “Pagina web, solo HTML”) la pagina di un
   giocatore su **FUT.GG** o **FUTBIN** e scegli il file: leggo nome, versione, ruolo, prezzo (console), stats, body
   type, piede debole, skill e PlayStyle. Più file insieme; da terminale: `python -m eafcmeta.collect cartella/`.
-  Limite noto: i PlayStyle+ non sono ancora riconosciuti con certezza (servono pagine di esempio con PlayStyle+).
+  I PlayStyle+ sono riconosciuti da entrambi i siti; la stessa carta letta da FUT.GG e da FUTBIN non si duplica (“Kelly” = “Chloe Kelly”; Rare/Common = Gold).
 - Da terminale: `python -m eafcmeta.importer data/esempio.csv` (30 carte fittizie di prova).
 - Prezzi: `12.500`, `12500`, `12k`, `1.2m`.
 

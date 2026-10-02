@@ -76,6 +76,15 @@ def _stats(tokens: list[str], start: int, end: int) -> dict[str, int]:
     return stats
 
 
+def normalize_version(rarity: str, rating: int) -> str:
+    """'Rare'/'Common' non cambiano le stats: si unificano come 'Gold' così le due fonti danno la stessa versione."""
+    base = re.sub(r"\b(Rare|Common)\b", "", rarity).strip(" -") or "Gold"
+    return f"{base} {rating}"
+
+
+DIAMOND = "M128,12.808L243.192,128"  # forma dell'icona di un PlayStyle normale su FUT.GG; le altre forme sono PlayStyle+
+
+
 def detect_site(html: str) -> str:
     head = html[:200_000].lower()
     if "futbin" in head and "playstyle-table-icon" in html.lower():
@@ -92,7 +101,7 @@ def parse_futbin(html: str) -> dict:
         name = a.get_text(" ", strip=True)
         img = a.select_one("img.ps-logo")
         src = (img.get("src") or "") if img else ""
-        plus = "plus" in " ".join(a.get("class", [])).lower() or bool(re.search(r"plus\.png", src, re.I))
+        plus = "plus" in " ".join(a.get("class", [])).lower() or bool(re.search(r"(^|[_/])plus[_.]", src, re.I))
         if name and a.get("class") and "active" in a.get("class"):
             plays.append(name + ("+" if plus else ""))
     price_el = soup.select_one(".price-box.platform-ps-only .lowest-price-1") or soup.select_one(".lowest-price-1")
@@ -117,9 +126,9 @@ def parse_futbin(html: str) -> dict:
         s0, s1 = t.index("Player Stats"), t.index("Total Chem. style added:")
     except ValueError:
         raise PageError("non trovo le statistiche")
-    return {"site": "futbin", "name": name, "version": f"{rarity} {rating}", "position": position, "price": price,
-            "skill_moves": _int(_after(t, "Skills"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
-            "body_type": _body_type(_after(t, "B.Type")), "playstyles": plays, "stats": _stats(t, s0, s1)}
+    return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
+            "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
+            "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")), "playstyles": plays, "stats": _stats(t, s0, s1)}
 
 
 def parse_futgg(html: str) -> dict:
@@ -132,18 +141,21 @@ def parse_futgg(html: str) -> dict:
             continue
         if d.get("@type") == "BreadcrumbList" and len(d["itemListElement"]) >= 3:
             name = d["itemListElement"][1]["name"]
-            version = re.sub(r"\s*OVR$", "", d["itemListElement"][2]["name"])
+            version = d["itemListElement"][2]["name"]
         if d.get("@type") == "WebPage":
             m = re.search(r"(\d+) OVR ([A-Z]{2,3}) \(", d.get("description", ""))
             if m:
                 rating, position = int(m.group(1)), m.group(2)
-    if not (name and version and position):
+    if not (name and version and position and rating):
         raise PageError("non trovo nome/versione/posizione")
+    version = normalize_version(re.sub(r"\s*\d*\s*OVR$", "", version), rating)
     titles = []
     for d in soup.select("div[title]"):
         sv = d.find("svg")
         if sv is not None and sv.get("height") == "42" and d["title"] not in titles:
-            titles.append(d["title"])
+            path = sv.find("path")
+            plus = path is not None and bool(path.get("d")) and not path["d"].startswith(DIAMOND)
+            titles.append(d["title"] + ("+" if plus else ""))
     t = _tokens(soup)
     price = _price(t[t.index("Current price") - 1] if "Current price" in t else None)
     try:
