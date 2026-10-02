@@ -295,6 +295,7 @@ async function openDetail(id){
     <p class="head">${esc(d.analysis.headline)}</p>
     <div class="two"><div><h4>Perché sì</h4><ul class="pro">${d.analysis.pros.map(x=>`<li>${esc(x)}</li>`).join("")||"<li>Nessun punto di forza particolare.</li>"}</ul></div>
     <div><h4>Perché no / attenzione</h4><ul class="con">${d.analysis.cons.map(x=>`<li>${esc(x)}</li>`).join("")||"<li>Nessun difetto rilevante.</li>"}</ul></div></div>
+    ${d.analysis.site_signals.length?`<h4 style="margin:16px 0 4px">Segnali dei siti</h4>${d.analysis.site_signals.map(x=>`<p class="osum" style="font-weight:500;margin:2px 0">${esc(x)}</p>`).join("")}`:""}
     <h4 style="margin:16px 0 4px">Cosa dicono i creator</h4><p class="osum">${esc(d.analysis.opinions.summary)}</p>
     ${d.analysis.opinions.groups.map(g=>`<div class="og og-${g.stance}"><b>${esc(g.label)}</b>${g.creators.map(c=>`<p><span>${esc(c.name)}${c.score!=null?` (${c.score})`:""}:</span> ${esc(c.reason)}${c.url?` <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">fonte ↗</a>`:""}</p>`).join("")}</div>`).join("")}
     ${d.analysis.opinions.hint?`<div class="note" style="margin-top:8px">${esc(d.analysis.opinions.hint)}</div>`:""}

@@ -16,6 +16,16 @@ class CardIn(BaseModel):
     body_type: str = "Average"
     weak_foot: int = Field(3, ge=1, le=5)
     skill_moves: int = Field(3, ge=1, le=5)
+    signals: dict[str, float | int | str] = Field(default_factory=dict, max_length=12)
+
+    @field_validator("signals")
+    @classmethod
+    def _signals(cls, v):
+        allowed = {"gg_rating", "gg_role", "gg_rank", "gg_tier", "gg_tier_pct", "gg_tier_votes",
+                   "futbin_rating", "futbin_role", "futbin_rank"}
+        if set(v) - allowed or any(isinstance(x, str) and len(x) > 40 for x in v.values()):
+            raise ValueError("segnali non validi")
+        return v
 
     @field_validator("name", "version")
     @classmethod

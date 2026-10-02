@@ -13,6 +13,19 @@ from pydantic import ValidationError
 from types import SimpleNamespace
 
 from . import db, scoring, sources
+from .models import OpinionIn
+
+TIER_STANCE = {"S": "yes", "A": "yes", "B": "maybe", "C": "no", "D": "no", "F": "no"}
+MIN_VOTES = 30  # sotto questa soglia il voto della community è poco affidabile
+
+
+def community_opinion(sig: dict, url: str):
+    if "gg_tier" not in sig:
+        return None
+    n, pct = sig["gg_tier_votes"], sig["gg_tier_pct"]
+    note = "" if n >= MIN_VOTES else " (pochi voti: poco affidabile)"
+    return OpinionIn(creator="FUT.GG (community)", stance=TIER_STANCE[sig["gg_tier"]], url=url if url.startswith("http") else "",
+                     reason=f"Tier {sig['gg_tier']} per il {pct}% di {n} voti della community{note}.")
 
 
 def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
@@ -54,7 +67,10 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
     found = []
     try:
         for name, d, card in cards:
-            _, status = db.upsert_card(conn, card)
+            cid, status = db.upsert_card(conn, card)
+            op = community_opinion(card.signals, d.get("url", "")) if d["site"] == "futgg" else None
+            if op:
+                db.upsert_opinion(conn, cid, op)
             new += status == "new"
             updated += status == "updated"
             found.append({"file": name, "name": card.name, "version": card.version, "position": card.position,

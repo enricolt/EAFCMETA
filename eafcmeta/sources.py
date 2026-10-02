@@ -91,6 +91,54 @@ def normalize_version(rarity: str, rating: int) -> str:
 DIAMOND = "M128,12.808L243.192,128"  # forma dell'icona di un PlayStyle normale su FUT.GG; le altre forme sono PlayStyle+
 
 
+def _num(x: str) -> float | None:
+    try:
+        return float(x.replace(",", ""))
+    except ValueError:
+        return None
+
+
+def signals_futgg(t: list[str]) -> dict:
+    """Voto della community (tier) e GG Rating, se presenti nella pagina."""
+    sig: dict = {}
+    if "Tier vote" in t:
+        i = t.index("Tier vote")
+        votes, tier, pct = t[i + 1:i + 2], t[i + 3:i + 4], t[i + 4:i + 5]
+        if votes and votes[0].isdigit() and tier and tier[0] in ("S", "A", "B", "C", "D", "F") and pct and pct[0].endswith("%"):
+            sig.update(gg_tier=tier[0], gg_tier_pct=int(pct[0][:-1]), gg_tier_votes=int(votes[0]))
+    if "View All" in t:  # classifica dei ruoli: "ST | 87.9 | Advanced Forward | ++ | #70 Ranked"
+        i = t.index("View All")
+        role, val = t[i + 1:i + 2], _num(t[i + 2]) if i + 2 < len(t) else None
+        rank = next((int(m.group(1)) for x in t[i + 3:i + 8] if (m := re.fullmatch(r"#(\d+) Ranked", x))), None)
+        if role and val is not None:
+            sig.update(gg_role=role[0], gg_rating=val)
+            if rank:
+                sig["gg_rank"] = rank
+    return sig
+
+
+def signals_futbin(t: list[str]) -> dict:
+    sig: dict = {}
+    if "FUTBIN Rating" in t and "RPP Map" in t:  # "83.4 | CM | Playmaker++ | Rank #85"
+        i = t.index("RPP Map")
+        val = _num(t[i + 1]) if i + 1 < len(t) else None
+        rank = next((int(m.group(1)) for x in t[i + 2:i + 6] if (m := re.fullmatch(r"Rank #(\d+)", x))), None)
+        if val is not None and i + 2 < len(t):
+            sig.update(futbin_rating=val, futbin_role=t[i + 2])
+            if rank:
+                sig["futbin_rank"] = rank
+    return sig
+
+
+def _page_url(soup: BeautifulSoup) -> str:
+    for sc in soup.select('script[type="application/ld+json"]'):
+        for x in _ld_items(sc):
+            u = x.get("url") if x.get("@type") == "WebPage" else (x.get("@id") if x.get("@type") == "Product" else None)
+            if isinstance(u, str) and u.startswith("http"):
+                return u.split("#")[0]
+    return ""
+
+
 def detect_site(html: str) -> str:
     head = html[:200_000].lower()
     if "futbin" in head and "playstyle-table-icon" in html.lower():
@@ -120,6 +168,7 @@ def parse_futbin(html: str) -> dict:
             plays.append(name + ("+" if plus else ""))
     price_el = soup.select_one(".price-box.platform-ps-only .lowest-price-1") or soup.select_one(".lowest-price-1")
     price = _price(price_el.get_text(strip=True) if price_el else None)
+    page_url = _page_url(soup)
     ld_name = next((x.get("name", "") for sc in soup.select('script[type="application/ld+json"]')
                     for x in _ld_items(sc) if x.get("@type") == "Product"), "")
     t = _tokens(soup)
@@ -154,11 +203,12 @@ def parse_futbin(html: str) -> dict:
     return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
             "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
             "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")),
-            "playstyles": plays, "stats": stats}
+            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url}
 
 
 def parse_futgg(html: str) -> dict:
     soup = BeautifulSoup(html, "lxml")
+    page_url = _page_url(soup)
     name = version = rating = position = None
     for s in soup.select('script[type="application/ld+json"]'):
         try:
@@ -191,7 +241,8 @@ def parse_futgg(html: str) -> dict:
         raise PageError("non trovo le statistiche")
     return {"site": "futgg", "name": name, "version": version, "position": position, "price": price,
             "skill_moves": _int(_after(t, "Skill Moves"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
-            "body_type": _body_type(_after(t, "Body Type")), "playstyles": titles, "stats": _stats(t, s0, s1)}
+            "body_type": _body_type(_after(t, "Body Type")), "playstyles": titles, "stats": _stats(t, s0, s1),
+            "signals": signals_futgg(t), "url": page_url}
 
 
 def parse_short_price(tok: str | None) -> int | None:
@@ -282,4 +333,4 @@ def to_card(d: dict):
     from .models import CardIn
     return CardIn(name=d["name"], version=d["version"], position=d["position"], price=d["price"], is_sbc=False,
                   stats=d["stats"], playstyles=d["playstyles"], body_type=d["body_type"],
-                  weak_foot=d["weak_foot"], skill_moves=d["skill_moves"])
+                  weak_foot=d["weak_foot"], skill_moves=d["skill_moves"], signals=d.get("signals", {}))

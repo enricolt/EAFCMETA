@@ -63,6 +63,20 @@ def summarize_opinions(opinions: list[dict], level: str) -> dict:
     return {"status": status, "summary": summary, "groups": groups, "hint": hint}
 
 
+def site_signals(card: dict) -> list[str]:
+    sig, out = card.get("signals") or {}, []
+    if "gg_rating" in sig:
+        r = f"FUT.GG: GG Rating {sig['gg_rating']:g} come {sig.get('gg_role', '?')}"
+        r += f" (n°{sig['gg_rank']} nel ruolo)" if "gg_rank" in sig else ""
+        r += f" — rende meglio come {sig['gg_role']} che come {card['position']}" if sig.get("gg_role") not in (None, card["position"]) else ""
+        out.append(r + ".")
+    if "futbin_rating" in sig:
+        r = f"FUTBIN: Rating {sig['futbin_rating']:g} come {sig.get('futbin_role', '?')}"
+        r += f" (n°{sig['futbin_rank']} nel ruolo)" if "futbin_rank" in sig else ""
+        out.append(r + ".")
+    return out
+
+
 def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int, cfg: dict,
              opinions: list[dict] | None = None) -> dict:
     role = ex["role"]
@@ -141,7 +155,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
         {"top": ": tra le migliori del suo ruolo.", "meta": ": competitiva ai livelli alti.",
          "playable": ": usabile ma non decisiva.", "below": ": sotto il livello che serve ai livelli alti."}[level])
     return {"meta_level": level, "meta_label": label, "headline": headline, "pros": pros, "cons": cons, "advice": advice,
-            "opinions": ops}
+            "opinions": ops, "site_signals": site_signals(card)}
 
 
 def _advice(level: str, verdict: str, no_market: bool, card: dict) -> str:

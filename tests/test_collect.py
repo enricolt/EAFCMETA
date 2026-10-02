@@ -227,3 +227,43 @@ def test_futbin_goalkeeper_icon():
     d = sources.parse_page(html)
     assert (d["name"], d["version"], d["position"], d["price"]) == ("Angerer", "Icon 92", "GK", 217000)
     assert d["playstyles"] == ["Far Reach+"] and "finishing" not in d["stats"] and d["stats"]["gk_reflexes"] == 94
+
+
+GG_SIGNALS = "View All|ST|87.9|Advanced Forward|++|#70 Ranked|CAM|87.8|Playmaker|++|#48 Ranked|Tier vote|321|placements|S|79%|Where would"
+FB_SIGNALS = "FUTBIN Rating|Best Ratings|RPP Map|83.4|CM|Playmaker++|Rank #85|Best Chem.|83.3|CAM|Playmaker|Rank #115"
+
+
+def test_site_signals_and_community_opinion(client):
+    gg = gg_page().replace("</body>", "".join(f"<div>{t}</div>" for t in GG_SIGNALS.split("|")) + "</body>")
+    gg = gg.replace('"@type": "WebPage"', '"@type": "WebPage", "url": "https://www.fut.gg/players/1-kika/27-1/"')
+    fb = fb_page().replace("</body>", "".join(f"<div>{t}</div>" for t in FB_SIGNALS.split("|")) + "</body>")
+    d = sources.parse_page(gg)
+    assert d["signals"] == {"gg_tier": "S", "gg_tier_pct": 79, "gg_tier_votes": 321, "gg_role": "ST", "gg_rating": 87.9, "gg_rank": 70}
+    assert sources.parse_page(fb)["signals"] == {"futbin_rating": 83.4, "futbin_role": "CM", "futbin_rank": 85}
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "a", "html": gg}], "dry_run": False})
+    cid = client.get("/api/v1/cards").json()[0]["id"]
+    det = client.get(f"/api/v1/cards/{cid}").json()
+    op = det["opinions"][0]
+    assert (op["creator"], op["stance"]) == ("FUT.GG (community)", "yes") and "79% di 321 voti" in op["reason"]
+    assert "rende meglio come ST che come CM" in " ".join(det["analysis"]["site_signals"])
+
+
+def test_signals_merge_across_sites_and_survive_edit(client):
+    gg = gg_page(name="Kelly X", rating=86, rarity="Rare").replace("</body>", "".join(f"<div>{t}</div>" for t in GG_SIGNALS.split("|")) + "</body>")
+    fb = fb_page(name="Kelly X", rating="86").replace("</body>", "".join(f"<div>{t}</div>" for t in FB_SIGNALS.split("|")) + "</body>")
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "a", "html": gg}, {"name": "b", "html": fb}], "dry_run": False})
+    cards = client.get("/api/v1/cards").json()
+    assert len(cards) == 1
+    det = client.get(f"/api/v1/cards/{cards[0]['id']}").json()
+    assert len(det["analysis"]["site_signals"]) == 2  # FUT.GG e FUTBIN insieme
+    body = {"name": det["name"], "version": det["version"], "position": det["position"], "price": 5, **det["card"]}
+    again = client.put(f"/api/v1/cards/{cards[0]['id']}", json=body).json()
+    assert len(again["analysis"]["site_signals"]) == 2  # la modifica manuale non cancella i segnali
+
+
+def test_low_vote_community_is_flagged(client):
+    gg = gg_page().replace("</body>", "".join(f"<div>{t}</div>" for t in "Tier vote|17|placements|B|18%|Where would".split("|")) + "</body>")
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "a", "html": gg}], "dry_run": False})
+    cid = client.get("/api/v1/cards").json()[0]["id"]
+    op = client.get(f"/api/v1/cards/{cid}").json()["opinions"][0]
+    assert op["stance"] == "maybe" and "pochi voti" in op["reason"]

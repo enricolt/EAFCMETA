@@ -83,9 +83,11 @@ def find_card(conn, card) -> sqlite3.Row | None:
 
 def upsert_card(conn, card) -> tuple[int, str]:
     """Inserisce o aggiorna (chiave: nome+versione+posizione). Non fa commit. Ritorna (id, 'new'|'updated')."""
-    data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
-                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves})
     row = find_card(conn, card)
+    old = json.loads(conn.execute("SELECT data FROM cards WHERE id=?", (row["id"],)).fetchone()["data"]) if row else {}
+    data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
+                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves,
+                       "signals": {**old.get("signals", {}), **card.signals}})  # i segnali dei due siti si sommano
     if row is None:
         cur = conn.execute("INSERT INTO cards (name, version, position, price, is_sbc, data) VALUES (?,?,?,?,?,?)",
                            (card.name, card.version, card.position, card.price, int(card.is_sbc), data))
@@ -101,9 +103,10 @@ def upsert_card(conn, card) -> tuple[int, str]:
 
 def update_card(conn, card_id: int, card) -> None:
     """Modifica completa di una carta esistente (può cambiare anche nome/versione/posizione)."""
+    old = conn.execute("SELECT price, data FROM cards WHERE id = ?", (card_id,)).fetchone()
+    signals = card.signals or (json.loads(old["data"]).get("signals", {}) if old else {})
     data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
-                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves})
-    old = conn.execute("SELECT price FROM cards WHERE id = ?", (card_id,)).fetchone()
+                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves, "signals": signals})
     conn.execute("UPDATE cards SET name=?, version=?, position=?, price=?, is_sbc=?, data=? WHERE id=?",
                  (card.name, card.version, card.position, card.price, int(card.is_sbc), data, card_id))
     if old and old["price"] != card.price:
