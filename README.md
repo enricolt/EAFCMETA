@@ -1,25 +1,12 @@
 # EA FC Meta
 
-App per uso personale: valuta carte EA FC (score da stats + PlayStyle + body type, parere dei pro inserito a mano)
-e dice se una carta conviene rispetto al prezzo di mercato.
+App per uso personale (e con gli amici): valuta le carte EA FC con uno score da stats in-game, PlayStyle, body type
+e parere dei pro (inserito a mano), e dice se una carta conviene rispetto al prezzo di mercato.
 
 ## Avvio
     pip install -r requirements.txt
-    uvicorn eafcmeta.api:app --reload      # docs su /docs
-    pytest
-
-Interfaccia web su `/` (classifica, aggiunta carte, pro score modificabile).
-Import carte: `python -m eafcmeta.importer data/esempio.csv` (dati di esempio fittizi).
-DB: file `eafcmeta.db` (o variabile `EAFCMETA_DB`).
-
-## Decisioni iniziali
-- Monolite FastAPI + SQLite, nessuno scraping: le carte si inseriscono via API (`POST /api/v1/cards`).
-- Pro sentiment inserito a mano (`PUT /api/v1/cards/{id}/pro`); se manca, conta solo lo score base.
-- Bonus (PlayStyle, body type, 5★) sommati e limitati a `max_bonus`, così lo score resta ≤ 100.
-- Verdetto = scarto dello score dalla curva score-vs-ln(prezzo) delle carte nella stessa posizione
-  (serve almeno `min_cards_for_curve` carte, altrimenti NEUTRAL).
-- Pesi e soglie in `eafcmeta/config/patch.json`: si modificano senza toccare il codice.
-- Posizioni supportate: ST/CF, ali, CAM, CM/CDM, terzini, CB (niente portieri per ora).
+    python start.py            # controlla gli aggiornamenti, poi apre http://localhost:8000
+    pip install -r requirements-dev.txt && pytest
 
 ## Copia locale con aggiornamento automatico
 Prima volta (serve git e Python 3.11+):
@@ -28,7 +15,36 @@ Prima volta (serve git e Python 3.11+):
     cd EAFCMETA
     python start.py
 
-Ogni avvio di `python start.py` fa `git fetch`, aggiorna la copia se ci sono novità (solo fast-forward, e solo
-se non hai modifiche locali), reinstalla le dipendenze se `requirements.txt` è cambiato e apre l'app su
-http://localhost:8000. Se sei offline usa la versione che hai. Il database `eafcmeta.db` è ignorato da git,
-quindi gli aggiornamenti non lo toccano. Opzioni: `--lan` (visibile in rete locale), `--check`, `--no-update`.
+Ogni avvio fa `git fetch` e, se ci sono novità, un aggiornamento fast-forward (solo se non hai modifiche locali);
+reinstalla le dipendenze se `requirements.txt` è cambiato. Offline usa la versione che hai. Il database
+`eafcmeta.db` è ignorato da git: gli aggiornamenti non lo toccano. Opzioni: `--check`, `--no-update`, `--port`, `--lan`.
+
+## Con gli amici (rete locale)
+`python start.py --lan` ascolta su tutta la rete e **richiede una chiave d'accesso** (creata in `.token`, ignorata da git).
+Stampa il link da mandare agli amici (contiene la chiave: `http://IP:8000/#token=…`). Per l'accesso da fuori casa
+usa un tunnel con autenticazione (Tailscale, Cloudflare Tunnel): non aprire la porta direttamente su internet.
+
+## Inserire i dati
+Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
+- **Importa → Carte**: incolla CSV/TSV/JSON (colonne: `name, version, position, price, is_sbc, body_type, weak_foot,
+  skill_moves, playstyles` + una colonna per stat). “Modello CSV” genera le intestazioni. Se nome+versione+posizione
+  esistono già la carta viene **aggiornata** (niente doppioni) e lo storico prezzi si allunga. Anteprima prima di salvare;
+  se c'è un errore non viene salvato nulla e vedi le righe sbagliate.
+- **Importa → Solo prezzi**: righe `nome;versione;prezzo` da incollare ogni tanto.
+- Da terminale: `python -m eafcmeta.importer data/esempio.csv` (30 carte fittizie di prova).
+- Prezzi: `12.500`, `12500`, `12k`, `1.2m`.
+
+## Come si calcola
+- **Score base** = media pesata delle stats del ruolo + bonus (PlayStyle+ per tier e ruolo, body type, 5★ piede
+  debole/skill), con bonus massimo 12; sopra 90 la scala si comprime dolcemente verso 100.
+- **Score finale** = 70% base + 30% pro. Senza parere dei pro vale solo il base (l'app lo segnala).
+- **Verdetto**: scarto dello score dalla curva score–ln(prezzo) delle carte della stessa posizione (regressione
+  robusta Theil-Sen). Servono ≥ 8 carte con ≥ 4 prezzi diversi; la soglia si adatta alla dispersione (min ±1.5).
+  “Conviene” / “In linea” / “Evita”, altrimenti “Pochi dati”.
+- Pesi, bonus e soglie: `eafcmeta/config/patch.json` (validato all'avvio). Sono valori di partenza: da tarare sulle
+  tier list che conosci.
+
+## API
+Documentazione interattiva su `/docs`. Principali: `GET/POST /api/v1/cards`, `GET/PUT/DELETE /api/v1/cards/{id}`,
+`PUT /api/v1/cards/{id}/pro`, `POST /api/v1/import`, `POST /api/v1/prices`, `GET /api/v1/meta`.
+Posizioni supportate: ST, CF, ali (RW/LW/RM/LM), CAM, CM, CDM, terzini (RB/LB), esterni (RWB/LWB), CB. Niente portieri.

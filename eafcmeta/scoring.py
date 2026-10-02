@@ -4,6 +4,7 @@ from __future__ import annotations
 import functools
 import json
 import math
+import statistics
 from pathlib import Path
 
 CONFIG_PATH = Path(__file__).parent / "config" / "patch.json"
@@ -11,15 +12,44 @@ CONFIG_PATH = Path(__file__).parent / "config" / "patch.json"
 
 @functools.lru_cache(maxsize=1)
 def load_config(path: Path = CONFIG_PATH) -> dict:
-    return json.loads(Path(path).read_text())
+    cfg = json.loads(Path(path).read_text(encoding="utf-8"))
+    validate_config(cfg)
+    return cfg
+
+
+def validate_config(cfg: dict) -> None:
+    """Controlla la configurazione all'avvio: meglio un errore chiaro subito che un KeyError dopo."""
+    for key in ("score_weights", "role_weights", "position_to_role", "playstyle_bonus", "playstyles",
+                "body_type_bonus", "verdict", "stat_keys", "max_bonus", "soft_cap_start"):
+        if key not in cfg:
+            raise ValueError(f"patch.json: manca '{key}'")
+    sw = cfg["score_weights"]
+    if abs(sw["stats"] + sw["pro"] - 1) > 1e-9:
+        raise ValueError("patch.json: score_weights.stats + pro deve fare 1")
+    for pos, role in cfg["position_to_role"].items():
+        if role not in cfg["role_weights"]:
+            raise ValueError(f"patch.json: ruolo '{role}' (posizione {pos}) senza role_weights")
+    for role, w in cfg["role_weights"].items():
+        bad = [k for k in w if k not in cfg["stat_keys"]]
+        if bad or sum(w.values()) <= 0:
+            raise ValueError(f"patch.json: pesi non validi per {role}: {bad}")
+    for name, p in cfg["playstyles"].items():
+        if p["tier"] not in ("S", "A", "B") or any(r not in cfg["role_weights"] for r in p["roles"]):
+            raise ValueError(f"patch.json: playstyle '{name}' non valido")
+    if not 0 < cfg["soft_cap_start"] < 100:
+        raise ValueError("patch.json: soft_cap_start deve essere tra 0 e 100")
+
+
+def role_of(position: str, cfg: dict) -> str:
+    role = cfg["position_to_role"].get(position)
+    if role is None:
+        raise ValueError(f"posizione non supportata: {position}")
+    return role
 
 
 def stats_meta(card: dict, cfg: dict) -> float:
-    """Media pesata (0-100) delle in-game stats rilevanti per il ruolo."""
-    role = cfg["position_to_role"].get(card["position"])
-    if role is None:
-        raise ValueError(f"posizione non supportata: {card['position']}")
-    weights = cfg["role_weights"][role]
+    """Media pesata (1-99) delle in-game stats rilevanti per il ruolo."""
+    weights = cfg["role_weights"][role_of(card["position"], cfg)]
     stats = card["stats"]
     missing = [k for k in weights if k not in stats]
     if missing:
@@ -27,13 +57,19 @@ def stats_meta(card: dict, cfg: dict) -> float:
     return sum(stats[k] * w for k, w in weights.items()) / sum(weights.values())
 
 
-def bonus_points(card: dict, cfg: dict) -> float:
-    b = 0.0
-    tiers = cfg["playstyle_tiers"]
+def bonus_points(card: dict, cfg: dict) -> tuple[float, list[str]]:
+    """Bonus totale (limitato a max_bonus) e lista di PlayStyle+ sconosciuti."""
+    role = role_of(card["position"], cfg)
     pb = cfg["playstyle_bonus"]
+    b, unknown = 0.0, []
     for ps in card.get("playstyles", []):
         if ps.endswith("+"):
-            b += pb["plus_s"] if tiers.get(ps) == "S" else pb["plus_a"]
+            info = cfg["playstyles"].get(ps)
+            if info is None:
+                unknown.append(ps)
+                b += pb["B"]
+            else:
+                b += pb[info["tier"]] * (1 if role in info["roles"] else pb["off_role_factor"])
         else:
             b += pb["standard"]
     b += cfg["body_type_bonus"].get(card.get("body_type", "Average"), 0)
@@ -41,52 +77,65 @@ def bonus_points(card: dict, cfg: dict) -> float:
         b += cfg["weak_foot_5_bonus"]
     if card.get("skill_moves", 0) >= 5:
         b += cfg["skill_moves_5_bonus"]
-    return min(b, cfg["max_bonus"])
+    return min(b, cfg["max_bonus"]), unknown
+
+
+def soft_cap(x: float, cfg: dict) -> float:
+    """Sopra la soglia lo score cresce sempre più piano verso 100, senza appiattirsi di colpo."""
+    s = cfg["soft_cap_start"]
+    return x if x <= s else s + (100 - s) * math.tanh((x - s) / (100 - s))
+
+
+def explain(card: dict, cfg: dict) -> dict:
+    sm = stats_meta(card, cfg)
+    bonus, unknown = bonus_points(card, cfg)
+    return {"role": role_of(card["position"], cfg), "stats_meta": round(sm, 2), "bonus": round(bonus, 2),
+            "base": soft_cap(sm + bonus, cfg), "unknown_playstyles": unknown}
 
 
 def base_score(card: dict, cfg: dict) -> float:
-    return min(100.0, stats_meta(card, cfg) + bonus_points(card, cfg))
+    return explain(card, cfg)["base"]
 
 
 def final_score(base: float, pro: float | None, cfg: dict) -> float:
-    """Se manca il parere dei pro, si usa solo lo score base."""
+    """Se manca il parere dei pro, si usa solo lo score base (e l'API lo segnala)."""
     if pro is None:
         return base
     w = cfg["score_weights"]
     return base * w["stats"] + pro * w["pro"]
 
 
-def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float] | None:
-    """Regressione lineare score = a + b*ln(prezzo). Ritorna (a, b) o None."""
+def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float, float] | None:
+    """Theil-Sen (robusta agli outlier): score = a + b*ln(prezzo). Ritorna (a, b, sigma_residui) o None."""
     pts = [(math.log(p), s) for p, s in points if p > 0]
-    n = len(pts)
-    if n < 2:
+    slopes = [(y2 - y1) / (x2 - x1) for i, (x1, y1) in enumerate(pts) for x2, y2 in pts[i + 1:]
+              if abs(x2 - x1) > 1e-9]
+    if not slopes:
         return None
-    mx = sum(x for x, _ in pts) / n
-    my = sum(y for _, y in pts) / n
-    var = sum((x - mx) ** 2 for x, _ in pts)
-    if var == 0:
-        return None
-    b = sum((x - mx) * (y - my) for x, y in pts) / var
-    return my - b * mx, b
+    b = statistics.median(slopes)
+    a = statistics.median(y - b * x for x, y in pts)
+    res = [y - (a + b * x) for x, y in pts]
+    med = statistics.median(res)
+    sigma = 1.4826 * statistics.median(abs(r - med) for r in res)
+    return a, b, sigma
 
 
 def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict) -> dict:
-    """Confronta lo score con quello atteso al prezzo (curva del mercato)."""
+    """Confronta lo score con quello atteso al prezzo (curva robusta del mercato nella stessa posizione)."""
     v = cfg["verdict"]
     market = [(p, s) for p, s in market if p > 0]
-    curve = fit_curve(market) if len(market) >= v["min_cards_for_curve"] else None
-    if price <= 0 or curve is None or curve[1] <= 0:
-        return {"verdict": "NEUTRAL", "value_gap": None,
-                "reason": "Dati di mercato insufficienti o non affidabili per un confronto."}
-    a, b = curve
-    expected = a + b * math.log(max(price, 1))
+    unreliable = {"verdict": "NEUTRAL", "value_gap": None,
+                  "reason": f"Servono almeno {v['min_cards_for_curve']} carte con prezzi diversi nella posizione "
+                            f"per un confronto affidabile (ora: {len(market)})."}
+    if price <= 0 or len(market) < v["min_cards_for_curve"] or len({p for p, _ in market}) < v["min_distinct_prices"]:
+        return unreliable
+    curve = fit_curve(market)
+    if curve is None or curve[1] <= 0:
+        return {**unreliable, "reason": "Nel mercato inserito prezzo e score non sono correlati: confronto non affidabile."}
+    a, b, sigma = curve
+    expected = a + b * math.log(price)
     gap = score - expected
-    if gap >= v["must_do_gap"]:
-        label = "MUST_DO"
-    elif gap <= v["avoid_gap"]:
-        label = "AVOID"
-    else:
-        label = "NEUTRAL"
-    return {"verdict": label, "value_gap": round(gap, 2),
-            "reason": f"Score {score:.1f} vs {expected:.1f} atteso a {price:,} crediti ({gap:+.1f})."}
+    thr = max(v["min_gap"], v["k_sigma"] * sigma)
+    label = "MUST_DO" if gap >= thr else "AVOID" if gap <= -thr else "NEUTRAL"
+    return {"verdict": label, "value_gap": round(gap, 2), "threshold": round(thr, 2),
+            "reason": f"Score {score:.1f} vs {expected:.1f} atteso a {price:,} crediti ({gap:+.1f}, soglia ±{thr:.1f})."}

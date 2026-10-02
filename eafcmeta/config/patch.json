@@ -1,27 +1,442 @@
 {
-  "patch_version": "1.0",
-  "last_updated": "2026-10-02",
-  "score_weights": {"stats": 0.70, "pro": 0.30},
-  "max_bonus": 12,
-  "role_weights": {
-    "ST": {"acceleration": 3, "sprint_speed": 3, "agility": 2, "reactions": 2, "composure": 2, "finishing": 3, "shot_power": 1},
-    "W":  {"agility": 3, "balance": 2, "acceleration": 3, "dribbling": 3, "sprint_speed": 2, "crossing": 1},
-    "CAM":{"agility": 2, "acceleration": 2, "dribbling": 3, "short_passing": 3, "vision": 3, "reactions": 2},
-    "CM": {"short_passing": 3, "defensive_awareness": 2, "standing_tackle": 2, "reactions": 2, "stamina": 2, "interceptions": 2},
-    "FB": {"acceleration": 3, "sprint_speed": 3, "defensive_awareness": 2, "standing_tackle": 2, "stamina": 2, "crossing": 1},
-    "CB": {"defensive_awareness": 3, "standing_tackle": 3, "sliding_tackle": 1, "reactions": 2, "interceptions": 2, "strength": 2, "sprint_speed": 3}
+ "patch_version": "1.1",
+ "last_updated": "2026-10-02",
+ "score_weights": {
+  "stats": 0.7,
+  "pro": 0.3
+ },
+ "max_bonus": 12,
+ "soft_cap_start": 90,
+ "stat_keys": [
+  "acceleration",
+  "sprint_speed",
+  "agility",
+  "balance",
+  "reactions",
+  "ball_control",
+  "dribbling",
+  "composure",
+  "positioning",
+  "finishing",
+  "shot_power",
+  "long_shots",
+  "volleys",
+  "curve",
+  "fk_accuracy",
+  "penalties",
+  "vision",
+  "crossing",
+  "short_passing",
+  "long_passing",
+  "heading_accuracy",
+  "defensive_awareness",
+  "standing_tackle",
+  "sliding_tackle",
+  "interceptions",
+  "aggression",
+  "jumping",
+  "stamina",
+  "strength"
+ ],
+ "role_weights": {
+  "ST": {
+   "finishing": 3,
+   "positioning": 2,
+   "acceleration": 3,
+   "sprint_speed": 3,
+   "reactions": 2,
+   "composure": 2,
+   "shot_power": 1,
+   "agility": 1,
+   "ball_control": 1
   },
-  "position_to_role": {
-    "ST": "ST", "CF": "ST", "RW": "W", "LW": "W", "RM": "W", "LM": "W",
-    "CAM": "CAM", "CM": "CM", "CDM": "CM", "RB": "FB", "LB": "FB", "RWB": "FB", "LWB": "FB", "CB": "CB"
+  "CF": {
+   "finishing": 2,
+   "positioning": 2,
+   "dribbling": 2,
+   "short_passing": 2,
+   "acceleration": 2,
+   "sprint_speed": 2,
+   "agility": 2,
+   "reactions": 2,
+   "composure": 2,
+   "ball_control": 2
   },
-  "playstyle_bonus": {"plus_s": 4.0, "plus_a": 2.0, "standard": 0.5},
-  "playstyle_tiers": {
-    "Anticipate+": "S", "Finesse Shot+": "S", "Rapid+": "S",
-    "Whipped Pass+": "A", "Power Header+": "B"
+  "W": {
+   "agility": 3,
+   "balance": 2,
+   "acceleration": 3,
+   "dribbling": 3,
+   "sprint_speed": 2,
+   "crossing": 1,
+   "ball_control": 2,
+   "short_passing": 1
   },
-  "body_type_bonus": {"Custom": 3, "Lean": 2, "Unique": 2, "Average": 0},
-  "weak_foot_5_bonus": 1.5,
-  "skill_moves_5_bonus": 1.5,
-  "verdict": {"must_do_gap": 2.0, "avoid_gap": -2.0, "min_cards_for_curve": 5}
+  "CAM": {
+   "agility": 2,
+   "acceleration": 2,
+   "dribbling": 3,
+   "short_passing": 3,
+   "vision": 3,
+   "reactions": 2,
+   "ball_control": 2,
+   "long_shots": 1
+  },
+  "CM": {
+   "short_passing": 3,
+   "long_passing": 1,
+   "ball_control": 2,
+   "defensive_awareness": 2,
+   "standing_tackle": 2,
+   "reactions": 2,
+   "stamina": 2,
+   "interceptions": 1,
+   "vision": 1
+  },
+  "CDM": {
+   "defensive_awareness": 3,
+   "standing_tackle": 3,
+   "interceptions": 3,
+   "strength": 2,
+   "aggression": 1,
+   "short_passing": 2,
+   "long_passing": 1,
+   "reactions": 2,
+   "stamina": 2
+  },
+  "FB": {
+   "acceleration": 3,
+   "sprint_speed": 3,
+   "defensive_awareness": 2,
+   "standing_tackle": 2,
+   "stamina": 2,
+   "crossing": 1,
+   "dribbling": 1,
+   "short_passing": 1,
+   "interceptions": 1
+  },
+  "WB": {
+   "acceleration": 3,
+   "sprint_speed": 3,
+   "stamina": 2,
+   "crossing": 2,
+   "dribbling": 2,
+   "short_passing": 2,
+   "defensive_awareness": 1,
+   "standing_tackle": 1,
+   "agility": 1
+  },
+  "CB": {
+   "defensive_awareness": 3,
+   "standing_tackle": 3,
+   "sliding_tackle": 1,
+   "reactions": 2,
+   "interceptions": 2,
+   "strength": 2,
+   "sprint_speed": 2,
+   "heading_accuracy": 1,
+   "jumping": 1,
+   "aggression": 1
+  }
+ },
+ "position_to_role": {
+  "ST": "ST",
+  "CF": "CF",
+  "RW": "W",
+  "LW": "W",
+  "RM": "W",
+  "LM": "W",
+  "CAM": "CAM",
+  "CM": "CM",
+  "CDM": "CDM",
+  "RB": "FB",
+  "LB": "FB",
+  "RWB": "WB",
+  "LWB": "WB",
+  "CB": "CB"
+ },
+ "playstyle_bonus": {
+  "S": 4.0,
+  "A": 2.0,
+  "B": 1.0,
+  "standard": 0.5,
+  "off_role_factor": 0.25
+ },
+ "playstyles": {
+  "Finesse Shot+": {
+   "tier": "S",
+   "roles": [
+    "ST",
+    "CF",
+    "W",
+    "CAM"
+   ]
+  },
+  "Chip Shot+": {
+   "tier": "B",
+   "roles": [
+    "ST",
+    "CF",
+    "CAM"
+   ]
+  },
+  "Power Shot+": {
+   "tier": "A",
+   "roles": [
+    "ST",
+    "CF",
+    "CAM",
+    "W"
+   ]
+  },
+  "Low Driven Shot+": {
+   "tier": "B",
+   "roles": [
+    "ST",
+    "CF",
+    "CAM",
+    "W"
+   ]
+  },
+  "Power Header+": {
+   "tier": "B",
+   "roles": [
+    "ST",
+    "CF",
+    "CB"
+   ]
+  },
+  "Incisive Pass+": {
+   "tier": "A",
+   "roles": [
+    "CAM",
+    "CM",
+    "CF",
+    "W"
+   ]
+  },
+  "Pinged Pass+": {
+   "tier": "A",
+   "roles": [
+    "CM",
+    "CDM",
+    "CAM",
+    "CB",
+    "FB"
+   ]
+  },
+  "Long Ball Pass+": {
+   "tier": "A",
+   "roles": [
+    "CM",
+    "CDM",
+    "CB"
+   ]
+  },
+  "Tiki Taka+": {
+   "tier": "A",
+   "roles": [
+    "CM",
+    "CAM",
+    "CDM"
+   ]
+  },
+  "Whipped Pass+": {
+   "tier": "A",
+   "roles": [
+    "W",
+    "FB",
+    "WB",
+    "CM"
+   ]
+  },
+  "Jockey+": {
+   "tier": "A",
+   "roles": [
+    "CB",
+    "CDM",
+    "FB",
+    "WB"
+   ]
+  },
+  "Block+": {
+   "tier": "B",
+   "roles": [
+    "CB",
+    "CDM",
+    "FB"
+   ]
+  },
+  "Intercept+": {
+   "tier": "A",
+   "roles": [
+    "CB",
+    "CDM",
+    "CM",
+    "FB"
+   ]
+  },
+  "Anticipate+": {
+   "tier": "S",
+   "roles": [
+    "CB",
+    "CDM",
+    "FB",
+    "WB",
+    "CM"
+   ]
+  },
+  "Slide Tackle+": {
+   "tier": "B",
+   "roles": [
+    "CB",
+    "CDM",
+    "FB"
+   ]
+  },
+  "Bruiser+": {
+   "tier": "A",
+   "roles": [
+    "CB",
+    "CDM",
+    "ST"
+   ]
+  },
+  "Technical+": {
+   "tier": "A",
+   "roles": [
+    "W",
+    "CAM",
+    "CF",
+    "ST"
+   ]
+  },
+  "Rapid+": {
+   "tier": "S",
+   "roles": [
+    "ST",
+    "CF",
+    "W",
+    "CAM",
+    "CM",
+    "CDM",
+    "FB",
+    "WB",
+    "CB"
+   ]
+  },
+  "Flair+": {
+   "tier": "B",
+   "roles": [
+    "W",
+    "CAM",
+    "CF"
+   ]
+  },
+  "First Touch+": {
+   "tier": "A",
+   "roles": [
+    "ST",
+    "CF",
+    "W",
+    "CAM"
+   ]
+  },
+  "Trickster+": {
+   "tier": "B",
+   "roles": [
+    "W",
+    "CAM",
+    "CF"
+   ]
+  },
+  "Press Proven+": {
+   "tier": "A",
+   "roles": [
+    "CM",
+    "CAM",
+    "CDM",
+    "W",
+    "CF"
+   ]
+  },
+  "Quick Step+": {
+   "tier": "A",
+   "roles": [
+    "ST",
+    "CF",
+    "W",
+    "FB",
+    "WB",
+    "CB",
+    "CDM"
+   ]
+  },
+  "Relentless+": {
+   "tier": "A",
+   "roles": [
+    "CM",
+    "CDM",
+    "FB",
+    "WB",
+    "W",
+    "CAM"
+   ]
+  },
+  "Aerial+": {
+   "tier": "A",
+   "roles": [
+    "CB",
+    "ST",
+    "CDM"
+   ]
+  },
+  "Acrobatic+": {
+   "tier": "B",
+   "roles": [
+    "ST",
+    "CF"
+   ]
+  },
+  "Gamechanger+": {
+   "tier": "B",
+   "roles": [
+    "CAM",
+    "CF",
+    "W",
+    "ST"
+   ]
+  },
+  "Dead Ball+": {
+   "tier": "B",
+   "roles": [
+    "CAM",
+    "CM",
+    "W"
+   ]
+  },
+  "Trivela+": {
+   "tier": "B",
+   "roles": [
+    "W",
+    "FB",
+    "WB"
+   ]
+  }
+ },
+ "body_type_bonus": {
+  "Custom": 2,
+  "Lean": 1.5,
+  "Unique": 1.5,
+  "Average": 0,
+  "Stocky": 0
+ },
+ "weak_foot_5_bonus": 1.5,
+ "skill_moves_5_bonus": 1.5,
+ "verdict": {
+  "min_cards_for_curve": 8,
+  "min_distinct_prices": 4,
+  "min_gap": 1.5,
+  "k_sigma": 0.7
+ }
 }

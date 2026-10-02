@@ -1,46 +1,267 @@
 <!doctype html>
-<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="it"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f1a">
 <title>EA FC Meta</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%E2%9A%BD%3C/text%3E%3C/svg%3E">
 <style>
-:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--g:#1a9e55;--y:#d9a400;--r:#d03a3a}
-@media(prefers-color-scheme:dark){:root{--bg:#14161a;--fg:#eee;--mut:#9aa;--line:#2c3038}}
-body{margin:0;padding:12px;background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif;max-width:900px;margin:auto}
-h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{padding:6px 3px;font-size:13px;border-bottom:1px solid var(--line);text-align:left}
-.v{font-weight:600}.MUST_DO{color:var(--g)}.NEUTRAL{color:var(--y)}.AVOID{color:var(--r)}
-details{margin:16px 0}input,select{padding:6px;margin:2px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px}
-button{padding:7px 12px;cursor:pointer}small{color:var(--mut)}.stats{display:flex;flex-wrap:wrap}.stats label{font-size:12px;color:var(--mut)}
-.wrap{overflow-x:auto}
-</style></head><body>
-<h1>EA FC Meta</h1>
-<div class="wrap"><table><thead><tr><th>Carta</th><th>Pos</th><th>Prezzo</th><th>Score</th><th>Pro</th><th>Verdetto</th></tr></thead><tbody id="rows"></tbody></table></div>
-<details><summary>Aggiungi carta</summary>
-<form id="f"><input name="name" placeholder="Nome" required><input name="version" placeholder="Versione">
-<select name="position"></select><input name="price" type="number" min="0" placeholder="Prezzo" required>
-<select name="body_type"><option>Average</option><option>Lean</option><option>Custom</option><option>Unique</option></select>
-<input name="weak_foot" type="number" min="1" max="5" value="3" title="Piede debole"><input name="skill_moves" type="number" min="1" max="5" value="3" title="Skill moves">
-<input name="playstyles" placeholder="PlayStyle separati da ;" size="30">
-<div class="stats" id="stats"></div><button>Salva</button></form></details>
-<small id="msg"></small>
-<script>
-const STATS="acceleration sprint_speed agility reactions composure finishing shot_power balance dribbling crossing short_passing vision defensive_awareness standing_tackle sliding_tackle interceptions stamina strength".split(" ");
-const POS="ST CF RW LW RM LM CAM CM CDM RB LB RWB LWB CB".split(" ");
-const $=s=>document.querySelector(s);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-$("[name=position]").innerHTML=POS.map(p=>`<option>${p}</option>`).join("");
-$("#stats").innerHTML=STATS.map(s=>`<label>${s}<br><input data-stat="${s}" type="number" min="1" max="99" style="width:70px"></label>`).join("");
-async function load(){
-  const r=await fetch("api/v1/cards");const d=await r.json();
-  $("#rows").innerHTML=d.map(c=>`<tr><td>${esc(c.name)} <small>${esc(c.version)}</small></td><td>${c.position}</td>
-  <td>${c.cost_credits.toLocaleString("it")}</td><td>${c.scores.final_score}</td>
-  <td><input type="number" min="0" max="100" style="width:44px;padding:3px" value="${c.scores.pro_sentiment_score??""}" onchange="setPro(${c.id},this.value)"></td>
-  <td><span class="v ${c.verdict}" title="${esc(c.verdict_reason)}">${c.verdict}</span></td></tr>`).join("");
+:root{
+  --bg:#f3f5fa;--bg2:#fff;--card:#fff;--fg:#0e1424;--mut:#5f6b85;--line:#e1e6f0;--chip:#eaeef7;
+  --acc:#5b5bf0;--acc2:#a45bf0;--ok:#12a05c;--warn:#c98a00;--bad:#d6404a;--nd:#8a93a8;
+  --ok-bg:#e2f6ec;--warn-bg:#fdf3d9;--bad-bg:#fde6e8;--nd-bg:#eceff5;
+  --shadow:0 1px 2px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.06);--r:16px;
 }
-async function setPro(id,v){await fetch(`api/v1/cards/${id}/pro`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({pro_score:+v})});load()}
-$("#f").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const stats={};
-  document.querySelectorAll("[data-stat]").forEach(i=>{if(i.value)stats[i.dataset.stat]=+i.value});
-  const body={name:f.get("name"),version:f.get("version"),position:f.get("position"),price:+f.get("price"),body_type:f.get("body_type"),
-   weak_foot:+f.get("weak_foot"),skill_moves:+f.get("skill_moves"),playstyles:f.get("playstyles").split(";").map(s=>s.trim()).filter(Boolean),stats};
-  const r=await fetch("api/v1/cards",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-  $("#msg").textContent=r.ok?"Salvata":"Errore: "+JSON.stringify((await r.json()).detail);if(r.ok){e.target.reset();load()}};
-load();
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0b0f1a;--bg2:#121829;--card:#151c30;--fg:#e8ecf7;--mut:#8f9bb8;--line:#232c46;--chip:#1c2540;
+  --acc:#7b7bff;--acc2:#c07bff;--ok:#3ed38a;--warn:#f0b83a;--bad:#ff6b76;--nd:#7d88a3;
+  --ok-bg:#12332a;--warn-bg:#382d10;--bad-bg:#3a1a20;--nd-bg:#1c2440;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background-image:radial-gradient(900px 400px at 85% -10%,color-mix(in srgb,var(--acc) 18%,transparent),transparent),
+  radial-gradient(700px 360px at -10% 0%,color-mix(in srgb,var(--acc2) 14%,transparent),transparent);background-repeat:no-repeat}
+.wrap{max-width:980px;margin:auto;padding:16px 16px 96px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;color:#fff;font-size:16px;box-shadow:0 6px 16px color-mix(in srgb,var(--acc) 40%,transparent)}
+.brand small{display:block;font-weight:500;font-size:12px;color:var(--mut);letter-spacing:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--chip);color:var(--fg);min-height:42px}
+.btn:hover{filter:brightness(.97)}
+.btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--acc) 35%,transparent)}
+.btn.bad{background:var(--bad-bg);color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar{display:grid;gap:10px;margin-bottom:14px}
+.search{display:flex;gap:8px}
+input[type=search],input[type=text],input[type=number],select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:42px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:0;border-radius:999px;padding:7px 13px;background:var(--chip);color:var(--mut);font-weight:600;cursor:pointer;white-space:nowrap;min-height:36px}
+.chip[aria-pressed=true]{background:var(--fg);color:var(--bg)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);
+  display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center;cursor:pointer;text-align:left;width:100%;transition:transform .12s}
+.card:hover{transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ring{--p:0;--c:var(--acc);width:62px;height:62px;border-radius:50%;display:grid;place-items:center;grid-row:span 2;
+  background:conic-gradient(var(--c) calc(var(--p)*1%),var(--chip) 0)}
+.ring span{width:50px;height:50px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.name{font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis}
+.sub{color:var(--mut);font-size:13px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pos{background:var(--chip);border-radius:6px;padding:1px 7px;font-weight:700;font-size:12px;color:var(--fg)}
+.price{font-variant-numeric:tabular-nums;font-weight:600;color:var(--fg)}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge.MUST_DO{background:var(--ok-bg);color:var(--ok)}.badge.NEUTRAL{background:var(--warn-bg);color:var(--warn)}
+.badge.AVOID{background:var(--bad-bg);color:var(--bad)}.badge.ND{background:var(--nd-bg);color:var(--nd)}
+.meta{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.empty{text-align:center;color:var(--mut);padding:48px 16px;border:1px dashed var(--line);border-radius:var(--r)}
+.empty b{display:block;color:var(--fg);font-size:17px;margin-bottom:4px}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:5}
+.fab .btn{box-shadow:var(--shadow);min-height:48px;border-radius:14px}
+dialog{border:0;border-radius:20px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 24px);background:var(--bg2);color:var(--fg);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+dialog::backdrop{background:rgba(5,8,16,.6);backdrop-filter:blur(3px)}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 18px 8px}
+.dh h2{margin:0;font-size:19px;letter-spacing:-.01em}
+.db{padding:6px 18px 18px;overflow:auto;max-height:calc(100vh - 140px)}
+.x{border:0;background:var(--chip);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;color:var(--mut);flex:none}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.kv div{background:var(--chip);border-radius:12px;padding:10px;text-align:center}
+.kv b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.kv small{color:var(--mut)}
+.note{background:var(--chip);border-radius:12px;padding:10px 12px;color:var(--mut);font-size:14px;margin:8px 0}
+.note.warn{background:var(--warn-bg);color:var(--warn)}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:0 0 4px}
+.fg2{display:grid;gap:10px;grid-template-columns:1fr 1fr}.fg3{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+.span2{grid-column:1/-1}
+h3{margin:16px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+textarea{min-height:150px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+.errs{max-height:150px;overflow:auto;font-size:13px;color:var(--bad);margin:8px 0;padding-left:18px}
+.spark{width:100%;height:56px}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:20;box-shadow:var(--shadow);max-width:90vw}
+.sr{position:absolute;left:-9999px}
+@media(max-width:480px){.fg3{grid-template-columns:repeat(2,1fr)}.btn.lbl span{display:none}}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="logo">⚽</div><div>EA FC Meta<small id="patch">valore delle carte</small></div></div>
+    <button class="btn" id="bImport">⇪ Importa</button>
+  </header>
+  <div class="toolbar">
+    <div class="search"><input type="search" id="q" placeholder="Cerca giocatore…" aria-label="Cerca giocatore">
+      <select id="sort" aria-label="Ordina per" style="width:auto">
+        <option value="score">Score</option><option value="gap">Convenienza</option><option value="priceAsc">Prezzo ↑</option><option value="priceDesc">Prezzo ↓</option><option value="name">Nome</option></select></div>
+    <div class="chips" id="chips" role="group" aria-label="Filtra per posizione"></div>
+  </div>
+  <div class="grid" id="list" aria-live="polite"></div>
+</div>
+<div class="fab"><button class="btn pri" id="bAdd">＋ Nuova carta</button></div>
+
+<dialog id="dDetail"><div class="dh"><h2 id="dtTitle"></h2><button class="x" data-close aria-label="Chiudi">✕</button></div><div class="db" id="dtBody"></div></dialog>
+
+<dialog id="dForm"><div class="dh"><h2 id="fTitle">Nuova carta</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
+<form class="db" id="form"><div class="fg2">
+  <div class="span2"><label class="f" for="fName">Nome</label><input type="text" id="fName" required maxlength="64"></div>
+  <div><label class="f" for="fVer">Versione</label><input type="text" id="fVer" maxlength="64" placeholder="es. TOTS"></div>
+  <div><label class="f" for="fPos">Posizione</label><select id="fPos"></select></div>
+  <div><label class="f" for="fPrice">Prezzo (crediti)</label><input type="text" inputmode="numeric" id="fPrice" required placeholder="es. 25.000 o 25k"></div>
+  <div><label class="f" for="fBody">Body type</label><select id="fBody"></select></div>
+  <div><label class="f" for="fWF">Piede debole ★</label><input type="number" id="fWF" min="1" max="5" value="3" inputmode="numeric"></div>
+  <div><label class="f" for="fSM">Skill moves ★</label><input type="number" id="fSM" min="1" max="5" value="3" inputmode="numeric"></div>
+  <div class="span2"><label class="f" for="fPS">PlayStyle (separati da ;)</label><input type="text" id="fPS" list="psList" placeholder="Rapid+; Finesse Shot+"></div>
+  <label class="span2" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="fSBC" style="width:auto;min-height:0"> Prezzo = costo SBC/evoluzione</label>
+</div><datalist id="psList"></datalist>
+<h3>Statistiche in-game <span id="fRole" style="text-transform:none;letter-spacing:0"></span></h3>
+<div class="fg3" id="fStats"></div>
+<p class="errs" id="fErr" hidden></p>
+<div class="row" style="margin-top:14px;justify-content:flex-end"><button type="button" class="btn" data-close>Annulla</button><button class="btn pri" id="fSave">Salva</button></div>
+</form></dialog>
+
+<dialog id="dImp"><div class="dh"><h2>Importa dati</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
+<div class="db"><div class="tabs"><button class="chip" id="tCards" aria-pressed="true">Carte</button><button class="chip" id="tPrices" aria-pressed="false">Solo prezzi</button></div>
+<p class="note" id="impHelp"></p>
+<textarea id="impText" spellcheck="false" aria-label="Dati da importare"></textarea>
+<ul class="errs" id="impErr" hidden></ul><div class="note" id="impRes" hidden></div>
+<div class="row" style="margin-top:12px"><button class="btn" id="bTpl">⇩ Modello CSV</button><span style="flex:1"></span>
+<button class="btn" id="bPrev">Anteprima</button><button class="btn pri" id="bDo">Importa</button></div></div></dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Number(n).toLocaleString("it-IT");
+const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
+const VERD={MUST_DO:["✓","Conviene"],NEUTRAL:["●","In linea"],AVOID:["✕","Evita"],ND:["?","Pochi dati"]};
+const vkey=c=>c.value_gap==null?"ND":c.verdict;
+let META=null,CARDS=[],posFilter="",editing=null,impMode="cards";
+
+// token (per l'accesso in rete locale): arriva da #token=... e resta salvato nel browser
+const m=location.hash.match(/token=([^&]+)/);
+if(m){store.set("token",decodeURIComponent(m[1]));history.replaceState(null,"",location.pathname)}
+async function api(path,opts={},retry=true){
+  const h={"Content-Type":"application/json"};const t=store.get("token");if(t)h["X-Token"]=t;
+  const r=await fetch("/api/v1"+path,{...opts,headers:h});
+  if(r.status===401&&retry){const n=prompt("Token di accesso (te lo dà chi ha avviato l'app):");if(n){store.set("token",n);return api(path,opts,false)}}
+  return r;
+}
+async function jget(path){const r=await api(path);if(!r.ok)throw new Error(await errText(r));return r.json()}
+async function errText(r){try{const d=await r.json();const x=d.detail;return Array.isArray(x)?x.map(e=>(e.loc||[]).slice(1).join(".")+": "+e.msg).join("; "):String(x||r.status)}catch{return "Errore "+r.status}}
+let tt;function toast(msg){let t=$(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.append(t)}t.textContent=msg;clearTimeout(tt);tt=setTimeout(()=>t.remove(),2800)}
+
+function ringColor(s){return s>=88?"var(--ok)":s>=78?"var(--acc)":s>=68?"var(--warn)":"var(--bad)"}
+function badge(c){const k=vkey(c),[i,l]=VERD[k];return `<span class="badge ${k}" title="${esc(c.verdict_reason)}">${i} ${l}</span>`}
+
+function render(){
+  const q=$("#q").value.trim().toLowerCase(),s=$("#sort").value;
+  let a=CARDS.filter(c=>(!posFilter||c.position===posFilter)&&(!q||(c.name+" "+c.version).toLowerCase().includes(q)));
+  const by={score:(x,y)=>y.scores.final_score-x.scores.final_score,gap:(x,y)=>(y.value_gap??-99)-(x.value_gap??-99),
+    priceAsc:(x,y)=>x.cost_credits-y.cost_credits,priceDesc:(x,y)=>y.cost_credits-x.cost_credits,name:(x,y)=>x.name.localeCompare(y.name)};
+  a.sort(by[s]);
+  $("#list").innerHTML=a.length?a.map(c=>`<button class="card" data-id="${c.id}">
+    <div class="ring" style="--p:${Math.min(100,c.scores.final_score)};--c:${ringColor(c.scores.final_score)}"><span>${Math.round(c.scores.final_score)}</span></div>
+    <div><div class="name">${esc(c.name)}</div><div class="sub"><span class="pos">${esc(c.position)}</span>${esc(c.version)}${c.is_sbc?" · SBC":""}</div></div>
+    <div class="meta"><span class="price">${fmt(c.cost_credits)} 🪙</span>${badge(c)}</div></button>`).join("")
+   :`<div class="empty" style="grid-column:1/-1"><b>${CARDS.length?"Nessun risultato":"Ancora nessuna carta"}</b>${CARDS.length?"Prova a cambiare ricerca o filtro.":"Aggiungine una con “Nuova carta” oppure usa “Importa”."}</div>`;
+  const pos=[...new Set(CARDS.map(c=>c.position))].sort();
+  $("#chips").innerHTML=["",...pos].map(p=>`<button class="chip" data-pos="${p}" aria-pressed="${p===posFilter}">${p||"Tutte"}</button>`).join("");
+}
+async function load(){
+  try{CARDS=await jget("/cards")}catch(e){$("#list").innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Impossibile caricare</b>${esc(e.message)}</div>`;return}
+  render();
+}
+
+async function openDetail(id){
+  let d;try{d=await jget("/cards/"+id)}catch(e){return toast(e.message)}
+  $("#dtTitle").innerHTML=`${esc(d.name)} <span class="sub" style="display:inline-flex"><span class="pos">${esc(d.position)}</span>${esc(d.version)}</span>`;
+  const k=vkey(d),h=d.price_history,sp=spark(h);
+  $("#dtBody").innerHTML=`<div class="row" style="justify-content:space-between">${badge(d)}<b class="price">${fmt(d.cost_credits)} 🪙${d.is_sbc?" (SBC)":""}</b></div>
+   <div class="kv"><div><b>${d.scores.final_score}</b><small>Score finale</small></div><div><b>${d.scores.base_score}</b><small>Base (stats+bonus)</small></div><div><b>${d.scores.pro_sentiment_score??"—"}</b><small>Pro</small></div></div>
+   <div class="note">${esc(d.verdict_reason)}</div>
+   ${d.pro_missing?`<div class="note warn">Manca il parere dei pro: lo score è solo quello base, quindi non è confrontabile del tutto con le carte che lo hanno.</div>`:""}
+   ${d.breakdown.unknown_playstyles.length?`<div class="note warn">PlayStyle+ non in tabella (bonus minimo): ${esc(d.breakdown.unknown_playstyles.join(", "))}</div>`:""}
+   <h3>Come si calcola</h3><div class="note">Ruolo <b>${esc(d.breakdown.role)}</b> · stats ${d.breakdown.stats_meta} + bonus ${d.breakdown.bonus} (PlayStyle, body type, 5★) → base ${d.scores.base_score}${d.pro_missing?"":` · 70% base + 30% pro`}. Confronto con ${d.market_size} carte ${esc(d.position)}.</div>
+   ${h.length>1?`<h3>Storico prezzo</h3>${sp}`:""}
+   <h3>Parere dei pro (0–100)</h3>
+   <div class="fg2"><div><label class="f" for="pS">Punteggio</label><input type="number" id="pS" min="0" max="100" step="0.5" inputmode="decimal" value="${d.scores.pro_sentiment_score??""}" placeholder="vuoto = nessuno"></div>
+   <div><label class="f" for="pN">Note</label><input type="text" id="pN" maxlength="500" value="${esc(d.pro_notes)}"></div></div>
+   <div class="row" style="margin-top:14px"><button class="btn bad" id="bDel">Elimina</button><span style="flex:1"></span><button class="btn" id="bEdit">Modifica</button><button class="btn pri" id="bPro">Salva pro</button></div>`;
+  $("#bPro").onclick=async()=>{const v=$("#pS").value.trim();const r=await api(`/cards/${id}/pro`,{method:"PUT",body:JSON.stringify({pro_score:v===""?null:+v,notes:$("#pN").value})});
+    if(r.ok){toast("Salvato");$("#dDetail").close();load()}else toast(await errText(r))};
+  $("#bDel").onclick=async()=>{if(!confirm(`Eliminare ${d.name}?`))return;const r=await api("/cards/"+id,{method:"DELETE"});
+    if(r.ok){toast("Eliminata");$("#dDetail").close();load()}else toast(await errText(r))};
+  $("#bEdit").onclick=()=>{$("#dDetail").close();openForm(d)};
+  $("#dDetail").showModal();
+}
+function spark(h){if(h.length<2)return"";const p=h.map(x=>x.price),mn=Math.min(...p),mx=Math.max(...p),W=300,H=50;
+  const pts=p.map((v,i)=>[i*(W/(p.length-1)),mx===mn?H/2:H-4-((v-mn)/(mx-mn))*(H-8)]);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Andamento del prezzo"><polyline fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round" points="${pts.map(q=>q.join(",")).join(" ")}"/></svg>
+   <div class="sub" style="justify-content:space-between"><span>${esc(h[0].ts)} · ${fmt(p[0])}</span><span>${esc(h.at(-1).ts)} · ${fmt(p.at(-1))}</span></div>`}
+
+// form carta
+function statInputs(){
+  const pos=$("#fPos").value,w=META.role_weights[pos]||{},old={};
+  document.querySelectorAll("#fStats input").forEach(i=>{if(i.value)old[i.dataset.k]=i.value});
+  $("#fStats").innerHTML=Object.keys(w).map(k=>`<div><label class="f" for="s_${k}">${k.replaceAll("_"," ")}</label><input type="number" id="s_${k}" data-k="${k}" min="1" max="99" inputmode="numeric" required value="${old[k]??""}"></div>`).join("");
+  $("#fRole").textContent="· servono solo quelle del ruolo";
+}
+function openForm(c){
+  editing=c?c.id:null;$("#fTitle").textContent=c?"Modifica carta":"Nuova carta";$("#fErr").hidden=true;
+  const cd=c?c.card:{};
+  $("#fName").value=c?.name||"";$("#fVer").value=c?.version||"";$("#fPos").value=c?.position||META.positions[0];
+  $("#fPrice").value=c?c.cost_credits:"";$("#fBody").value=cd.body_type||"Average";$("#fWF").value=cd.weak_foot||3;$("#fSM").value=cd.skill_moves||3;
+  $("#fPS").value=(cd.playstyles||[]).join("; ");$("#fSBC").checked=!!c?.is_sbc;
+  $("#fStats").innerHTML="";statInputs();
+  if(c)for(const[k,v]of Object.entries(cd.stats||{})){const i=$("#s_"+k);if(i)i.value=v}
+  $("#dForm").showModal();
+}
+function parsePrice(v){let s=v.trim().toLowerCase().replace(/\s/g,""),m=1;if(s.endsWith("k")){m=1e3;s=s.slice(0,-1)}else if(s.endsWith("m")){m=1e6;s=s.slice(0,-1)}
+  if(m>1)return Math.round(parseFloat(s.replace(",","."))*m);return parseInt(s.replace(/[.,]/g,""),10)}
+$("#form").onsubmit=async e=>{e.preventDefault();
+  const price=parsePrice($("#fPrice").value);if(!Number.isFinite(price))return showFormErr("Prezzo non valido");
+  const stats={};document.querySelectorAll("#fStats input").forEach(i=>{if(i.value)stats[i.dataset.k]=+i.value});
+  const body={name:$("#fName").value,version:$("#fVer").value,position:$("#fPos").value,price,is_sbc:$("#fSBC").checked,stats,
+    playstyles:$("#fPS").value.split(";").map(s=>s.trim()).filter(Boolean),body_type:$("#fBody").value,weak_foot:+$("#fWF").value,skill_moves:+$("#fSM").value};
+  $("#fSave").disabled=true;
+  const r=await api(editing?"/cards/"+editing:"/cards",{method:editing?"PUT":"POST",body:JSON.stringify(body)});
+  $("#fSave").disabled=false;
+  if(!r.ok)return showFormErr(await errText(r));
+  const d=await r.json();toast(d.status==="updated"?"Carta già presente: aggiornata":"Salvata");$("#dForm").close();load()};
+function showFormErr(t){const e=$("#fErr");e.textContent=t;e.hidden=false;e.style.paddingLeft=0}
+
+// import
+const HELP={cards:"Incolla CSV (separatore ; , o tab) oppure JSON. Prima riga = intestazioni (name, version, position, price, … + le stat). Se la carta esiste già (nome+versione+posizione) viene aggiornata. Prezzi: 12.500, 12k, 1.2m.",
+  prices:"Una riga per carta: nome;versione;prezzo (la versione si può omettere se il nome è unico). Cambia solo i prezzi."};
+function setMode(m){impMode=m;$("#tCards").setAttribute("aria-pressed",m==="cards");$("#tPrices").setAttribute("aria-pressed",m==="prices");
+  $("#impHelp").textContent=HELP[m];$("#impText").placeholder=m==="cards"?"name;version;position;price;…":"Mbappé;TOTS;185k";$("#bTpl").hidden=m!=="cards";$("#impRes").hidden=true;$("#impErr").hidden=true}
+async function runImport(dry){
+  const r=await api(impMode==="cards"?"/import":"/prices",{method:"POST",body:JSON.stringify({text:$("#impText").value,dry_run:dry})});
+  if(!r.ok)return toast(await errText(r));
+  const d=await r.json(),res=$("#impRes"),er=$("#impErr");
+  const part=impMode==="cards"?`${d.new} nuove, ${d.updated} aggiornate`:`${d.updated} prezzi da aggiornare`;
+  res.hidden=false;res.textContent=d.errors.length?`${part} — ma ci sono ${d.errors.length} errori: non è stato salvato nulla.`:dry?`Anteprima: ${part}. Premi “Importa” per salvare.`:`Fatto: ${part}.`;
+  er.hidden=!d.errors.length;er.innerHTML=d.errors.slice(0,50).map(x=>`<li>${x.row?"Riga "+x.row+": ":""}${esc(x.error)}</li>`).join("");
+  if(d.saved){toast("Importazione completata");$("#dImp").close();$("#impText").value="";load()}
+}
+$("#bImport").onclick=()=>{setMode("cards");$("#dImp").showModal()};
+$("#tCards").onclick=()=>setMode("cards");$("#tPrices").onclick=()=>setMode("prices");
+$("#bPrev").onclick=()=>runImport(true);$("#bDo").onclick=()=>runImport(false);
+$("#bTpl").onclick=async()=>{const r=await api("/import/template");$("#impText").value=await r.text()};
+
+// eventi
+$("#bAdd").onclick=()=>openForm(null);
+$("#list").onclick=e=>{const b=e.target.closest(".card");if(b)openDetail(b.dataset.id)};
+$("#chips").onclick=e=>{const b=e.target.closest("[data-pos]");if(b){posFilter=b.dataset.pos;render()}};
+$("#q").oninput=render;$("#sort").onchange=()=>{store.set("sort",$("#sort").value);render()};
+$("#fPos").onchange=statInputs;
+document.addEventListener("click",e=>{if(e.target.closest("[data-close]"))e.target.closest("dialog").close();else if(e.target.tagName==="DIALOG")e.target.close()});
+(async()=>{
+  const s=store.get("sort");if(s)$("#sort").value=s;
+  try{META=await jget("/meta")}catch(e){$("#list").innerHTML=`<div class="empty"><b>Impossibile avviare</b>${esc(e.message)}</div>`;return}
+  $("#patch").textContent="patch "+META.patch_version;
+  $("#fPos").innerHTML=META.positions.map(p=>`<option>${p}</option>`).join("");
+  $("#fBody").innerHTML=META.body_types.map(p=>`<option>${p}</option>`).join("");
+  $("#psList").innerHTML=META.playstyles.map(p=>`<option value="${esc(p)}">`).join("");
+  load();
+})();
 </script></body></html>
