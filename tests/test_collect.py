@@ -129,7 +129,7 @@ def test_list_parse_and_detection():
     assert sources.is_list_page(html) and not sources.is_list_page(gg_page())
     rows = sources.parse_futgg_list(html)
     assert [(r["name"], r["version"], r["position"], r["price"]) for r in rows] == [
-        ("Pelé", "Base Icon 95", "CAM", 6_800_000), ("Raphinha", "Gold 88", "LM", 550_000), ("Ronaldo", "Base Icon 94", "ST", None)]
+        ("Pelé", "Icon 95", "CAM", 6_800_000), ("Raphinha", "Gold 88", "LM", 550_000), ("Ronaldo", "Icon 94", "ST", None)]
 
 
 def test_list_updates_known_prices_and_reports_unknown(client):
@@ -161,3 +161,31 @@ def test_crawl_with_fake_site(client, tmp_path):
 
     r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://x/list"], fetch=blocked, delay=0, check_robots=False)
     assert r["stopped"] == "HTTP 403" and r["new"] == 0
+
+
+def futbin_list(rows):
+    trs = "".join(
+        f'<tr class="player-row text-nowrap"><td class="table-name"><a class="player-row-playercard" href="https://www.futbin.com/27/player/{i}/{n.lower()}">'
+        f'<img alt=""><img class="playercard-27-special-img" alt="{n}"><img alt="Nation"><div class="table-player-revision">{rev}</div></a></td>'
+        f'<td class="table-rating">{r}</td><td class="table-pos">{pos} ++</td><td class="table-price">{p} 3.1%</td></tr>'
+        for i, (n, r, rev, pos, p) in enumerate(rows, start=1))
+    return f"<html><head><title>Players | FUTBIN</title></head><body><table>{trs}</table></body></html>"
+
+
+def test_futbin_list(client):
+    html = futbin_list([("Pelé", 95, "Icon", "CAM", "6.8M"), ("Buffon", 92, "Icon", "GK", "865K"), ("Kelly", 86, "Rare", "RM", "-")])
+    assert sources.is_list_page(html)
+    rows = sources.parse_list(html)
+    assert [(r["name"], r["version"], r["position"], r["price"]) for r in rows] == [
+        ("Pelé", "Icon 95", "CAM", 6_800_000), ("Buffon", "Icon 92", "GK", 865_000), ("Kelly", "Gold 86", "RM", None)]
+    r = client.post("/api/v1/import/pages", json={"pages": [{"name": "l.html", "html": html}], "dry_run": True}).json()
+    l = r["lists"][0]
+    assert l["unsupported"] == 1 and {u["name"] for u in l["unknown"]} == {"Pelé", "Kelly"}
+
+
+def test_base_prefix_unified():
+    assert sources.normalize_version("Base Icon", 95) == sources.normalize_version("Icon", 95) == "Icon 95"
+
+
+def test_normal_is_gold():
+    assert sources.normalize_version("Normal", 88) == sources.normalize_version("Rare", 88) == "Gold 88"

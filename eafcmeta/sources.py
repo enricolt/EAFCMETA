@@ -78,7 +78,7 @@ def _stats(tokens: list[str], start: int, end: int) -> dict[str, int]:
 
 def normalize_version(rarity: str, rating: int) -> str:
     """'Rare'/'Common' non cambiano le stats: si unificano come 'Gold' così le due fonti danno la stessa versione."""
-    base = re.sub(r"\b(Rare|Common)\b", "", rarity).strip(" -") or "Gold"
+    base = re.sub(r"\b(Rare|Common|Normal)\b", "", re.sub(r"^Base\s+", "", rarity.strip())).strip(" -") or "Gold"
     return f"{base} {rating}"
 
 
@@ -178,8 +178,11 @@ def parse_short_price(tok: str | None) -> int | None:
 
 
 def is_list_page(html: str) -> bool:
-    """Pagina elenco giocatori di FUT.GG: ci sono molte carte e non c'è il 'breadcrumb' di un giocatore."""
-    if "fut.gg" not in html[:200_000].lower():
+    """Pagina elenco giocatori (FUT.GG o FUTBIN): molte carte e nessun 'breadcrumb' di un singolo giocatore."""
+    head = html[:200_000].lower()
+    if "futbin" in head and "player-row" in html:
+        return len(BeautifulSoup(html, "lxml").select("tr.player-row")) >= 2
+    if "fut.gg" not in head:
         return False
     soup = BeautifulSoup(html, "lxml")
     for s in soup.select('script[type="application/ld+json"]'):
@@ -194,6 +197,32 @@ def is_list_page(html: str) -> bool:
 
 def _list_anchors(soup):
     return [a for a in soup.select('a[href*="/players/"]') if a.select_one(".fc-card, [class*=fc-card]")]
+
+
+def parse_futbin_list(html: str) -> list[dict]:
+    """Elenco FUTBIN (tabella) -> stessa forma di parse_futgg_list; prezzo = console."""
+    soup = BeautifulSoup(html, "lxml")
+    out = []
+    for r in soup.select("tr.player-row"):
+        a = r.select_one("a.player-row-playercard")
+        img = next((i for i in r.find_all("img") if (i.get("alt") or "").strip()
+                    and i["alt"].strip() not in ("Nation", "League", "Club")), None)  # carta base o speciale
+        rev = r.select_one(".table-player-revision")
+        rating = (r.select_one("td.table-rating") or r).get_text(strip=True)
+        pos = (r.select_one("td.table-pos") or r).get_text(" ", strip=True).split(" ")[0]
+        price = r.select_one("td.table-price")
+        if not (a and img and img.get("alt") and rev and rating.isdigit()):
+            continue
+        ptxt = price.get_text(" ", strip=True).split(" ")[0] if price else None
+        out.append({"name": img["alt"].strip(), "rating": int(rating), "version": normalize_version(rev.get_text(strip=True), int(rating)),
+                    "position": pos, "price": parse_short_price(ptxt), "url": a["href"]})
+    if not out:
+        raise PageError("non trovo giocatori nella lista")
+    return out
+
+
+def parse_list(html: str) -> list[dict]:
+    return parse_futbin_list(html) if "futbin" in html[:200_000].lower() and "player-row" in html else parse_futgg_list(html)
 
 
 def parse_futgg_list(html: str) -> list[dict]:

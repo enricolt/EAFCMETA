@@ -12,13 +12,17 @@ from pydantic import ValidationError
 
 from types import SimpleNamespace
 
-from . import db, sources
+from . import db, scoring, sources
 
 
 def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
     """Pagina elenco: aggiorna il prezzo delle carte già note; le altre vanno scaricate (pagina del giocatore)."""
-    updated, unknown = 0, []
+    updated, unknown, unsupported = 0, [], 0
+    supported = scoring.load_config()["position_to_role"]
     for e in entries:
+        if e["position"] not in supported:
+            unsupported += 1  # es. portieri: l'app non li valuta ancora
+            continue
         row = db.find_card(conn, SimpleNamespace(name=e["name"], version=e["version"], position=e["position"]))
         if row is None:
             unknown.append({k: e[k] for k in ("name", "version", "position", "price", "url")})
@@ -26,7 +30,7 @@ def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
             if not dry_run:
                 db.set_price(conn, row["id"], e["price"])
             updated += 1
-    return {"total": len(entries), "prices_updated": updated, "unknown": unknown}
+    return {"total": len(entries), "prices_updated": updated, "unknown": unknown, "unsupported": unsupported}
 
 
 def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> dict:
@@ -36,7 +40,7 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
     for name, html in pages:
         try:
             if sources.is_list_page(html):
-                lists.append({"file": name, **apply_list(conn, sources.parse_futgg_list(html), dry_run)})
+                lists.append({"file": name, **apply_list(conn, sources.parse_list(html), dry_run)})
                 continue
             d = sources.parse_page(html)
             cards.append((name, d, sources.to_card(d)))
@@ -78,7 +82,7 @@ if __name__ == "__main__":
         print(f"  {c['status']:8} {c['name']} · {c['version']} ({c['position']}) {c['price']:,}  [{c['site']}]")
     for l in r["lists"]:
         print(f"  elenco {l['file']}: {l['total']} giocatori, {l['prices_updated']} prezzi aggiornati, "
-              f"{len(l['unknown'])} non ancora nell'app")
+              f"{len(l['unknown'])} non ancora nell'app, {l['unsupported']} non supportati (portieri)")
     for e in r["errors"]:
         print(f"  ERRORE   {e['file']}: {e['error']}")
     print(f"{r['new']} nuove, {r['updated']} aggiornate, {len(r['errors'])} non lette")

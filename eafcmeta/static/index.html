@@ -325,7 +325,7 @@ $("#form").onsubmit=async e=>{e.preventDefault();
 function showFormErr(t){const e=$("#fErr");e.textContent=t;e.hidden=false;e.style.paddingLeft=0}
 
 const HELP={cards:"Incolla CSV (separatore ; , o tab) oppure JSON. Prima riga = intestazioni (name, version, position, price, … + le stat). Se la carta esiste già (nome+versione+posizione) viene aggiornata. Prezzi: 12.500, 12k, 1.2m.",
-  pages:"Salva col browser (Ctrl+S → “Pagina web, solo HTML”) la pagina di un giocatore su FUT.GG o FUTBIN, poi scegli qui uno o più file. Leggo statistiche, prezzo (console), ruolo, body type, piede debole, skill e PlayStyle. Se la carta esiste già viene aggiornata. Se scegli una pagina elenco di FUT.GG aggiorno i prezzi delle carte che ho già.",
+  pages:"Salva col browser (Ctrl+S → “Pagina web, solo HTML”) la pagina di un giocatore su FUT.GG o FUTBIN, poi scegli qui uno o più file. Leggo statistiche, prezzo (console), ruolo, body type, piede debole, skill e PlayStyle. Se la carta esiste già viene aggiornata. Se scegli una pagina elenco (FUT.GG o FUTBIN) aggiorno i prezzi delle carte che ho già.",
   prices:"Una riga per carta: nome;versione;prezzo (la versione si può omettere se il nome è unico). Cambia solo i prezzi."};
 function setMode(m){impMode=m;["Cards","Prices","Pages"].forEach(x=>$("#t"+x).setAttribute("aria-pressed",m===x.toLowerCase()));
   $("#impText").hidden=m==="pages";$("#impFiles").hidden=m!=="pages";$("#bTpl").hidden=m!=="cards";
@@ -337,7 +337,7 @@ async function runPages(dry){
   if(!r.ok)return toast(await errText(r));
   const d=await r.json(),res=$("#impRes"),er=$("#impErr");
   res.hidden=false;res.textContent=(dry?"Anteprima: ":"Fatto: ")+`${d.new} nuove, ${d.updated} aggiornate`+(d.errors.length?`, ${d.errors.length} pagine non lette`:"")+(dry?". Premi “Importa” per salvare.":".");
-  const ls=d.lists||[];if(ls.length)res.textContent+=" "+ls.map(l=>`Elenco: ${l.total} giocatori, ${l.prices_updated} prezzi aggiornati, ${l.unknown.length} non ancora nell'app (servono le loro pagine).`).join(" ");
+  const ls=d.lists||[];if(ls.length)res.textContent+=" "+ls.map(l=>`Elenco: ${l.total} giocatori, ${l.prices_updated} prezzi aggiornati, ${l.unknown.length} non ancora nell'app (servono le loro pagine)${l.unsupported?`, ${l.unsupported} non supportati (portieri)`:""}.`).join(" ");
   er.hidden=!(d.errors.length||d.cards.length||ls.length);er.style.color="inherit";er.style.paddingLeft="18px";
   er.innerHTML=ls.map(l=>`<li>📋 ${esc(l.file)}: ${l.total} giocatori — ${l.prices_updated} prezzi aggiornati</li>`).join("")+d.cards.map(c=>`<li>${c.status==="new"?"➕":"🔄"} ${esc(c.name)} · ${esc(c.version)} (${esc(c.position)}) — ${fmt(c.price)} 🪙</li>`).join("")+
     d.errors.map(x=>`<li style="color:var(--bad)">${esc(x.file)}: ${esc(x.error)}</li>`).join("");
