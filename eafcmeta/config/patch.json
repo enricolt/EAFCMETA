@@ -1,0 +1,27 @@
+{
+  "patch_version": "1.0",
+  "last_updated": "2026-10-02",
+  "score_weights": {"stats": 0.70, "pro": 0.30},
+  "max_bonus": 12,
+  "role_weights": {
+    "ST": {"acceleration": 3, "sprint_speed": 3, "agility": 2, "reactions": 2, "composure": 2, "finishing": 3, "shot_power": 1},
+    "W":  {"agility": 3, "balance": 2, "acceleration": 3, "dribbling": 3, "sprint_speed": 2, "crossing": 1},
+    "CAM":{"agility": 2, "acceleration": 2, "dribbling": 3, "short_passing": 3, "vision": 3, "reactions": 2},
+    "CM": {"short_passing": 3, "defensive_awareness": 2, "standing_tackle": 2, "reactions": 2, "stamina": 2, "interceptions": 2},
+    "FB": {"acceleration": 3, "sprint_speed": 3, "defensive_awareness": 2, "standing_tackle": 2, "stamina": 2, "crossing": 1},
+    "CB": {"defensive_awareness": 3, "standing_tackle": 3, "sliding_tackle": 1, "reactions": 2, "interceptions": 2, "strength": 2, "sprint_speed": 3}
+  },
+  "position_to_role": {
+    "ST": "ST", "CF": "ST", "RW": "W", "LW": "W", "RM": "W", "LM": "W",
+    "CAM": "CAM", "CM": "CM", "CDM": "CM", "RB": "FB", "LB": "FB", "RWB": "FB", "LWB": "FB", "CB": "CB"
+  },
+  "playstyle_bonus": {"plus_s": 4.0, "plus_a": 2.0, "standard": 0.5},
+  "playstyle_tiers": {
+    "Anticipate+": "S", "Finesse Shot+": "S", "Rapid+": "S",
+    "Whipped Pass+": "A", "Power Header+": "B"
+  },
+  "body_type_bonus": {"Custom": 3, "Lean": 2, "Unique": 2, "Average": 0},
+  "weak_foot_5_bonus": 1.5,
+  "skill_moves_5_bonus": 1.5,
+  "verdict": {"must_do_gap": 2.0, "avoid_gap": -2.0, "min_cards_for_curve": 5}
+}
