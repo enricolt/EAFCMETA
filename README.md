@@ -3,6 +3,8 @@
 App per uso personale (e con gli amici): valuta le carte EA FC con uno score da stats in-game, PlayStyle, body type
 e parere dei pro (inserito a mano), e dice se una carta conviene rispetto al prezzo di mercato.
 
+> Per chi continua il lavoro: leggi **[HANDOFF.md](HANDOFF.md)** (stato, cosa non è verificato, prossimi compiti).
+
 ## Avvio
     pip install -r requirements.txt
     python start.py            # controlla gli aggiornamenti, poi apre l'app in una finestra nativa
