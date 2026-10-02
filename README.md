@@ -20,3 +20,15 @@ DB: file `eafcmeta.db` (o variabile `EAFCMETA_DB`).
   (serve almeno `min_cards_for_curve` carte, altrimenti NEUTRAL).
 - Pesi e soglie in `eafcmeta/config/patch.json`: si modificano senza toccare il codice.
 - Posizioni supportate: ST/CF, ali, CAM, CM/CDM, terzini, CB (niente portieri per ora).
+
+## Copia locale con aggiornamento automatico
+Prima volta (serve git e Python 3.11+):
+
+    git clone -b claude/nifty-babbage-h8l35m https://github.com/enricolt/EAFCMETA
+    cd EAFCMETA
+    python start.py
+
+Ogni avvio di `python start.py` fa `git fetch`, aggiorna la copia se ci sono novità (solo fast-forward, e solo
+se non hai modifiche locali), reinstalla le dipendenze se `requirements.txt` è cambiato e apre l'app su
+http://localhost:8000. Se sei offline usa la versione che hai. Il database `eafcmeta.db` è ignorato da git,
+quindi gli aggiornamenti non lo toccano. Opzioni: `--lan` (visibile in rete locale), `--check`, `--no-update`.
