@@ -180,7 +180,7 @@ def test_futbin_list(client):
         ("Pelé", "Icon 95", "CAM", 6_800_000), ("Buffon", "Icon 92", "GK", 865_000), ("Kelly", "Gold 86", "RM", None)]
     r = client.post("/api/v1/import/pages", json={"pages": [{"name": "l.html", "html": html}], "dry_run": True}).json()
     l = r["lists"][0]
-    assert l["unsupported"] == 1 and {u["name"] for u in l["unknown"]} == {"Pelé", "Kelly"}
+    assert l["unsupported"] == 0 and {u["name"] for u in l["unknown"]} == {"Pelé", "Kelly", "Buffon"}
 
 
 def test_base_prefix_unified():

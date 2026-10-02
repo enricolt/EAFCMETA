@@ -20,7 +20,10 @@ STAT_LABELS = {
     "balance": "balance", "reactions": "reactions", "ballcontrol": "ball_control", "composure": "composure",
     "interceptions": "interceptions", "headingacc": "heading_accuracy", "defaware": "defensive_awareness",
     "standtackle": "standing_tackle", "slidetackle": "sliding_tackle", "jumping": "jumping", "stamina": "stamina",
-    "strength": "strength", "aggression": "aggression"}
+    "strength": "strength", "aggression": "aggression",
+    # portieri (nomi attesi, non ancora verificati su una pagina reale)
+    "gkdiving": "gk_diving", "gkhandling": "gk_handling", "gkkicking": "gk_kicking",
+    "gkpositioning": "gk_positioning", "gkreflexes": "gk_reflexes"}
 
 
 class PageError(ValueError):

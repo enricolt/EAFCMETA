@@ -1,5 +1,5 @@
 {
- "patch_version": "1.1",
+ "patch_version": "1.2",
  "last_updated": "2026-10-02",
  "score_weights": {
   "stats": 0.7,
@@ -36,7 +36,12 @@
   "aggression",
   "jumping",
   "stamina",
-  "strength"
+  "strength",
+  "gk_diving",
+  "gk_handling",
+  "gk_kicking",
+  "gk_positioning",
+  "gk_reflexes"
  ],
  "role_weights": {
   "ST": {
@@ -137,6 +142,13 @@
    "heading_accuracy": 1,
    "jumping": 1,
    "aggression": 1
+  },
+  "GK": {
+   "gk_reflexes": 3,
+   "gk_diving": 3,
+   "gk_positioning": 3,
+   "gk_handling": 2,
+   "gk_kicking": 1
   }
  },
  "position_to_role": {
@@ -153,7 +165,8 @@
   "LB": "FB",
   "RWB": "WB",
   "LWB": "WB",
-  "CB": "CB"
+  "CB": "CB",
+  "GK": "GK"
  },
  "playstyle_bonus": {
   "S": 4.0,
@@ -421,6 +434,42 @@
     "W",
     "FB",
     "WB"
+   ]
+  },
+  "Far Reach+": {
+   "tier": "S",
+   "roles": [
+    "GK"
+   ]
+  },
+  "1v1 Close Down+": {
+   "tier": "A",
+   "roles": [
+    "GK"
+   ]
+  },
+  "Footwork+": {
+   "tier": "A",
+   "roles": [
+    "GK"
+   ]
+  },
+  "Deflector+": {
+   "tier": "A",
+   "roles": [
+    "GK"
+   ]
+  },
+  "Cross Claimer+": {
+   "tier": "B",
+   "roles": [
+    "GK"
+   ]
+  },
+  "Far Throw+": {
+   "tier": "B",
+   "roles": [
+    "GK"
    ]
   }
  },

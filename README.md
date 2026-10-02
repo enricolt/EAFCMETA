@@ -62,4 +62,4 @@ Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
 ## API
 Documentazione interattiva su `/docs`. Principali: `GET/POST /api/v1/cards`, `GET/PUT/DELETE /api/v1/cards/{id}`,
 `PUT /api/v1/cards/{id}/pro`, `POST /api/v1/import`, `POST /api/v1/prices`, `GET /api/v1/meta`.
-Posizioni supportate: ST, CF, ali (RW/LW/RM/LM), CAM, CM, CDM, terzini (RB/LB), esterni (RWB/LWB), CB. Niente portieri.
+Posizioni supportate: ST, CF, ali (RW/LW/RM/LM), CAM, CM, CDM, terzini (RB/LB), esterni (RWB/LWB), CB e GK (portieri: contano riflessi, tuffo, piazzamento, presa e rinvio; la lettura automatica delle loro pagine non è ancora verificata).

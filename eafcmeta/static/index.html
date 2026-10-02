@@ -193,7 +193,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch{return null}},set(k
 const VERD={MUST_DO:["✓","Conviene"],NEUTRAL:["●","In linea"],AVOID:["✕","Evita"],ND:["?","Pochi dati"]};
 const LBL={acceleration:"ACC",sprint_speed:"VEL",agility:"AGI",balance:"BAL",reactions:"REA",ball_control:"CTR",dribbling:"DRI",composure:"CMP",positioning:"POS",finishing:"FIN",
   shot_power:"POT",long_shots:"TLU",volleys:"VOL",curve:"EFF",fk_accuracy:"PUN",penalties:"RIG",vision:"VIS",crossing:"CRO",short_passing:"PAS",long_passing:"PLU",
-  heading_accuracy:"TST",defensive_awareness:"DIF",standing_tackle:"CON",sliding_tackle:"SCI",interceptions:"INT",aggression:"AGG",jumping:"SAL",stamina:"RES",strength:"FOR"};
+  heading_accuracy:"TST",defensive_awareness:"DIF",standing_tackle:"CON",sliding_tackle:"SCI",interceptions:"INT",aggression:"AGG",jumping:"SAL",stamina:"RES",strength:"FOR",gk_diving:"TUF",gk_handling:"PRE",gk_kicking:"RIN",gk_positioning:"POR",gk_reflexes:"RIF"};
 const lbl=k=>LBL[k]||k.slice(0,3).toUpperCase();
 const vkey=c=>c.value_gap==null?"ND":c.verdict;
 let META=null,CARDS=[],posFilter="",editing=null,impMode="cards";

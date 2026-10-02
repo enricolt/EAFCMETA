@@ -42,7 +42,7 @@ def test_final_score():
 
 def test_unknown_position_and_missing_stats():
     with pytest.raises(ValueError):
-        scoring.stats_meta(card(position="GK"), CFG)
+        scoring.stats_meta(card(position="XX"), CFG)
     with pytest.raises(ValueError):
         scoring.stats_meta(card(stats={"finishing": 90}), CFG)
 
@@ -80,3 +80,15 @@ def test_validate_config():
     del bad["role_weights"]["CB"]
     with pytest.raises(ValueError):
         scoring.validate_config(bad)
+
+
+GK = {"gk_diving": 88, "gk_handling": 85, "gk_kicking": 80, "gk_positioning": 87, "gk_reflexes": 90}
+
+
+def test_goalkeeper_scoring():
+    c = card(position="GK", stats=GK, playstyles=["Far Reach+", "Rapid+"])
+    ex = scoring.explain(c, CFG)
+    assert ex["role"] == "GK" and ex["stats_meta"] > 85
+    assert scoring.bonus_points(c, CFG)[0] > scoring.bonus_points(card(position="GK", stats=GK, playstyles=["Rapid+"]), CFG)[0]
+    with pytest.raises(ValueError):
+        scoring.stats_meta(card(position="GK"), CFG)  # servono le stats da portiere
