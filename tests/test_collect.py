@@ -189,3 +189,17 @@ def test_base_prefix_unified():
 
 def test_normal_is_gold():
     assert sources.normalize_version("Normal", 88) == sources.normalize_version("Rare", 88) == "Gold 88"
+
+
+GG_GK_STATS = ("Attributes|Chemistry Style|Diving|92|Diving|92|Handling|88|Handling|88|Kicking|79|Kicking|79|Reflexes|94|"
+               "Reflexes|94|Reactions|93|Speed|59|Acceleration|60|Sprint Speed|57|Positioning|92|Positioning|92|GK Basic|L")
+
+
+def test_futgg_goalkeeper():
+    html = gg_page(name="Nadine Angerer", rating=92, rarity="Base Icon").replace(GG_STATS, GG_GK_STATS.replace("|", "</div><div>"))
+    html = html.replace("CM (FC Barcelona)", "GK (Germany)").replace("</div><div>".join(GG_STATS.split("|")), "</div><div>".join(GG_GK_STATS.split("|")))
+    d = sources.parse_page(html)
+    assert (d["name"], d["version"], d["position"]) == ("Nadine Angerer", "Icon 92", "GK")
+    assert d["stats"] == {"gk_diving": 92, "gk_handling": 88, "gk_kicking": 79, "gk_reflexes": 94, "reactions": 93,
+                          "acceleration": 60, "sprint_speed": 57, "gk_positioning": 92}
+    assert sources.to_card(d).position == "GK"

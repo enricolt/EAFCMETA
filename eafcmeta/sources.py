@@ -21,7 +21,9 @@ STAT_LABELS = {
     "interceptions": "interceptions", "headingacc": "heading_accuracy", "defaware": "defensive_awareness",
     "standtackle": "standing_tackle", "slidetackle": "sliding_tackle", "jumping": "jumping", "stamina": "stamina",
     "strength": "strength", "aggression": "aggression",
-    # portieri (nomi attesi, non ancora verificati su una pagina reale)
+    # portieri: su FUT.GG le etichette sono semplici (verificato); le varianti "GK ..." sono per FUTBIN (da verificare)
+    "diving": "gk_diving", "handling": "gk_handling", "kicking": "gk_kicking",
+    "positioning": "gk_positioning", "reflexes": "gk_reflexes",
     "gkdiving": "gk_diving", "gkhandling": "gk_handling", "gkkicking": "gk_kicking",
     "gkpositioning": "gk_positioning", "gkreflexes": "gk_reflexes"}
 
@@ -163,8 +165,8 @@ def parse_futgg(html: str) -> dict:
     price = _price(t[t.index("Current price") - 1] if "Current price" in t else None)
     try:
         s0 = next(i for i, x in enumerate(t) if x == "Attributes" and t[i + 1] == "Chemistry Style")
-        s1 = t.index("Basic", s0)
-    except (StopIteration, ValueError):
+        s1 = next(i for i in range(s0, len(t)) if t[i] in ("Basic", "GK Basic"))
+    except StopIteration:
         raise PageError("non trovo le statistiche")
     return {"site": "futgg", "name": name, "version": version, "position": position, "price": price,
             "skill_moves": _int(_after(t, "Skill Moves"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
