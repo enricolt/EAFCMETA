@@ -1,2 +1,4 @@
 fastapi>=0.110,<1
 uvicorn>=0.29,<1
+beautifulsoup4>=4.12
+lxml>=5

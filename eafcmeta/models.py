@@ -72,3 +72,13 @@ class ProIn(BaseModel):
 class ImportIn(BaseModel):
     text: str = Field(max_length=300_000)
     dry_run: bool = True
+
+
+class PageIn(BaseModel):
+    name: str = Field(max_length=200)
+    html: str = Field(max_length=4_000_000)
+
+
+class PagesIn(BaseModel):
+    pages: list[PageIn] = Field(max_length=40)
+    dry_run: bool = True

@@ -7,8 +7,8 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 
-from . import db, importer, scoring
-from .models import CardIn, ImportIn, ProIn
+from . import collect, db, importer, scoring
+from .models import CardIn, ImportIn, PagesIn, ProIn
 
 
 @asynccontextmanager
@@ -152,6 +152,11 @@ def import_cards(body: ImportIn, conn: sqlite3.Connection = Conn):
 @router.post("/prices")
 def import_prices(body: ImportIn, conn: sqlite3.Connection = Conn):
     return importer.update_prices(conn, body.text, body.dry_run)
+
+
+@router.post("/import/pages")
+def import_pages(body: PagesIn, conn: sqlite3.Connection = Conn):
+    return collect.import_pages(conn, [(p.name, p.html) for p in body.pages], body.dry_run)
 
 
 @router.get("/import/template", response_class=PlainTextResponse)

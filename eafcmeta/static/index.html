@@ -123,6 +123,8 @@ h3{margin:18px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08e
 .bar span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar b{font-variant-numeric:tabular-nums;text-align:right}
 .bar i{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;display:block}.bar i u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
 .radar{width:100%;max-width:300px;margin:auto;display:block}
+input[type=file]{width:100%;padding:12px;border:1px dashed var(--line);border-radius:13px;background:var(--glass);color:var(--mut);cursor:pointer}
+input[type=file]::file-selector-button{border:0;border-radius:10px;padding:8px 14px;margin-right:12px;font-weight:650;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2))}
 .tabs{display:flex;gap:7px;margin-bottom:12px}
 textarea{min-height:170px;font:13px/1.45 ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;resize:vertical}
 .errs{max-height:150px;overflow:auto;font-size:13px;color:var(--bad);margin:8px 0;padding-left:18px}
@@ -174,9 +176,10 @@ textarea{min-height:170px;font:13px/1.45 ui-monospace,"Cascadia Mono",Menlo,Cons
 </form></dialog>
 
 <dialog id="dImp"><div class="dh"><h2>Importa dati</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
-<div class="db"><div class="tabs"><button class="chip" id="tCards" aria-pressed="true">Carte</button><button class="chip" id="tPrices" aria-pressed="false">Solo prezzi</button></div>
+<div class="db"><div class="tabs"><button class="chip" id="tCards" aria-pressed="true">Carte</button><button class="chip" id="tPrices" aria-pressed="false">Solo prezzi</button><button class="chip" id="tPages" aria-pressed="false">Pagine salvate</button></div>
 <p class="note" id="impHelp"></p>
 <textarea id="impText" spellcheck="false" aria-label="Dati da importare"></textarea>
+<div id="impFiles" hidden><input type="file" id="impFile" accept=".html,.htm" multiple aria-label="Pagine salvate"><p class="note" id="impFileInfo">Nessun file scelto.</p></div>
 <ul class="errs" id="impErr" hidden></ul><div class="note" id="impRes" hidden></div>
 <div class="row" style="margin-top:14px"><button class="btn" id="bTpl">⇩ Modello CSV</button><span style="flex:1"></span>
 <button class="btn" id="bPrev">Anteprima</button><button class="btn pri" id="bDo">Importa</button></div></div></dialog>
@@ -322,10 +325,25 @@ $("#form").onsubmit=async e=>{e.preventDefault();
 function showFormErr(t){const e=$("#fErr");e.textContent=t;e.hidden=false;e.style.paddingLeft=0}
 
 const HELP={cards:"Incolla CSV (separatore ; , o tab) oppure JSON. Prima riga = intestazioni (name, version, position, price, … + le stat). Se la carta esiste già (nome+versione+posizione) viene aggiornata. Prezzi: 12.500, 12k, 1.2m.",
+  pages:"Salva col browser (Ctrl+S → “Pagina web, solo HTML”) la pagina di un giocatore su FUT.GG o FUTBIN, poi scegli qui uno o più file. Leggo statistiche, prezzo (console), ruolo, body type, piede debole, skill e PlayStyle. Se la carta esiste già viene aggiornata.",
   prices:"Una riga per carta: nome;versione;prezzo (la versione si può omettere se il nome è unico). Cambia solo i prezzi."};
-function setMode(m){impMode=m;$("#tCards").setAttribute("aria-pressed",m==="cards");$("#tPrices").setAttribute("aria-pressed",m==="prices");
-  $("#impHelp").textContent=HELP[m];$("#impText").placeholder=m==="cards"?"name;version;position;price;…":"Mbappé;TOTS;185k";$("#bTpl").hidden=m!=="cards";$("#impRes").hidden=true;$("#impErr").hidden=true}
+function setMode(m){impMode=m;["Cards","Prices","Pages"].forEach(x=>$("#t"+x).setAttribute("aria-pressed",m===x.toLowerCase()));
+  $("#impText").hidden=m==="pages";$("#impFiles").hidden=m!=="pages";$("#bTpl").hidden=m!=="cards";
+  $("#impHelp").textContent=HELP[m];$("#impText").placeholder=m==="cards"?"name;version;position;price;…":"Mbappé;TOTS;185k";$("#impRes").hidden=true;$("#impErr").hidden=true}
+async function runPages(dry){
+  const fs=[...$("#impFile").files];if(!fs.length)return toast("Scegli prima uno o più file");
+  const pages=await Promise.all(fs.map(async f=>({name:f.name,html:await f.text()})));
+  const r=await api("/import/pages",{method:"POST",body:JSON.stringify({pages,dry_run:dry})});
+  if(!r.ok)return toast(await errText(r));
+  const d=await r.json(),res=$("#impRes"),er=$("#impErr");
+  res.hidden=false;res.textContent=(dry?"Anteprima: ":"Fatto: ")+`${d.new} nuove, ${d.updated} aggiornate`+(d.errors.length?`, ${d.errors.length} pagine non lette`:"")+(dry?". Premi “Importa” per salvare.":".");
+  er.hidden=!(d.errors.length||d.cards.length);er.style.color="inherit";er.style.paddingLeft="18px";
+  er.innerHTML=d.cards.map(c=>`<li>${c.status==="new"?"➕":"🔄"} ${esc(c.name)} · ${esc(c.version)} (${esc(c.position)}) — ${fmt(c.price)} 🪙</li>`).join("")+
+    d.errors.map(x=>`<li style="color:var(--bad)">${esc(x.file)}: ${esc(x.error)}</li>`).join("");
+  if(d.saved){toast("Importazione completata");if(!d.errors.length){$("#dImp").close();$("#impFile").value="";$("#impFileInfo").textContent="Nessun file scelto."}load()}
+}
 async function runImport(dry){
+  if(impMode==="pages")return runPages(dry);
   const r=await api(impMode==="cards"?"/import":"/prices",{method:"POST",body:JSON.stringify({text:$("#impText").value,dry_run:dry})});
   if(!r.ok)return toast(await errText(r));
   const d=await r.json(),res=$("#impRes"),er=$("#impErr");
@@ -335,7 +353,8 @@ async function runImport(dry){
   if(d.saved){toast("Importazione completata");$("#dImp").close();$("#impText").value="";load()}
 }
 $("#bImport").onclick=()=>{setMode("cards");$("#dImp").showModal()};
-$("#tCards").onclick=()=>setMode("cards");$("#tPrices").onclick=()=>setMode("prices");
+$("#tCards").onclick=()=>setMode("cards");$("#tPrices").onclick=()=>setMode("prices");$("#tPages").onclick=()=>setMode("pages");
+$("#impFile").onchange=e=>{const n=e.target.files.length;$("#impFileInfo").textContent=n?`${n} file scelti.`:"Nessun file scelto."};
 $("#bPrev").onclick=()=>runImport(true);$("#bDo").onclick=()=>runImport(false);
 $("#bTpl").onclick=async()=>{const r=await api("/import/template");$("#impText").value=await r.text()};
 
