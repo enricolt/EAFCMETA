@@ -32,13 +32,14 @@ FB_STATS = ("Player Stats|Pace|85|Acceleration|81|Sprint Speed|88|Shooting|82|At
 
 
 def fb_page(price="80,000", plus=False, name="Kika Nazareth", rating="83", rarity="Gold"):
-    head = "|".join([rating, "CM", "++", "R", "4", "4", "83.4", name, "85", "Pac", "82", "Sho"])
+    head = "|".join([rating, "CM", "++", "R", "4", "4", "83.4", name, "85", "Pac", "82", "Sho", "Add to Compare"])
     info = "|".join(["Portugal", "FC Barcelona", rarity, "Skills", "4", "Weak Foot", "4", "B.Type", "Short & Lean"])
     f = "27_plus_scoring-chipshot.png" if plus else "27_scoring-chipshot.png"
     ps = (f'<a class="playStyle-table-icon column active{" psplus" if plus else ""}" href="x"><img class="ps-logo" src="{f}">'
           '<div>Chip Shot</div></a><a class="playStyle-table-icon column" href="y"><div>Inattivo</div></a>')
     mk = lambda s: "".join(f"<div>{t}</div>" for t in s.split("|"))
-    return (f'<html><head><title>FUTBIN</title></head><body><div class="price-box platform-ps-only">'
+    ld = json.dumps({"@type": "Product", "name": f"{name} {rarity} EA FC 27 Player Card"})
+    return (f'<html><head><title>FUTBIN</title><script type="application/ld+json">{ld}</script></head><body><div class="price-box platform-ps-only">'
             f'<div class="price lowest-price-1">{price}</div></div>{mk(head)}{mk(info)}{ps}{mk(FB_STATS)}</body></html>')
 
 
@@ -203,3 +204,26 @@ def test_futgg_goalkeeper():
     assert d["stats"] == {"gk_diving": 92, "gk_handling": 88, "gk_kicking": 79, "gk_reflexes": 94, "reactions": 93,
                           "acceleration": 60, "sprint_speed": 57, "gk_positioning": 92}
     assert sources.to_card(d).position == "GK"
+
+
+def test_list_in_same_batch_sees_new_cards(client):
+    pages = [{"name": "lista.html", "html": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M")])},  # prima nel lotto
+             {"name": "a.html", "html": gg_page(name="Pelé", rating=95, rarity="Base Icon", price="5,000,000")}]
+    l = client.post("/api/v1/import/pages", json={"pages": pages, "dry_run": False}).json()["lists"][0]
+    assert l["prices_updated"] == 1 and l["unknown"] == []
+
+
+def test_futbin_goalkeeper_icon():
+    head = "|".join(["45K", "92", "GK", "++", "R", "1", "3", "Angerer", "Add to Compare"])
+    stats = ("Player Stats|Evolution Builder|92|Show All Stats|Diving|92|Handling|88|Kicking|79|Reflexes|94|Reactions|93|Speed|59|"
+             "Acceleration|60|Sprint Speed|57|Positioning|92|Pace|58|Acceleration|60|Sprint Speed|57|Shooting|22|Att. Position|12|"
+             "Total Chem. style added:")
+    info = "|".join(["Germany", "Icons", "EA FC ICONS", "All Icons", "Skills", "1", "Weak Foot", "3"])
+    mk = lambda s: "".join(f"<div>{t}</div>" for t in s.split("|"))
+    ld = json.dumps({"@type": "Product", "name": "Angerer All Icons EA FC 27 Player Card"})
+    html = (f'<html><head><title>FUTBIN</title><script type="application/ld+json">{ld}</script></head><body>'
+            f'<div class="price-box platform-ps-only"><div class="price lowest-price-1">217,000</div></div>'
+            f'{mk(head)}{mk(info)}<a class="playStyle-table-icon column active psplus"><div>Far Reach</div></a>{mk(stats)}</body></html>')
+    d = sources.parse_page(html)
+    assert (d["name"], d["version"], d["position"], d["price"]) == ("Angerer", "Icon 92", "GK", 217000)
+    assert d["playstyles"] == ["Far Reach+"] and "finishing" not in d["stats"] and d["stats"]["gk_reflexes"] == 94

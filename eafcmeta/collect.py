@@ -36,11 +36,11 @@ def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
 def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> dict:
     """pages: [(nome_file, html)]. Ogni pagina è indipendente: le valide si salvano, le altre sono segnalate."""
     new = updated = 0
-    errors, cards, lists = [], [], []
+    errors, cards, lists, pending = [], [], [], []
     for name, html in pages:
         try:
             if sources.is_list_page(html):
-                lists.append({"file": name, **apply_list(conn, sources.parse_list(html), dry_run)})
+                pending.append((name, sources.parse_list(html)))  # le liste si applicano dopo le carte del lotto
                 continue
             d = sources.parse_page(html)
             cards.append((name, d, sources.to_card(d)))
@@ -59,6 +59,8 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
             updated += status == "updated"
             found.append({"file": name, "name": card.name, "version": card.version, "position": card.position,
                           "price": card.price, "site": d["site"], "status": status})
+        for name, entries in pending:
+            lists.append({"file": name, **apply_list(conn, entries, dry_run)})
         conn.rollback() if dry_run else conn.commit()
     except Exception:
         conn.rollback()

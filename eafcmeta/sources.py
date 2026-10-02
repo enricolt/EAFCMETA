@@ -83,7 +83,8 @@ def _stats(tokens: list[str], start: int, end: int) -> dict[str, int]:
 
 def normalize_version(rarity: str, rating: int) -> str:
     """'Rare'/'Common' non cambiano le stats: si unificano come 'Gold' così le due fonti danno la stessa versione."""
-    base = re.sub(r"\b(Rare|Common|Normal)\b", "", re.sub(r"^Base\s+", "", rarity.strip())).strip(" -") or "Gold"
+    rarity = re.sub(r"\bIcons\b", "Icon", re.sub(r"\bHeroes\b", "Hero", re.sub(r"^All\s+", "", rarity.strip())))
+    base = re.sub(r"\b(Rare|Common|Normal)\b", "", re.sub(r"^Base\s+", "", rarity)).strip(" -") or "Gold"
     return f"{base} {rating}"
 
 
@@ -99,6 +100,14 @@ def detect_site(html: str) -> str:
     raise PageError("pagina non riconosciuta (servono pagine-giocatore salvate da FUT.GG o FUTBIN)")
 
 
+def _ld_items(script) -> list[dict]:
+    try:
+        d = json.loads(script.string or "")
+    except json.JSONDecodeError:
+        return []
+    return d.get("@graph", [d]) if isinstance(d, dict) else []
+
+
 def parse_futbin(html: str) -> dict:
     soup = BeautifulSoup(html, "lxml")
     plays = []
@@ -111,29 +120,41 @@ def parse_futbin(html: str) -> dict:
             plays.append(name + ("+" if plus else ""))
     price_el = soup.select_one(".price-box.platform-ps-only .lowest-price-1") or soup.select_one(".lowest-price-1")
     price = _price(price_el.get_text(strip=True) if price_el else None)
+    ld_name = next((x.get("name", "") for sc in soup.select('script[type="application/ld+json"]')
+                    for x in _ld_items(sc) if x.get("@type") == "Product"), "")
     t = _tokens(soup)
     try:
-        i_pac = t.index("Pac")
+        i_cmp = t.index("Add to Compare")
     except ValueError:
-        raise PageError("non trovo la carta (Pac)")
-    name = t[i_pac - 2]
-    positions = set(scoring.load_config()["position_to_role"]) | {"GK"}
-    rating = position = None
-    for j in range(i_pac - 3, max(0, i_pac - 40), -1):
+        raise PageError("non trovo la carta")
+    positions = set(scoring.load_config()["position_to_role"])
+    rating = position = name = None
+    for j in range(i_cmp - 1, max(0, i_cmp - 60), -1):
         if re.fullmatch(r"\d{2}", t[j]) and t[j + 1] in positions:
             rating, position = int(t[j]), t[j + 1]
             break
     if rating is None:
         raise PageError("non trovo valutazione e posizione")
+    for tok in t[j + 2:i_cmp]:  # primo testo "vero": salta '++', 'R', numeri e posizioni alternative
+        if not (re.fullmatch(r"[\d.]+|\+*|[RL]", tok) or tok in positions):
+            name = tok
+            break
+    if not name:
+        raise PageError("non trovo il nome")
+    m = re.fullmatch(re.escape(name) + r"\s+(.+?)\s+EA FC \d+ Player Card", ld_name)
     i_sk = t.index("Skills") if "Skills" in t else -1
-    rarity = t[i_sk - 1] if i_sk > 0 else "Gold"
+    rarity = m.group(1) if m else (t[i_sk - 1] if i_sk > 0 else "Gold")
     try:
         s0, s1 = t.index("Player Stats"), t.index("Total Chem. style added:")
     except ValueError:
         raise PageError("non trovo le statistiche")
+    stats = _stats(t, s0, s1)
+    if position == "GK":  # sulle pagine dei portieri compaiono anche le stats da giocatore di movimento (inutili)
+        stats = {k: v for k, v in stats.items() if k.startswith("gk_") or k in ("reactions", "acceleration", "sprint_speed")}
     return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
             "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
-            "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")), "playstyles": plays, "stats": _stats(t, s0, s1)}
+            "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")),
+            "playstyles": plays, "stats": stats}
 
 
 def parse_futgg(html: str) -> dict:
@@ -186,7 +207,7 @@ def is_list_page(html: str) -> bool:
     """Pagina elenco giocatori (FUT.GG o FUTBIN): molte carte e nessun 'breadcrumb' di un singolo giocatore."""
     head = html[:200_000].lower()
     if "futbin" in head and "player-row" in html:
-        return len(BeautifulSoup(html, "lxml").select("tr.player-row")) >= 2
+        return len(BeautifulSoup(html, "lxml").select("tr.player-row")) >= 1
     if "fut.gg" not in head:
         return False
     soup = BeautifulSoup(html, "lxml")
@@ -197,7 +218,7 @@ def is_list_page(html: str) -> bool:
             continue
         if d.get("@type") == "BreadcrumbList" and len(d.get("itemListElement", [])) >= 3:
             return False
-    return len(_list_anchors(soup)) >= 2
+    return len(_list_anchors(soup)) >= 1
 
 
 def _list_anchors(soup):
