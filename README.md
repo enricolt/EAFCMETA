@@ -8,6 +8,10 @@ e dice se una carta conviene rispetto al prezzo di mercato.
     uvicorn eafcmeta.api:app --reload      # docs su /docs
     pytest
 
+Interfaccia web su `/` (classifica, aggiunta carte, pro score modificabile).
+Import carte: `python -m eafcmeta.importer data/esempio.csv` (dati di esempio fittizi).
+DB: file `eafcmeta.db` (o variabile `EAFCMETA_DB`).
+
 ## Decisioni iniziali
 - Monolite FastAPI + SQLite, nessuno scraping: le carte si inseriscono via API (`POST /api/v1/cards`).
 - Pro sentiment inserito a mano (`PUT /api/v1/cards/{id}/pro`); se manca, conta solo lo score base.

@@ -1,6 +1,7 @@
 """Motore di punteggio: score base da stats/bonus, fusione col pro sentiment, valore vs mercato."""
 from __future__ import annotations
 
+import functools
 import json
 import math
 from pathlib import Path
@@ -8,6 +9,7 @@ from pathlib import Path
 CONFIG_PATH = Path(__file__).parent / "config" / "patch.json"
 
 
+@functools.lru_cache(maxsize=1)
 def load_config(path: Path = CONFIG_PATH) -> dict:
     return json.loads(Path(path).read_text())
 
@@ -19,8 +21,10 @@ def stats_meta(card: dict, cfg: dict) -> float:
         raise ValueError(f"posizione non supportata: {card['position']}")
     weights = cfg["role_weights"][role]
     stats = card["stats"]
-    total = sum(weights.values())
-    return sum(stats.get(k, 0) * w for k, w in weights.items()) / total
+    missing = [k for k in weights if k not in stats]
+    if missing:
+        raise ValueError(f"stats mancanti per {card['position']}: {', '.join(missing)}")
+    return sum(stats[k] * w for k, w in weights.items()) / sum(weights.values())
 
 
 def bonus_points(card: dict, cfg: dict) -> float:
@@ -70,10 +74,11 @@ def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float] | None:
 def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict) -> dict:
     """Confronta lo score con quello atteso al prezzo (curva del mercato)."""
     v = cfg["verdict"]
+    market = [(p, s) for p, s in market if p > 0]
     curve = fit_curve(market) if len(market) >= v["min_cards_for_curve"] else None
-    if curve is None:
+    if price <= 0 or curve is None or curve[1] <= 0:
         return {"verdict": "NEUTRAL", "value_gap": None,
-                "reason": "Dati di mercato insufficienti per un confronto affidabile."}
+                "reason": "Dati di mercato insufficienti o non affidabili per un confronto."}
     a, b = curve
     expected = a + b * math.log(max(price, 1))
     gap = score - expected

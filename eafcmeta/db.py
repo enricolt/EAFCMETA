@@ -6,8 +6,10 @@ DB_PATH = os.environ.get("EAFCMETA_DB", "eafcmeta.db")
 
 
 def connect(path: str | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(path or DB_PATH, check_same_thread=False)
+    conn = sqlite3.connect(path or DB_PATH, timeout=5)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
     conn.execute(
         """CREATE TABLE IF NOT EXISTS cards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

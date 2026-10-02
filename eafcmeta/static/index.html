@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EA FC Meta</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--g:#1a9e55;--y:#d9a400;--r:#d03a3a}
+@media(prefers-color-scheme:dark){:root{--bg:#14161a;--fg:#eee;--mut:#9aa;--line:#2c3038}}
+body{margin:0;padding:12px;background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif;max-width:900px;margin:auto}
+h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{padding:6px 3px;font-size:13px;border-bottom:1px solid var(--line);text-align:left}
+.v{font-weight:600}.MUST_DO{color:var(--g)}.NEUTRAL{color:var(--y)}.AVOID{color:var(--r)}
+details{margin:16px 0}input,select{padding:6px;margin:2px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px}
+button{padding:7px 12px;cursor:pointer}small{color:var(--mut)}.stats{display:flex;flex-wrap:wrap}.stats label{font-size:12px;color:var(--mut)}
+.wrap{overflow-x:auto}
+</style></head><body>
+<h1>EA FC Meta</h1>
+<div class="wrap"><table><thead><tr><th>Carta</th><th>Pos</th><th>Prezzo</th><th>Score</th><th>Pro</th><th>Verdetto</th></tr></thead><tbody id="rows"></tbody></table></div>
+<details><summary>Aggiungi carta</summary>
+<form id="f"><input name="name" placeholder="Nome" required><input name="version" placeholder="Versione">
+<select name="position"></select><input name="price" type="number" min="0" placeholder="Prezzo" required>
+<select name="body_type"><option>Average</option><option>Lean</option><option>Custom</option><option>Unique</option></select>
+<input name="weak_foot" type="number" min="1" max="5" value="3" title="Piede debole"><input name="skill_moves" type="number" min="1" max="5" value="3" title="Skill moves">
+<input name="playstyles" placeholder="PlayStyle separati da ;" size="30">
+<div class="stats" id="stats"></div><button>Salva</button></form></details>
+<small id="msg"></small>
+<script>
+const STATS="acceleration sprint_speed agility reactions composure finishing shot_power balance dribbling crossing short_passing vision defensive_awareness standing_tackle sliding_tackle interceptions stamina strength".split(" ");
+const POS="ST CF RW LW RM LM CAM CM CDM RB LB RWB LWB CB".split(" ");
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("[name=position]").innerHTML=POS.map(p=>`<option>${p}</option>`).join("");
+$("#stats").innerHTML=STATS.map(s=>`<label>${s}<br><input data-stat="${s}" type="number" min="1" max="99" style="width:70px"></label>`).join("");
+async function load(){
+  const r=await fetch("api/v1/cards");const d=await r.json();
+  $("#rows").innerHTML=d.map(c=>`<tr><td>${esc(c.name)} <small>${esc(c.version)}</small></td><td>${c.position}</td>
+  <td>${c.cost_credits.toLocaleString("it")}</td><td>${c.scores.final_score}</td>
+  <td><input type="number" min="0" max="100" style="width:44px;padding:3px" value="${c.scores.pro_sentiment_score??""}" onchange="setPro(${c.id},this.value)"></td>
+  <td><span class="v ${c.verdict}" title="${esc(c.verdict_reason)}">${c.verdict}</span></td></tr>`).join("");
+}
+async function setPro(id,v){await fetch(`api/v1/cards/${id}/pro`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({pro_score:+v})});load()}
+$("#f").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const stats={};
+  document.querySelectorAll("[data-stat]").forEach(i=>{if(i.value)stats[i.dataset.stat]=+i.value});
+  const body={name:f.get("name"),version:f.get("version"),position:f.get("position"),price:+f.get("price"),body_type:f.get("body_type"),
+   weak_foot:+f.get("weak_foot"),skill_moves:+f.get("skill_moves"),playstyles:f.get("playstyles").split(";").map(s=>s.trim()).filter(Boolean),stats};
+  const r=await fetch("api/v1/cards",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  $("#msg").textContent=r.ok?"Salvata":"Errore: "+JSON.stringify((await r.json()).detail);if(r.ok){e.target.reset();load()}};
+load();
+</script></body></html>

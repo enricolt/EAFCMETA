@@ -1,0 +1,9 @@
+name,version,position,price,is_sbc,body_type,weak_foot,skill_moves,playstyles,acceleration,sprint_speed,agility,reactions,composure,finishing,shot_power,balance,dribbling,crossing,short_passing,vision,defensive_awareness,standing_tackle,sliding_tackle,interceptions,stamina,strength
+Attaccante 1 (fittizio),Demo,ST,5000,1,Average,5,3,Rapid+;Finesse Shot+,73,73,73,72,69,67,67,,,,,,,,,,,
+Attaccante 2 (fittizio),Demo,ST,9500,0,Lean,3,4,Anticipate+,76,73,72,70,74,69,69,,,,,,,,,,,
+Attaccante 3 (fittizio),Demo,ST,18050,0,Average,3,5,,75,78,72,80,75,78,79,,,,,,,,,,,
+Attaccante 4 (fittizio),Demo,ST,34294,1,Lean,5,3,Rapid+;Finesse Shot+,78,82,79,75,81,78,83,,,,,,,,,,,
+Attaccante 5 (fittizio),Demo,ST,65160,0,Custom,3,3,Rapid+;Finesse Shot+,83,86,84,86,81,79,82,,,,,,,,,,,
+Attaccante 6 (fittizio),Demo,ST,123804,0,Lean,5,4,Anticipate+,88,84,87,87,83,81,86,,,,,,,,,,,
+Attaccante 7 (fittizio),Demo,ST,235229,1,Custom,5,5,Rapid+;Finesse Shot+,91,92,85,86,92,85,90,,,,,,,,,,,
+Attaccante 8 (fittizio),Demo,ST,446935,0,Lean,4,5,,87,91,93,89,89,94,95,,,,,,,,,,,

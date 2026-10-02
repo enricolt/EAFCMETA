@@ -1,6 +1,8 @@
 import os
 
-os.environ["EAFCMETA_DB"] = ":memory:"
+import tempfile
+
+os.environ["EAFCMETA_DB"] = tempfile.mktemp(suffix=".db")
 from fastapi.testclient import TestClient
 
 from eafcmeta import api, scoring
@@ -56,3 +58,19 @@ def test_api_flow():
     assert c.get("/api/v1/cards/999/eval").status_code == 404
     assert c.post("/api/v1/cards", json={**payload, "position": "GK"}).status_code == 422
     assert c.get("/api/v1/cards").status_code == 200
+
+
+def test_edge_cases():
+    market = [(10_000, 75), (50_000, 80), (150_000, 85), (400_000, 88), (1_000_000, 91)]
+    assert scoring.verdict(90, 0, market, CFG)["verdict"] == "NEUTRAL"
+    assert scoring.verdict(90, 5000, [(0, 80)] * 5, CFG)["verdict"] == "NEUTRAL"
+    assert scoring.verdict(90, 5000, [(1000, 80)] * 5, CFG)["verdict"] == "NEUTRAL"
+    inverted = [(10_000, 90), (50_000, 85), (150_000, 80), (400_000, 75), (1_000_000, 70)]
+    assert scoring.verdict(90, 5000, inverted, CFG)["verdict"] == "NEUTRAL"
+
+
+def test_missing_and_out_of_range_stats():
+    c = TestClient(api.app)
+    bad = {"name": "Y", "position": "ST", "price": 1, "stats": {"finishing": 90}}
+    assert c.post("/api/v1/cards", json=bad).status_code == 422
+    assert c.post("/api/v1/cards", json={**bad, "stats": {**ST, "finishing": 150}}).status_code == 422
