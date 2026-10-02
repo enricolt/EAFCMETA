@@ -3,6 +3,7 @@
 
 Uso:  python start.py [--no-update] [--check] [--lan] [--port 8000] [--no-browser]
   --check    solo controllo/aggiornamento, non avvia il server
+  --retry-app riprova l'installazione di pywebview
   --browser  apri nel browser invece che nella finestra dell'app
   --lan      ascolta su tutta la rete (amici in LAN) con chiave d'accesso; default solo questo PC
 """
@@ -91,12 +92,43 @@ def lan_ip() -> str:
         return "IP-DEL-PC"
 
 
+def ensure_webview(retry: bool) -> bool:
+    """Prova a importare pywebview; se manca lo installa. Se non ci riesce stampa il motivo e ritorna False."""
+    def importable() -> str | None:
+        try:
+            import webview  # noqa: F401
+            return None
+        except Exception as e:  # noqa: BLE001
+            return f"{type(e).__name__}: {e}"
+
+    err = importable()
+    if err is None:
+        return True
+    failed = ROOT / ".webview_failed"
+    tag = sys.version.split()[0]
+    if failed.exists() and failed.read_text() == tag and not retry:
+        print(f"[app] pywebview non installabile con Python {tag} (tentativo precedente): uso il browser. "
+              "Riprova con: python start.py --retry-app")
+        return False
+    print("[app] installo pywebview (solo la prima volta)...")
+    r = subprocess.run([sys.executable, "-m", "pip", "install", "pywebview"], capture_output=True, text=True)
+    err = importable() if r.returncode == 0 else None
+    if r.returncode == 0 and err is None:
+        failed.unlink(missing_ok=True)
+        return True
+    print("[app] installazione di pywebview fallita. Motivo:")
+    print("      " + (err or "\n      ".join(r.stderr.strip().splitlines()[-6:])))
+    failed.write_text(tag)
+    return False
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-update", action="store_true")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--lan", action="store_true")
     ap.add_argument("--browser", action="store_true")
+    ap.add_argument("--retry-app", action="store_true")
     ap.add_argument("--no-browser", action="store_true")
     ap.add_argument("--port", type=int, default=8000)
     a = ap.parse_args()
@@ -109,9 +141,13 @@ def main() -> None:
     if not a.lan and not a.browser:
         sys.path.insert(0, str(ROOT))
         from eafcmeta import desktop
-        if desktop.run():  # finestra nativa; False se pywebview non è disponibile
-            return
-        print("[app] finestra nativa non disponibile (pip install pywebview): uso il browser.")
+        if ensure_webview(a.retry_app):
+            print("[app] avvio la finestra dell'app...")
+            if desktop.run():
+                return
+            print("[app] la finestra non si è aperta (vedi sopra): uso il browser.")
+        else:
+            print("[app] uso il browser al posto della finestra.")
     host = "0.0.0.0" if a.lan else "127.0.0.1"
     url = f"http://localhost:{a.port}"
     env = os.environ.copy()

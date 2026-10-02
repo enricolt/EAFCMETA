@@ -4,3 +4,4 @@ __pycache__/
 .deps_hash
 .token
 app.log
+.webview_failed

@@ -15,7 +15,8 @@ def run(open_window=None) -> bool:
     if open_window is None:
         try:
             import webview
-        except ImportError:
+        except Exception as e:  # noqa: BLE001
+            print(f"[app] pywebview non utilizzabile: {type(e).__name__}: {e}")
             return False
 
         def open_window(url):

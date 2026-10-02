@@ -22,7 +22,7 @@ Prima volta (serve git e Python 3.11+):
 
 Ogni avvio fa `git fetch` e, se ci sono novità, un aggiornamento fast-forward (solo se non hai modifiche locali);
 reinstalla le dipendenze se `requirements.txt` è cambiato. Offline usa la versione che hai. Il database
-`eafcmeta.db` è ignorato da git: gli aggiornamenti non lo toccano. Opzioni: `--check`, `--no-update`, `--port`, `--lan`.
+`eafcmeta.db` è ignorato da git: gli aggiornamenti non lo toccano. Opzioni: `--check`, `--no-update`, `--port`, `--lan`, `--browser`, `--retry-app`.
 
 ## Con gli amici (rete locale)
 `python start.py --lan` ascolta su tutta la rete e **richiede una chiave d'accesso** (creata in `.token`, ignorata da git).
