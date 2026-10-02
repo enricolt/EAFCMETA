@@ -26,3 +26,18 @@ def test_update_flow(tmp_path):
     (origin / "f.txt").write_text("3"); run(origin, "git", "commit", "-qam", "tre")
     (work / "f.txt").write_text("sporco")
     assert "modifiche locali" in start() and (work / "f.txt").read_text() == "sporco"
+
+
+def test_desktop_window_flow(tmp_path, monkeypatch):
+    import urllib.request
+
+    from eafcmeta import desktop
+
+    monkeypatch.setenv("EAFCMETA_DB", str(tmp_path / "d.db"))
+    seen = {}
+
+    def fake_window(url):
+        seen["status"] = urllib.request.urlopen(url, timeout=5).status
+
+    assert desktop.run(open_window=fake_window) is True and seen["status"] == 200
+    assert desktop.run(open_window=lambda u: 1 / 0) is False  # errore GUI -> ripiego

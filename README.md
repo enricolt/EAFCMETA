@@ -5,8 +5,13 @@ e parere dei pro (inserito a mano), e dice se una carta conviene rispetto al pre
 
 ## Avvio
     pip install -r requirements.txt
-    python start.py            # controlla gli aggiornamenti, poi apre http://localhost:8000
+    python start.py            # controlla gli aggiornamenti, poi apre l'app in una finestra nativa
     pip install -r requirements-dev.txt && pytest
+
+## App desktop (senza browser)
+`python start.py` apre l'app in una **finestra nativa** (pywebview: su Windows usa Edge WebView2, già incluso in
+Windows 10/11). Su Windows puoi anche fare **doppio clic su `EAFCMETA.pyw`**: parte senza finestra di console
+(i messaggi vanno in `app.log`). Se la finestra nativa non è disponibile ripiega sul browser; `--browser` lo forza.
 
 ## Copia locale con aggiornamento automatico
 Prima volta (serve git e Python 3.11+):

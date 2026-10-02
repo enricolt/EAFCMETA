@@ -3,6 +3,7 @@
 
 Uso:  python start.py [--no-update] [--check] [--lan] [--port 8000] [--no-browser]
   --check    solo controllo/aggiornamento, non avvia il server
+  --browser  apri nel browser invece che nella finestra dell'app
   --lan      ascolta su tutta la rete (amici in LAN) con chiave d'accesso; default solo questo PC
 """
 import argparse
@@ -95,6 +96,7 @@ def main() -> None:
     ap.add_argument("--no-update", action="store_true")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--lan", action="store_true")
+    ap.add_argument("--browser", action="store_true")
     ap.add_argument("--no-browser", action="store_true")
     ap.add_argument("--port", type=int, default=8000)
     a = ap.parse_args()
@@ -104,6 +106,12 @@ def main() -> None:
     if a.check:
         return
     install_deps()
+    if not a.lan and not a.browser:
+        sys.path.insert(0, str(ROOT))
+        from eafcmeta import desktop
+        if desktop.run():  # finestra nativa; False se pywebview non è disponibile
+            return
+        print("[app] finestra nativa non disponibile (pip install pywebview): uso il browser.")
     host = "0.0.0.0" if a.lan else "127.0.0.1"
     url = f"http://localhost:{a.port}"
     env = os.environ.copy()

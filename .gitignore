@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 .deps_hash
 .token
+app.log

@@ -60,7 +60,10 @@ def _eval(card_id: int, scored: dict) -> dict:
     card, ex, final = scored[card_id]
     market = [(c["price"], f) for i, (c, _, f) in scored.items() if i != card_id and c["position"] == card["position"]]
     v = scoring.verdict(final, card["price"], market, cfg)
-    return {"id": card_id, "name": card["name"], "version": card["version"], "position": card["position"],
+    weights = cfg["role_weights"][ex["role"]]
+    top = sorted(weights, key=lambda k: (-weights[k], -card["stats"][k]))[:4]
+    return {"id": card_id, "name": card["name"], "top_stats": [{"k": k, "v": card["stats"][k]} for k in top],
+            "bonus_playstyles": [p for p in card["playstyles"] if p.endswith("+")][:3], "version": card["version"], "position": card["position"],
             "is_sbc": card["is_sbc"], "cost_credits": card["price"],
             "scores": {"base_score": round(ex["base"], 2), "pro_sentiment_score": card["pro_score"],
                        "final_score": round(final, 2)},
