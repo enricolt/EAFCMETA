@@ -1,5 +1,5 @@
 {
- "patch_version": "1.2",
+ "patch_version": "1.4",
  "last_updated": "2026-10-02",
  "score_weights": {
   "stats": 0.7,
@@ -487,5 +487,20 @@
   "min_distinct_prices": 4,
   "min_gap": 1.5,
   "k_sigma": 0.7
- }
+ },
+ "meta": {
+  "top": 90,
+  "meta": 84,
+  "playable": 76
+ },
+ "stance_scores": {
+  "yes": 85,
+  "maybe": 70,
+  "no": 50
+ },
+ "creators": [
+  "Team Gullit",
+  "Exeed",
+  "Nassada"
+ ]
 }

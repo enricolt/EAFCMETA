@@ -49,6 +49,14 @@ Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
 - Da terminale: `python -m eafcmeta.importer data/esempio.csv` (30 carte fittizie di prova).
 - Prezzi: `12.500`, `12500`, `12k`, `1.2m`.
 
+## Pareri dei creator e analisi di ogni carta
+Nel dettaglio di una carta c'è un'**analisi scritta** (generata da regole fisse sui dati, senza LLM): se è meta, perché
+sì, perché no/attenzione e un consiglio finale. Sotto, **“Cosa dicono i creator”**: per ogni carta puoi inserire il parere
+di più creator (es. Team Gullit, Exeed, Nassada): sì / dipende / no, voto facoltativo, motivo a parole sue e link. Se
+discordano l'app lo dice e riporta i motivi di ciascuno (“secondo Team Gullit sì; secondo Exeed e Nassada no”). Il
+punteggio “pro” (30% dello score) è la media dei pareri; senza voto, sì = 85, dipende = 70, no = 50 (`stance_scores`).
+I pareri e i motivi li inserisci tu: l'app non li legge dai video. Soglie “meta” in `patch.json` (`meta`).
+
 ## Come si calcola
 - **Score base** = media pesata delle stats del ruolo + bonus (PlayStyle+ per tier e ruolo, body type, 5★ piede
   debole/skill), con bonus massimo 12; sopra 90 la scala si comprime dolcemente verso 100.

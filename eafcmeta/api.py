@@ -7,8 +7,8 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 
-from . import collect, db, importer, scoring
-from .models import CardIn, ImportIn, PagesIn, ProIn
+from . import analysis, collect, db, importer, scoring
+from .models import CardIn, ImportIn, OpinionIn, PagesIn, ProIn
 
 
 @asynccontextmanager
@@ -45,8 +45,11 @@ Conn = Depends(get_conn)
 def _scored(conn) -> dict:
     cfg = scoring.load_config()
     out = {}
+    ops = db.opinions_by_card(conn)
     for r in conn.execute("SELECT * FROM cards"):
         c = db.row_to_card(r)
+        if c["id"] in ops:  # con pareri dei creator, il punteggio "pro" è la loro media
+            c["pro_score"] = scoring.pro_from_opinions(ops[c["id"]], cfg)
         try:
             ex = scoring.explain(c, cfg)
         except ValueError:
@@ -71,18 +74,24 @@ def _eval(card_id: int, scored: dict) -> dict:
             "verdict": v["verdict"], "value_gap": v["value_gap"], "verdict_reason": v["reason"],
             "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"],
                           "unknown_playstyles": ex["unknown_playstyles"]},
-            "market_size": len(market)}
+            "market_size": len(market), "meta_level": analysis.meta_level(final, cfg)[0],
+            "meta_label": analysis.meta_level(final, cfg)[1],
+            "_v": v, "_ex": ex, "_final": final, "_card": card}
 
 
 def _raw(card: dict) -> dict:
     return {k: card[k] for k in ("stats", "playstyles", "body_type", "weak_foot", "skill_moves")}
 
 
+def _public(e: dict) -> dict:
+    return {k: v for k, v in e.items() if not k.startswith("_")}
+
+
 @router.get("/cards")
 def list_cards(conn: sqlite3.Connection = Conn, position: str | None = None, q: str | None = None,
                limit: int = 500, offset: int = 0):
     scored = _scored(conn)
-    out = [_eval(i, scored) for i in scored]
+    out = [_public(_eval(i, scored)) for i in scored]
     if position:
         out = [e for e in out if e["position"] == position.upper()]
     if q:
@@ -109,7 +118,12 @@ def get_card(card_id: int, conn: sqlite3.Connection = Conn):
     scored = _scored(conn)
     if card_id not in scored:
         raise HTTPException(422, "carta non valutabile con la configurazione attuale")
-    return {**_eval(card_id, scored), "card": _raw(scored[card_id][0]), "price_history": db.history(conn, card_id)}
+    e = _eval(card_id, scored)
+    cfg = scoring.load_config()
+    return {**_public(e), "card": _raw(scored[card_id][0]), "price_history": db.history(conn, card_id),
+            "opinions": db.opinions_by_card(conn, card_id).get(card_id, []),
+            "analysis": analysis.describe(e["_card"], e["_ex"], e["_final"], e["_v"], e["market_size"], cfg,
+                                          db.opinions_by_card(conn, card_id).get(card_id, []))}
 
 
 @router.get("/cards/{card_id}/eval")
@@ -144,6 +158,24 @@ def set_pro(card_id: int, body: ProIn, conn: sqlite3.Connection = Conn):
     return get_card(card_id, conn)
 
 
+@router.put("/cards/{card_id}/opinions")
+def set_opinion(card_id: int, body: OpinionIn, conn: sqlite3.Connection = Conn):
+    _exists(conn, card_id)
+    db.upsert_opinion(conn, card_id, body)
+    conn.commit()
+    return get_card(card_id, conn)
+
+
+@router.delete("/cards/{card_id}/opinions/{opinion_id}")
+def delete_opinion(card_id: int, opinion_id: int, conn: sqlite3.Connection = Conn):
+    _exists(conn, card_id)
+    cur = conn.execute("DELETE FROM opinions WHERE id=? AND card_id=?", (opinion_id, card_id))
+    if cur.rowcount == 0:
+        raise HTTPException(404, "parere non trovato")
+    conn.commit()
+    return get_card(card_id, conn)
+
+
 @router.post("/import")
 def import_cards(body: ImportIn, conn: sqlite3.Connection = Conn):
     return importer.import_text(conn, body.text, body.dry_run)
@@ -170,7 +202,8 @@ def meta():
     return {"patch_version": cfg["patch_version"], "positions": list(cfg["position_to_role"]),
             "body_types": list(cfg["body_type_bonus"]), "stat_keys": cfg["stat_keys"],
             "role_weights": {pos: cfg["role_weights"][role] for pos, role in cfg["position_to_role"].items()},
-            "playstyles": list(cfg["playstyles"])}
+            "playstyles": list(cfg["playstyles"]), "creators": cfg["creators"],
+            "stat_names": analysis.NAMES}
 
 
 app.include_router(router)

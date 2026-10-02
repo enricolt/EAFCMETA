@@ -32,7 +32,14 @@ def connect(path: str | None = None) -> sqlite3.Connection:
             card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
             price INTEGER NOT NULL, ts TEXT NOT NULL
         );
-        CREATE INDEX IF NOT EXISTS ix_hist_card ON price_history(card_id, id);"""
+        CREATE INDEX IF NOT EXISTS ix_hist_card ON price_history(card_id, id);
+        CREATE TABLE IF NOT EXISTS opinions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+            creator TEXT NOT NULL COLLATE NOCASE, stance TEXT NOT NULL, score REAL,
+            reason TEXT NOT NULL DEFAULT '', url TEXT NOT NULL DEFAULT '', ts TEXT NOT NULL,
+            UNIQUE(card_id, creator)
+        );"""
     )
     try:  # chiave naturale: stessa carta = stesso nome+versione+posizione (db vecchi con doppioni: si salta)
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_card ON cards(name COLLATE NOCASE, version COLLATE NOCASE, position)")
@@ -113,3 +120,22 @@ def set_price(conn, card_id: int, price: int) -> None:
 def history(conn, card_id: int, limit: int = 12) -> list[dict]:
     rows = conn.execute("SELECT price, ts FROM price_history WHERE card_id=? ORDER BY id DESC LIMIT ?", (card_id, limit))
     return [dict(r) for r in rows][::-1]
+
+
+def opinions_by_card(conn, card_id: int | None = None) -> dict[int, list[dict]]:
+    q, args = "SELECT * FROM opinions", ()
+    if card_id is not None:
+        q, args = q + " WHERE card_id = ?", (card_id,)
+    out: dict[int, list[dict]] = {}
+    for r in conn.execute(q + " ORDER BY id", args):
+        out.setdefault(r["card_id"], []).append({k: r[k] for k in ("id", "creator", "stance", "score", "reason", "url", "ts")})
+    return out
+
+
+def upsert_opinion(conn, card_id: int, o) -> None:
+    """Un solo parere per creator e carta: se esiste, lo aggiorna. Non fa commit."""
+    conn.execute(
+        "INSERT INTO opinions (card_id, creator, stance, score, reason, url, ts) VALUES (?,?,?,?,?,?,?) "
+        "ON CONFLICT(card_id, creator) DO UPDATE SET stance=excluded.stance, score=excluded.score, "
+        "reason=excluded.reason, url=excluded.url, ts=excluded.ts",
+        (card_id, o.creator, o.stance, o.score, o.reason, o.url, _now()))

@@ -118,8 +118,28 @@ dialog::backdrop{background:rgba(3,5,12,.65);backdrop-filter:blur(5px)}
 label.f{display:block;font-size:12px;font-weight:650;color:var(--mut);margin:0 0 4px}
 .fg2{display:grid;gap:12px;grid-template-columns:1fr 1fr}.fg3{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}.span2{grid-column:1/-1}
 h3{margin:18px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+.mchip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2))}
+.ana{margin:14px 0 4px;padding:16px;border-radius:18px;background:var(--chip);border:1px solid var(--line)}
+.ana .head{margin:8px 0 12px;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.ana .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ana ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;align-content:start}
+.ana li{position:relative;padding-left:24px;font-size:14px;color:var(--fg)}
+.ana li::before{position:absolute;left:0;top:0;font-weight:900}
+.ana .pro li::before{content:"✓";color:var(--ok)}.ana .con li::before{content:"✕";color:var(--bad)}
+.ana h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut)}
+.ana .advice{margin-top:14px;padding:12px 14px;border-radius:14px;font-weight:700;background:var(--glass);border:1px solid var(--acc)}
+.m-top,.m-meta{background:linear-gradient(135deg,var(--acc),var(--acc2))}.m-playable{background:var(--warn)}.m-below{background:var(--bad)}
+.osum{margin:6px 0 10px;font-weight:650}
+.og{margin:8px 0;padding:10px 12px;border-radius:13px;border:1px solid var(--line);border-left-width:4px;background:var(--glass)}
+.og.og-yes{border-left-color:var(--ok)}.og.og-no{border-left-color:var(--bad)}.og.og-maybe{border-left-color:var(--warn)}
+.og b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.og.og-yes b{color:var(--ok)}.og.og-no b{color:var(--bad)}.og.og-maybe b{color:var(--warn)}
+.og p{margin:4px 0;font-size:14px}.og p span{font-weight:700}.og a{color:var(--acc);font-weight:650}
+.oplist{display:grid;gap:6px;margin:8px 0}
+.oprow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--chip);font-size:14px}
+.oprow button{border:0;background:none;color:var(--bad);cursor:pointer;font-size:16px;padding:4px 8px}
 .bars{display:grid;gap:7px}
-.bar{display:grid;grid-template-columns:104px 1fr 30px;gap:9px;align-items:center;font-size:13px}
+.bar{display:grid;grid-template-columns:132px 1fr 30px;gap:9px;align-items:center;font-size:13px}
 .bar span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar b{font-variant-numeric:tabular-nums;text-align:right}
 .bar i{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;display:block}.bar i u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
 .radar{width:100%;max-width:300px;margin:auto;display:block}
@@ -131,6 +151,7 @@ textarea{min-height:170px;font:13px/1.45 ui-monospace,"Cascadia Mono",Menlo,Cons
 .spark{width:100%;height:70px}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:13px;font-weight:650;z-index:20;box-shadow:var(--shadow);max-width:90vw;animation:rise .25s}
 @media(max-width:640px){
+  .ana .two{grid-template-columns:1fr}
   .wrap{padding:12px 12px 90px}.dgrid{grid-template-columns:1fr}.dgrid .cw{max-width:210px;margin:auto}
   .grid{grid-template-columns:repeat(2,1fr);gap:18px 10px}.rail .cw{flex-basis:150px}
   .fg3{grid-template-columns:repeat(2,1fr)}.hbtn span{display:none}.brand{font-size:19px}
@@ -222,7 +243,7 @@ function fut(c,i=0){
     <div class="nm">${esc(c.name)}</div><div class="vr">${esc(c.version||" ")}</div>
     <div class="st">${c.top_stats.map(t=>`<div><b>${t.v}</b><span>${lbl(t.k)}</span></div>`).join("")}</div>
     </div></div>
-   <div class="under"><span class="price">${short(c.cost_credits)} 🪙</span>${badge(c)}</div></button>`}
+   <div class="under"><span class="price">${short(c.cost_credits)} 🪙</span>${badge(c)}${c.meta_level==="top"||c.meta_level==="meta"?'<span class="mchip">★ Meta</span>':""}</div></button>`}
 
 function summary(){
   const n=CARDS.length,ok=CARDS.filter(c=>vkey(c)==="MUST_DO").length;
@@ -269,23 +290,39 @@ async function openDetail(id){
   $("#dtBody").innerHTML=`<div class="dgrid"><div>${fut(d)}</div><div>
    <div class="row" style="justify-content:space-between">${badge(d)}<b class="price">${fmt(d.cost_credits)} 🪙${d.is_sbc?" (SBC)":""}</b></div>
    <div class="kv"><div><b>${d.scores.final_score}</b><small>Score finale</small></div><div><b>${d.scores.base_score}</b><small>Base</small></div><div><b>${d.scores.pro_sentiment_score??"—"}</b><small>Pro</small></div></div>
-   <div class="note">${esc(d.verdict_reason)}</div>
-   ${d.pro_missing?`<div class="note warn">Manca il parere dei pro: lo score è solo quello base, quindi non è del tutto confrontabile con le carte che lo hanno.</div>`:""}
-   ${d.breakdown.unknown_playstyles.length?`<div class="note warn">PlayStyle+ non in tabella (bonus minimo): ${esc(d.breakdown.unknown_playstyles.join(", "))}</div>`:""}</div></div>
+</div></div>
+   <div class="ana"><span class="mchip m-${d.analysis.meta_level}">${esc(d.analysis.meta_label)}</span>
+    <p class="head">${esc(d.analysis.headline)}</p>
+    <div class="two"><div><h4>Perché sì</h4><ul class="pro">${d.analysis.pros.map(x=>`<li>${esc(x)}</li>`).join("")||"<li>Nessun punto di forza particolare.</li>"}</ul></div>
+    <div><h4>Perché no / attenzione</h4><ul class="con">${d.analysis.cons.map(x=>`<li>${esc(x)}</li>`).join("")||"<li>Nessun difetto rilevante.</li>"}</ul></div></div>
+    <h4 style="margin:16px 0 4px">Cosa dicono i creator</h4><p class="osum">${esc(d.analysis.opinions.summary)}</p>
+    ${d.analysis.opinions.groups.map(g=>`<div class="og og-${g.stance}"><b>${esc(g.label)}</b>${g.creators.map(c=>`<p><span>${esc(c.name)}${c.score!=null?` (${c.score})`:""}:</span> ${esc(c.reason)}${c.url?` <a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">fonte ↗</a>`:""}</p>`).join("")}</div>`).join("")}
+    ${d.analysis.opinions.hint?`<div class="note" style="margin-top:8px">${esc(d.analysis.opinions.hint)}</div>`:""}
+    <div class="advice">💡 ${esc(d.analysis.advice)}</div></div>
    <div class="dgrid" style="margin-top:6px"><div>${radar(d.card.stats,keys)}</div><div><h3 style="margin-top:0">Statistiche del ruolo ${esc(d.breakdown.role)}</h3>
-   <div class="bars">${keys.map(k=>`<div class="bar"><span>${esc(k.replaceAll("_"," "))}</span><i><u style="width:${(d.card.stats[k]||0)/99*100}%"></u></i><b>${d.card.stats[k]??"–"}</b></div>`).join("")}</div>
+   <div class="bars">${keys.map(k=>`<div class="bar"><span>${esc(META.stat_names[k]||k.replaceAll("_"," "))}</span><i><u style="width:${(d.card.stats[k]||0)/99*100}%"></u></i><b>${d.card.stats[k]??"–"}</b></div>`).join("")}</div>
    <div class="note" style="margin-top:12px">Stats ${d.breakdown.stats_meta} + bonus ${d.breakdown.bonus} (PlayStyle, body type, 5★) → base ${d.scores.base_score}${d.pro_missing?"":" · 70% base + 30% pro"}. Confronto con ${d.market_size} carte ${esc(d.position)}.</div></div></div>
    ${h.length>1?`<h3>Storico prezzo</h3>${spark(h)}`:""}
-   <h3>Parere dei pro (0–100)</h3>
-   <div class="fg2"><div><label class="f" for="pS">Punteggio</label><input type="number" id="pS" min="0" max="100" step="0.5" inputmode="decimal" value="${d.scores.pro_sentiment_score??""}" placeholder="vuoto = nessuno"></div>
-   <div><label class="f" for="pN">Note</label><input type="text" id="pN" maxlength="500" value="${esc(d.pro_notes)}"></div></div>
-   <div class="row" style="margin-top:16px"><button class="btn bad" id="bDel">Elimina</button><span style="flex:1"></span><button class="btn" id="bEdit">Modifica</button><button class="btn pri" id="bPro">Salva pro</button></div>`;
-  $("#bPro").onclick=async()=>{const v=$("#pS").value.trim();const r=await api(`/cards/${id}/pro`,{method:"PUT",body:JSON.stringify({pro_score:v===""?null:+v,notes:$("#pN").value})});
-    if(r.ok){toast("Salvato");$("#dDetail").close();load()}else toast(await errText(r))};
+   <h3>Pareri dei creator</h3>
+   ${d.opinions.length?`<div class="oplist">${d.opinions.map(o=>`<div class="oprow"><span><b>${esc(o.creator)}</b> · ${esc({yes:"sì",maybe:"dipende",no:"no"}[o.stance])}${o.score!=null?` · ${o.score}`:""}</span><button data-del="${o.id}" aria-label="Elimina il parere di ${esc(o.creator)}" title="Elimina">✕</button></div>`).join("")}</div>`:`<p class="note">Nessun parere inserito. Aggiungi cosa dicono i creator che segui.</p>`}
+   <div class="fg2">
+    <div><label class="f" for="oC">Creator</label><input type="text" id="oC" list="crList" maxlength="40" placeholder="es. Team Gullit"><datalist id="crList">${META.creators.map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
+    <div><label class="f" for="oS">Secondo lui/lei</label><select id="oS" style="width:100%"><option value="yes">Sì, da prendere</option><option value="maybe">Dipende</option><option value="no">No, da evitare</option></select></div>
+    <div><label class="f" for="oV">Voto 0–100 (se vuoto: sì 85 · dipende 70 · no 50)</label><input type="number" id="oV" min="0" max="100" step="0.5" inputmode="decimal"></div>
+    <div><label class="f" for="oU">Link al video (facoltativo)</label><input type="text" id="oU" maxlength="300" placeholder="https://…"></div>
+    <div class="span2"><label class="f" for="oR">Perché (a parole sue, in breve)</label><textarea id="oR" maxlength="800" style="min-height:70px;font:inherit" placeholder="es. Scatto e finalizzazione top, ma lenta nei cambi di direzione"></textarea></div>
+   </div>
+   <div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn pri" id="bOp">Salva parere</button></div>
+   <div class="row" style="margin-top:16px"><button class="btn bad" id="bDel">Elimina carta</button><span style="flex:1"></span><button class="btn" id="bEdit">Modifica carta</button></div>`;
+  $("#bOp").onclick=async()=>{const v=$("#oV").value.trim();
+    const r=await api(`/cards/${id}/opinions`,{method:"PUT",body:JSON.stringify({creator:$("#oC").value,stance:$("#oS").value,score:v===""?null:+v,reason:$("#oR").value,url:$("#oU").value})});
+    if(!r.ok)return toast(await errText(r));toast("Parere salvato");const y=$("#dtBody").scrollTop;await openDetail(id);$("#dtBody").scrollTop=y;load()};
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{if(!confirm("Eliminare questo parere?"))return;
+    const r=await api(`/cards/${id}/opinions/${b.dataset.del}`,{method:"DELETE"});if(!r.ok)return toast(await errText(r));const y=$("#dtBody").scrollTop;await openDetail(id);$("#dtBody").scrollTop=y;load()});
   $("#bDel").onclick=async()=>{if(!confirm(`Eliminare ${d.name}?`))return;const r=await api("/cards/"+id,{method:"DELETE"});
     if(r.ok){toast("Eliminata");$("#dDetail").close();load()}else toast(await errText(r))};
   $("#bEdit").onclick=()=>{$("#dDetail").close();openForm(d)};
-  $("#dDetail").showModal();
+  if(!$("#dDetail").open)$("#dDetail").showModal();
 }
 function spark(h){const p=h.map(x=>x.price),mn=Math.min(...p),mx=Math.max(...p),W=300,H=60;
   const pts=p.map((v,i)=>[i*(W/(p.length-1)),mx===mn?H/2:H-6-((v-mn)/(mx-mn))*(H-12)]);
@@ -297,7 +334,7 @@ function spark(h){const p=h.map(x=>x.price),mn=Math.min(...p),mx=Math.max(...p),
 function statInputs(){
   const pos=$("#fPos").value,w=META.role_weights[pos]||{},old={};
   document.querySelectorAll("#fStats input").forEach(i=>{if(i.value)old[i.dataset.k]=i.value});
-  $("#fStats").innerHTML=Object.keys(w).map(k=>`<div><label class="f" for="s_${k}">${k.replaceAll("_"," ")}</label><input type="number" id="s_${k}" data-k="${k}" min="1" max="99" inputmode="numeric" required value="${old[k]??""}"></div>`).join("");
+  $("#fStats").innerHTML=Object.keys(w).map(k=>`<div><label class="f" for="s_${k}">${META.stat_names[k]||k.replaceAll("_"," ")}</label><input type="number" id="s_${k}" data-k="${k}" min="1" max="99" inputmode="numeric" required value="${old[k]??""}"></div>`).join("");
   $("#fRole").textContent="· servono solo quelle del ruolo";
 }
 function openForm(c){

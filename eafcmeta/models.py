@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from . import scoring
@@ -82,3 +84,23 @@ class PageIn(BaseModel):
 class PagesIn(BaseModel):
     pages: list[PageIn] = Field(max_length=40)
     dry_run: bool = True
+
+
+class OpinionIn(BaseModel):
+    creator: str = Field(min_length=1, max_length=40)
+    stance: Literal["yes", "maybe", "no"]
+    score: float | None = Field(None, ge=0, le=100)
+    reason: str = Field("", max_length=800)
+    url: str = Field("", max_length=300)
+
+    @field_validator("creator", "reason", "url")
+    @classmethod
+    def _strip(cls, v):
+        return v.strip()
+
+    @field_validator("url")
+    @classmethod
+    def _url(cls, v):
+        if v and not v.lower().startswith(("http://", "https://")):
+            raise ValueError("il link deve iniziare con http:// o https://")
+        return v
