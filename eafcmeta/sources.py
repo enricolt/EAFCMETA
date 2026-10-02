@@ -168,6 +168,55 @@ def parse_futgg(html: str) -> dict:
             "body_type": _body_type(_after(t, "Body Type")), "playstyles": titles, "stats": _stats(t, s0, s1)}
 
 
+def parse_short_price(tok: str | None) -> int | None:
+    """'6.8M' -> 6800000, '783K' -> 783000, '750' -> 750; 'EXTINCT'/assente -> None."""
+    m = re.fullmatch(r"([\d.,]+)\s*([KkMm]?)", (tok or "").strip())
+    if not m:
+        return None
+    n = float(m.group(1).replace(",", ""))
+    return int(round(n * {"": 1, "k": 1_000, "m": 1_000_000}[m.group(2).lower()]))
+
+
+def is_list_page(html: str) -> bool:
+    """Pagina elenco giocatori di FUT.GG: ci sono molte carte e non c'è il 'breadcrumb' di un giocatore."""
+    if "fut.gg" not in html[:200_000].lower():
+        return False
+    soup = BeautifulSoup(html, "lxml")
+    for s in soup.select('script[type="application/ld+json"]'):
+        try:
+            d = json.loads(s.string or "")
+        except json.JSONDecodeError:
+            continue
+        if d.get("@type") == "BreadcrumbList" and len(d.get("itemListElement", [])) >= 3:
+            return False
+    return len(_list_anchors(soup)) >= 2
+
+
+def _list_anchors(soup):
+    return [a for a in soup.select('a[href*="/players/"]') if a.select_one(".fc-card, [class*=fc-card]")]
+
+
+def parse_futgg_list(html: str) -> list[dict]:
+    """Elenco FUT.GG -> [{name, rating, version, position, price|None, url}]. Niente stats: servono le pagine singole."""
+    soup = BeautifulSoup(html, "lxml")
+    out = []
+    for a in _list_anchors(soup):
+        img = a.select_one("img[alt]")
+        m = re.fullmatch(r"(.+?) - (\d+) - (.+)", (img.get("alt") if img else "") or "")
+        if not m:
+            continue
+        for sv in a.find_all("svg"):
+            sv.decompose()
+        toks = [t for t in a.get_text("\n", strip=True).split("\n") if t.strip()]
+        rating = int(m.group(2))
+        out.append({"name": m.group(1).strip(), "rating": rating, "version": normalize_version(m.group(3).strip(), rating),
+                    "position": toks[0] if toks else "", "price": parse_short_price(toks[-1]) if len(toks) >= 3 else None,
+                    "url": a["href"]})
+    if not out:
+        raise PageError("non trovo giocatori nella lista")
+    return out
+
+
 def parse_page(html: str) -> dict:
     site = detect_site(html)
     return parse_futbin(html) if site == "futbin" else parse_futgg(html)

@@ -10,15 +10,34 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from types import SimpleNamespace
+
 from . import db, sources
+
+
+def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
+    """Pagina elenco: aggiorna il prezzo delle carte già note; le altre vanno scaricate (pagina del giocatore)."""
+    updated, unknown = 0, []
+    for e in entries:
+        row = db.find_card(conn, SimpleNamespace(name=e["name"], version=e["version"], position=e["position"]))
+        if row is None:
+            unknown.append({k: e[k] for k in ("name", "version", "position", "price", "url")})
+        elif e["price"] is not None and e["price"] != row["price"]:
+            if not dry_run:
+                db.set_price(conn, row["id"], e["price"])
+            updated += 1
+    return {"total": len(entries), "prices_updated": updated, "unknown": unknown}
 
 
 def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> dict:
     """pages: [(nome_file, html)]. Ogni pagina è indipendente: le valide si salvano, le altre sono segnalate."""
     new = updated = 0
-    errors, cards = [], []
+    errors, cards, lists = [], [], []
     for name, html in pages:
         try:
+            if sources.is_list_page(html):
+                lists.append({"file": name, **apply_list(conn, sources.parse_futgg_list(html), dry_run)})
+                continue
             d = sources.parse_page(html)
             cards.append((name, d, sources.to_card(d)))
         except sources.PageError as e:
@@ -40,7 +59,8 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
     except Exception:
         conn.rollback()
         raise
-    return {"new": new, "updated": updated, "errors": errors, "cards": found, "saved": not dry_run and bool(found)}
+    saved = not dry_run and bool(found or any(l["prices_updated"] for l in lists))
+    return {"new": new, "updated": updated, "errors": errors, "cards": found, "lists": lists, "saved": saved}
 
 
 def read_paths(paths: list[str]) -> list[tuple[str, str]]:
@@ -56,6 +76,9 @@ if __name__ == "__main__":
     r = import_pages(db.connect(), read_paths(sys.argv[1:]))
     for c in r["cards"]:
         print(f"  {c['status']:8} {c['name']} · {c['version']} ({c['position']}) {c['price']:,}  [{c['site']}]")
+    for l in r["lists"]:
+        print(f"  elenco {l['file']}: {l['total']} giocatori, {l['prices_updated']} prezzi aggiornati, "
+              f"{len(l['unknown'])} non ancora nell'app")
     for e in r["errors"]:
         print(f"  ERRORE   {e['file']}: {e['error']}")
     print(f"{r['new']} nuove, {r['updated']} aggiornate, {len(r['errors'])} non lette")

@@ -108,3 +108,56 @@ def test_same_card_from_both_sites_is_not_duplicated(client):
     assert (r["new"], r["updated"]) == (1, 1)
     cards = client.get("/api/v1/cards").json()
     assert len(cards) == 1 and cards[0]["name"] == "Chloe Kelly" and cards[0]["cost_credits"] == 12000
+
+
+def list_page(rows):
+    cards = "".join(
+        f'<a href="https://www.fut.gg/players/{i}-{n.lower()}/27-{i}/"><div class="fc-card"><img alt="{n} - {r} - {v}">'
+        f'<span>{pos}</span><span>9{i}.0</span>{f"<span>{p}</span>" if p else ""}</div></a>'
+        for i, (n, r, v, pos, p) in enumerate(rows, start=1))
+    return f"<html><head><title>EA FC 27 Players - FUT.GG</title></head><body>{cards}</body></html>"
+
+
+def test_short_prices():
+    f = sources.parse_short_price
+    assert (f("6.8M"), f("783K"), f("750"), f("EXTINCT"), f(None)) == (6_800_000, 783_000, 750, None, None)
+
+
+def test_list_parse_and_detection():
+    html = list_page([("Pelé", 95, "Base Icon", "CAM", "6.8M"), ("Raphinha", 88, "Rare", "LM", "550K"),
+                      ("Ronaldo", 94, "Base Icon", "ST", None)])
+    assert sources.is_list_page(html) and not sources.is_list_page(gg_page())
+    rows = sources.parse_futgg_list(html)
+    assert [(r["name"], r["version"], r["position"], r["price"]) for r in rows] == [
+        ("Pelé", "Base Icon 95", "CAM", 6_800_000), ("Raphinha", "Gold 88", "LM", 550_000), ("Ronaldo", "Base Icon 94", "ST", None)]
+
+
+def test_list_updates_known_prices_and_reports_unknown(client):
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "a", "html": gg_page(name="Pelé", rating=95, rarity="Base Icon", price="5,000,000")}],
+                                              "dry_run": False})
+    lst = list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CAM", "4.9M")])
+    r = client.post("/api/v1/import/pages", json={"pages": [{"name": "lista.html", "html": lst}], "dry_run": False}).json()
+    l = r["lists"][0]
+    assert (l["total"], l["prices_updated"], [u["name"] for u in l["unknown"]]) == (2, 1, ["Zico"])
+    assert client.get("/api/v1/cards").json()[0]["cost_credits"] == 6_800_000
+
+
+def test_crawl_with_fake_site(client, tmp_path):
+    from eafcmeta import db, fetch
+    pages = {"https://x/list": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CM", "4.9M")]),
+             "https://www.fut.gg/players/1-pelé/27-1/": gg_page(name="Pelé", rating=95, rarity="Base Icon"),
+             "https://www.fut.gg/players/2-zico/27-2/": gg_page(name="Zico", rating=91, rarity="Base Icon")}
+    conn = db.connect()
+    r = fetch.crawl(conn, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, log=lambda *_: None)
+    assert (r["new"], r["stopped"]) == (2, None)
+    assert conn.execute("select count(*) from cards").fetchone()[0] == 2
+    # limite --max e blocco anti-bot
+    conn2 = db.connect(str(tmp_path / "b.db"))
+    r = fetch.crawl(conn2, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, max_cards=1, log=lambda *_: None)
+    assert r["new"] == 1
+
+    def blocked(u):
+        raise fetch.Blocked("HTTP 403")
+
+    r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://x/list"], fetch=blocked, delay=0, check_robots=False)
+    assert r["stopped"] == "HTTP 403" and r["new"] == 0

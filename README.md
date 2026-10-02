@@ -40,6 +40,12 @@ Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
   giocatore su **FUT.GG** o **FUTBIN** e scegli il file: leggo nome, versione, ruolo, prezzo (console), stats, body
   type, piede debole, skill e PlayStyle. Più file insieme; da terminale: `python -m eafcmeta.collect cartella/`.
   I PlayStyle+ sono riconosciuti da entrambi i siti; la stessa carta letta da FUT.GG e da FUTBIN non si duplica (“Kelly” = “Chloe Kelly”; Rare/Common = Gold).
+- **Pagine elenco di FUT.GG** (es. `fut.gg/players/?nation_id=[54]`): salvate come le altre, aggiornano i prezzi delle
+  carte già presenti e dicono quali giocatori mancano. Le statistiche stanno solo nelle pagine dei singoli giocatori.
+- **Raccolta automatica da FUT.GG** (sul tuo PC):
+  `python -m eafcmeta.fetch "https://www.fut.gg/players/?nation_id=[54]" --max 30` scarica da solo le pagine dei
+  giocatori non ancora presenti, con pause di 2.5 s e nel rispetto di robots.txt. Se il sito blocca la richiesta
+  si ferma e te lo dice (allora salva le pagine dal browser). Non testato contro il sito reale.
 - Da terminale: `python -m eafcmeta.importer data/esempio.csv` (30 carte fittizie di prova).
 - Prezzi: `12.500`, `12500`, `12k`, `1.2m`.
 
