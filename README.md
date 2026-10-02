@@ -57,6 +57,19 @@ discordano l'app lo dice e riporta i motivi di ciascuno (“secondo Team Gullit 
 punteggio “pro” (30% dello score) è la media dei pareri; senza voto, sì = 85, dipende = 70, no = 50 (`stance_scores`).
 I pareri e i motivi li inserisci tu: l'app non li legge dai video. Soglie “meta” in `patch.json` (`meta`).
 
+## Calibrazione dal meta dei pro (🎯 Calibra)
+I parametri dell'analisi (soglie meta e pesi delle statistiche) si ricavano da ciò che ritengono meta i pro: con almeno
+12 carte che hanno il parere di un creator, “Calibra” mostra quanto il nostro punteggio è allineato (accordo e
+correlazione), propone soglie nuove e, dove ci sono 8+ carte dello stesso ruolo, pesi nuovi (cambi prudenti: più
+pochi sono i dati, meno si spostano). Applichi tu; “Ripristina” torna ai valori originali. Il risultato sta in
+`eafcmeta/config/local.json` (personale, ignorato da git) sopra `patch.json`. Il voto automatico della community
+di FUT.GG non conta come “pro”.
+
+## Segnali dei siti
+Leggendo le pagine di FUT.GG e FUTBIN l'app salva anche: GG Rating, ruolo in cui rende meglio e classifica,
+FUTBIN Rating e classifica, e il tier votato dalla community di FUT.GG (che diventa un parere “FUT.GG (community)”,
+segnalato come poco affidabile sotto i 30 voti).
+
 ## Come si calcola
 - **Score base** = media pesata delle stats del ruolo + bonus (PlayStyle+ per tier e ruolo, body type, 5★ piede
   debole/skill), con bonus massimo 12; sopra 90 la scala si comprime dolcemente verso 100.

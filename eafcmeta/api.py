@@ -6,8 +6,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
+from pydantic import BaseModel
 
-from . import analysis, collect, db, importer, scoring
+from . import analysis, calibration, collect, db, importer, scoring
 from .models import CardIn, ImportIn, OpinionIn, PagesIn, ProIn
 
 
@@ -196,6 +197,30 @@ def template():
     return importer.template_csv()
 
 
+class CalibrationIn(BaseModel):
+    thresholds: bool = True
+    weights: bool = False
+
+
+@router.get("/calibration")
+def get_calibration(conn: sqlite3.Connection = Conn):
+    return calibration.report(conn, scoring.load_config())
+
+
+@router.post("/calibration/apply")
+def apply_calibration(body: CalibrationIn, conn: sqlite3.Connection = Conn):
+    try:
+        return calibration.apply(conn, scoring.load_config(), body.thresholds, body.weights)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@router.post("/calibration/reset")
+def reset_calibration(conn: sqlite3.Connection = Conn):
+    calibration.reset()
+    return calibration.report(conn, scoring.load_config())
+
+
 @router.get("/meta")
 def meta():
     cfg = scoring.load_config()
@@ -203,7 +228,7 @@ def meta():
             "body_types": list(cfg["body_type_bonus"]), "stat_keys": cfg["stat_keys"],
             "role_weights": {pos: cfg["role_weights"][role] for pos, role in cfg["position_to_role"].items()},
             "playstyles": list(cfg["playstyles"]), "creators": cfg["creators"],
-            "stat_names": analysis.NAMES}
+            "stat_names": analysis.NAMES, "calibrated": scoring.local_config_path().exists()}
 
 
 app.include_router(router)

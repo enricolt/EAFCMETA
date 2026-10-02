@@ -1,5 +1,5 @@
 {
- "patch_version": "1.4",
+ "patch_version": "1.5",
  "last_updated": "2026-10-02",
  "score_weights": {
   "stats": 0.7,
@@ -502,5 +502,10 @@
   "Team Gullit",
   "Exeed",
   "Nassada"
- ]
+ ],
+ "calibration": {
+  "pro_meta_at": 80,
+  "min_cards": 12,
+  "min_cards_role": 8
+ }
 }

@@ -138,6 +138,10 @@ h3{margin:18px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08e
 .oplist{display:grid;gap:6px;margin:8px 0}
 .oprow{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--chip);font-size:14px}
 .oprow button{border:0;background:none;color:var(--bad);cursor:pointer;font-size:16px;padding:4px 8px}
+.prog{height:10px;border-radius:99px;background:var(--chip);overflow:hidden;margin:10px 0}.prog u{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.cmp div{background:var(--chip);border-radius:14px;padding:11px;text-align:center}.cmp b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.cmp small{color:var(--mut);font-size:12px}
+.wtab{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 12px}.wtab td,.wtab th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}.wtab th{color:var(--mut);font-weight:600}
 .bars{display:grid;gap:7px}
 .bar{display:grid;grid-template-columns:132px 1fr 30px;gap:9px;align-items:center;font-size:13px}
 .bar span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar b{font-variant-numeric:tabular-nums;text-align:right}
@@ -161,7 +165,8 @@ textarea{min-height:170px;font:13px/1.45 ui-monospace,"Cascadia Mono",Menlo,Cons
 <div class="wrap">
   <header>
     <div class="brand"><div class="logo">⚽</div><div>EA FC Meta<small id="patch">valore delle carte</small></div></div>
-    <div class="row"><button class="btn hbtn" id="bImport" title="Importa carte e prezzi">⇪ <span>Importa</span></button>
+    <div class="row"><button class="btn hbtn" id="bCal" title="Calibra il punteggio sul meta dei pro">🎯 <span>Calibra</span></button>
+    <button class="btn hbtn" id="bImport" title="Importa carte e prezzi">⇪ <span>Importa</span></button>
       <button class="btn pri hadd" id="bAdd">＋ Nuova carta</button></div>
   </header>
   <div class="tiles" id="tiles"></div>
@@ -195,6 +200,9 @@ textarea{min-height:170px;font:13px/1.45 ui-monospace,"Cascadia Mono",Menlo,Cons
 <p class="errs" id="fErr" hidden></p>
 <div class="row" style="margin-top:16px;justify-content:flex-end"><button type="button" class="btn" data-close>Annulla</button><button class="btn pri" id="fSave">Salva</button></div>
 </form></dialog>
+
+<dialog id="dCal"><div class="dh"><h2>Calibrazione dal meta dei pro</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
+<div class="db" id="calBody"></div></dialog>
 
 <dialog id="dImp"><div class="dh"><h2>Importa dati</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
 <div class="db"><div class="tabs"><button class="chip" id="tCards" aria-pressed="true">Carte</button><button class="chip" id="tPrices" aria-pressed="false">Solo prezzi</button><button class="chip" id="tPages" aria-pressed="false">Pagine salvate</button></div>
@@ -391,6 +399,32 @@ async function runImport(dry){
   er.hidden=!d.errors.length;er.innerHTML=d.errors.slice(0,50).map(x=>`<li>${x.row?"Riga "+x.row+": ":""}${esc(x.error)}</li>`).join("");
   if(d.saved){toast("Importazione completata");$("#dImp").close();$("#impText").value="";load()}
 }
+// calibrazione dal meta dei pro
+async function openCal(){
+  let r;try{r=await jget("/calibration")}catch(e){return toast(e.message)}
+  const nm=k=>META.stat_names[k]||k, pct=x=>Math.round(x*100)+"%", b=$("#calBody");
+  let h=`<p class="note">L'app confronta il suo punteggio con i pareri dei creator che hai inserito (il voto automatico della community dei siti non conta) e propone soglie e pesi più vicini al loro modo di vedere il meta. Niente cambia da solo: applichi tu, e puoi sempre tornare ai valori originali.</p>`;
+  if(!r.ready){
+    h+=`<p><b>Carte con il parere di un creator: ${r.n} / ${r.needed}</b></p><div class="prog"><u style="width:${Math.min(100,r.n/r.needed*100)}%"></u></div><p class="note warn">${esc(r.message)}</p>`;
+  }else{
+    const c=r.current,sg=r.suggested,t=sg.thresholds;
+    h+=`<div class="cmp"><div><b>${pct(c.accuracy)}</b><small>accordo ora (soglia ${r.thresholds.meta})</small></div><div><b>${pct(sg.after.accuracy)}</b><small>con soglia ${t.meta}</small></div><div><b>${r.correlation==null?"—":r.correlation.toFixed(2)}</b><small>correlazione col giudizio dei pro</small></div></div>
+     <p class="note">Su ${r.n} carte, i creator approvano (voto medio ≥ ${r.pro_meta_at}) in modo coerente col nostro punteggio nel ${pct(c.accuracy)} dei casi. Falsi “meta”: ${c.fp} · carte che i pro approvano e noi no: ${c.fn}.</p>
+     <h3>Soglie suggerite</h3><p>Giocabile <b>${r.thresholds.playable}</b> → <b>${t.playable}</b> · Meta <b>${r.thresholds.meta}</b> → <b>${t.meta}</b> · Di vertice <b>${r.thresholds.top}</b> → <b>${t.top}</b></p>`;
+    const roles=Object.entries(sg.weights);
+    h+=roles.length?`<h3>Pesi suggeriti (cambi piccoli e prudenti)</h3>`+roles.map(([ro,i])=>`<p style="margin:8px 0 2px"><b>${esc(ro)}</b> <small style="color:var(--mut)">su ${i.n} carte</small></p><table class="wtab"><tr><th>Statistica</th><th>Peso</th><th>Correlazione</th></tr>${i.changes.slice(0,5).map(x=>`<tr><td>${esc(nm(x.stat))}</td><td>${x.old} → <b>${x.new}</b></td><td>${x.corr}</td></tr>`).join("")}</table>`).join("")
+      :`<p class="note">Per i pesi servono almeno 8 carte dello stesso ruolo con pareri.</p>`;
+    h+=`<div class="row" style="margin-top:12px"><label><input type="checkbox" id="cT" checked style="width:auto;min-height:0"> soglie</label><label><input type="checkbox" id="cW" style="width:auto;min-height:0"> pesi</label><span style="flex:1"></span><button class="btn pri" id="cApply">Applica</button></div>`;
+  }
+  if(r.active)h+=`<div class="row" style="margin-top:12px;justify-content:space-between"><span class="mchip">Calibrazione attiva</span><button class="btn bad" id="cReset">Ripristina valori originali</button></div>`;
+  b.innerHTML=h;
+  const done=async(r2)=>{if(!r2.ok)return toast(await errText(r2));toast("Fatto");await load();openCal()};
+  $("#cApply")&&($("#cApply").onclick=async()=>done(await api("/calibration/apply",{method:"POST",body:JSON.stringify({thresholds:$("#cT").checked,weights:$("#cW").checked})})));
+  $("#cReset")&&($("#cReset").onclick=async()=>{if(confirm("Tornare ai valori originali?"))done(await api("/calibration/reset",{method:"POST"}))});
+  if(!$("#dCal").open)$("#dCal").showModal();
+}
+$("#bCal").onclick=openCal;
+
 $("#bImport").onclick=()=>{setMode("cards");$("#dImp").showModal()};
 $("#tCards").onclick=()=>setMode("cards");$("#tPrices").onclick=()=>setMode("prices");$("#tPages").onclick=()=>setMode("pages");
 $("#impFile").onchange=e=>{const n=e.target.files.length;$("#impFileInfo").textContent=n?`${n} file scelti.`:"Nessun file scelto."};

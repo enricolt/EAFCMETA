@@ -5,3 +5,4 @@ __pycache__/
 .token
 app.log
 .webview_failed
+local.json

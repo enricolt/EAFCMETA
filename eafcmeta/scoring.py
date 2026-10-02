@@ -4,16 +4,38 @@ from __future__ import annotations
 import functools
 import json
 import math
+import os
 import statistics
+import sys
 from pathlib import Path
 
 CONFIG_PATH = Path(__file__).parent / "config" / "patch.json"
+
+
+def local_config_path() -> Path:
+    """Calibrazione personale (soglie e pesi dedotti dai pareri dei pro): sopra patch.json, ignorata da git."""
+    return Path(os.environ.get("EAFCMETA_LOCAL_CONFIG") or CONFIG_PATH.parent / "local.json")
+
+
+def _merge(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = _merge(base[k], v) if isinstance(v, dict) and isinstance(base.get(k), dict) else v
+    return out
 
 
 @functools.lru_cache(maxsize=1)
 def load_config(path: Path = CONFIG_PATH) -> dict:
     cfg = json.loads(Path(path).read_text(encoding="utf-8"))
     validate_config(cfg)
+    local = local_config_path()
+    if Path(path) == CONFIG_PATH and local.exists():
+        try:
+            merged = _merge(cfg, json.loads(local.read_text(encoding="utf-8")))
+            validate_config(merged)
+            return merged
+        except (ValueError, KeyError, json.JSONDecodeError) as e:
+            print(f"[config] calibrazione locale ignorata ({e})", file=sys.stderr)
     return cfg
 
 
