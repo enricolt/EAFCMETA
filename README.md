@@ -55,6 +55,55 @@ reinstalla le dipendenze se `requirements.txt` è cambiato. Offline usa la versi
 Stampa il link da mandare agli amici (contiene la chiave: `http://IP:8000/#token=…`). Per l'accesso da fuori casa
 usa un tunnel con autenticazione (Tailscale, Cloudflare Tunnel): non aprire la porta direttamente su internet.
 
+## Catalogo e aggiornamento
+L'app è il **database di tutte le carte del gioco**: la schermata principale è l'elenco in **ordine di uscita** (le più recenti
+prima, come su FUTBIN) con la valutazione su ogni carta. La tua collezione resta come **scheda secondaria** («La mia collezione»:
+carte che segni come tue dal catalogo). Contratto delle rotte: [docs/API_CATALOGO.md](docs/API_CATALOGO.md).
+
+**Dati di ogni carta.** `released_at` (data di uscita, ISO UTC: da FUT.GG «Added On», da FUTBIN «Release date», che dà solo il giorno e
+a volte manca), `first_seen` (quando l'app l'ha vista), `rating` (numero), `url` (pagina del giocatore) e `version_family`
+(famiglia della versione = `version` senza il numero finale: Gold, Silver, Bronze, Icon, Hero, TOTW, TOTY, Rare…; alias unificati:
+«Team of the Week» → TOTW, «Team of the Year» → TOTY, «Icons» → Icon, «Heroes» → Hero). Il db esistente si migra da solo (colonne aggiunte
+con `ALTER TABLE`, rieseguibile).
+
+**Valutazioni in cache.** Ogni carta ha una riga in `evaluations` (score base e finale, quota dei pareri, verdetto sul prezzo,
+etichetta meta, riga di sintesi, stats principali…) calcolata con gli stessi passi di `/cards/{id}`; la curva prezzo/score è fatta
+**una volta per posizione** (oltre 300 punti con un sottocampione deterministico: `curve_max_points` in `config/catalog.json`).
+Si invalida da sola quando cambiano la carta, il prezzo, i pareri, le regole o la configurazione (`patch.json`, calibrazione,
+regole): la lettura (`GET /catalog`) non ricalcola mai tutto, ricalcola una volta sola le righe obsolete. Con 5.000 carte sintetiche:
+ricalcolo totale 1,6 s, `GET /catalog` 0,03 s (misure nel `HANDOFF.md`).
+
+**Aggiornare il database (a comando).** Dal pulsante «Aggiorna database» (`POST /api/v1/catalog/update`) o da terminale:
+
+    python -m eafcmeta.catalog update                 # modo "new": solo le uscite nuove
+    python -m eafcmeta.catalog update --mode backfill --pages 5   # popolare/continuare all'indietro, a tranche
+    python -m eafcmeta.catalog update --mode prices   # solo prezzi delle carte recenti
+    python -m eafcmeta.catalog status | recompute
+
+- `new` legge gli elenchi «ultime uscite» dalla pagina 1, scarica le pagine dei giocatori che non ha ancora e **si ferma alla prima
+  pagina fatta solo di carte già note** (o ai tetti); poi aggiorna i prezzi delle carte uscite negli ultimi `lookback_days` e rivaluta
+  solo le carte toccate. `backfill` riparte dal punto in cui era arrivato e scarica tutte le carte mancanti; `prices` aggiorna solo i prezzi.
+- Gentile col sito: pausa tra le richieste, robots.txt, solo https verso `fut.gg` (e `futbin.com`), tetti per aggiornamento (`limits` in
+  `catalog.json`). Un blocco (401/403/429/503) o 3 errori di fila **fermano** il passo e lo registrano (`catalog_runs`); nessun tentativo di
+  aggirarlo. FUTBIN spesso blocca: l'errore è chiaro e l'alternativa è salvare le pagine dal browser (Strumenti → Importa).
+- Parte in background, si vede l'avanzamento in `GET /catalog/status`, si ferma con `POST /catalog/cancel`; due aggiornamenti insieme
+  danno 409. **Mai periodico**: solo a comando, salvo che attivi `catalog.enabled` in `auto.local.json` (passo opzionale della raccolta
+  automatica, spento di default).
+- **Prima configurazione.** L'indirizzo dell'elenco «ultime uscite» NON è verificato sul sito vero: finché non lo confermi
+  (`PUT /api/v1/catalog/config` con `list_urls`, oppure `catalog.local.json`) l'aggiornamento non parte e dice `needs_setup`. Va incollato
+  l'indirizzo della pagina elenco giocatori **ordinata per novità** (da FUT.GG o FUTBIN); se la prima pagina non contiene carte
+  riconoscibili si torna a `needs_setup` con un messaggio. Se l'elenco non è ordinato per novità, `new` si ferma comunque alla prima
+  pagina di sole carte note (ma può scaricare carte non recenti).
+- **Popolare il database la prima volta:** configura l'indirizzo, poi `python -m eafcmeta.catalog update --mode backfill --pages 5`
+  ripetuto a tranche (ogni volta riparte dalla pagina successiva; `--restart` ricomincia da capo); a elenco finito lo dice. Con 30 carte per
+  pagina e una pausa di 2,5 s sono circa 2,5 s a carta: 5.000 carte richiedono ore, quindi tranche piccole.
+- Impostazioni in `eafcmeta/config/catalog.json` (personali in `catalog.local.json`, ignorato da git): `list_urls`, `pages_per_update`,
+  `lookback_days`, `delay_seconds`, `limits`, `price_source` (`list` oppure `list+cards`).
+
+**Limiti onesti:** la rete non è mai stata provata dal vivo (dal cloud è bloccata): tutto è testato con un sito finto; l'indirizzo
+dell'elenco e il parametro `page` sono ipotesi da confermare; due carte con la stessa etichetta di versione e stesse stats (es. due «TOTW 89»)
+si fondono; il tempo dei pareri (freschezza) non invalida da solo la cache.
+
 ## Inserire i dati
 Nessuno scraping (violerebbe i ToS dei siti): i dati si copiano a mano.
 - **Importa → Carte**: incolla CSV/TSV/JSON (colonne: `name, version, position, price, is_sbc, body_type, weak_foot,
@@ -184,6 +233,7 @@ segnalato come poco affidabile sotto i 30 voti).
   tier list che conosci.
 
 ## API
-Documentazione interattiva su `/docs`. Principali: `GET/POST /api/v1/cards`, `GET/PUT/DELETE /api/v1/cards/{id}`,
+Documentazione interattiva su `/docs`. Catalogo: `GET /api/v1/catalog` (+ `/facets`, `/status`), `POST /catalog/update`, `POST /catalog/cancel`,
+`PUT /catalog/config`; collezione: `GET /collection`, `PUT/DELETE /collection/{id}`. Principali: `GET/POST /api/v1/cards`, `GET/PUT/DELETE /api/v1/cards/{id}`,
 `PUT /api/v1/cards/{id}/pro`, `POST /api/v1/import`, `POST /api/v1/prices`, `GET /api/v1/meta`.
 Posizioni supportate: ST, CF, ali (RW/LW/RM/LM), CAM, CM, CDM, terzini (RB/LB), esterni (RWB/LWB), CB e GK (portieri: contano riflessi, tuffo, piazzamento, presa e rinvio; la lettura automatica delle loro pagine non è ancora verificata).

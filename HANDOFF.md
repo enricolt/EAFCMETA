@@ -26,7 +26,7 @@ Chi legge: una persona o una sessione di Claude Code che non ha visto la convers
 
 ## 2. Stato: cosa funziona e cosa no
 
-### Funziona ed è verificato (424 test con `python -m pytest -q`; `tests/ui_smoke.py` 76 controlli con Playwright, senza errori JS)
+### Funziona ed è verificato (499 test con `python -m pytest -q`; `tests/ui_smoke.py` 76 controlli con Playwright, senza errori JS)
 - **Punteggio:** stats per ruolo + bonus (PlayStyle per tier e ruolo, body type, 5★) → regole dichiarative (delta con tetto) → soft cap →
   fusione con i pareri (quota crescente col numero di creator, vedi §5). Portieri inclusi.
 - **Verdetto sul prezzo:** curva robusta (Theil-Sen) per posizione, soglia adattiva, ignorato fuori dal range di mercato; veloce (500 carte in 0,17 s).
@@ -43,9 +43,20 @@ Chi legge: una persona o una sessione di Claude Code che non ha visto la convers
 - **UI** rifatta: sidebar, carte FUT per rarità, confronto, drawer di dettaglio, import a 4 schede, Calibra, Regole, Ricerca pareri, Automatico, temi.
 - **Launcher** `start.py`: aggiornamento da GitHub, finestra a 3 livelli (pywebview → Edge/Chrome in app mode → browser), `--diagnosi`.
 
+- **Catalogo di tutte le carte** (`eafcmeta/catalog/`, `api_catalog.py`; nuova impostazione: l'app è il database delle carte del gioco in ordine di uscita,
+  la collezione dell'utente è una scheda secondaria): data di uscita (`released_at`), `first_seen`, `rating`, `version_family`; cache delle valutazioni
+  (`evaluations`, invalidata da trigger SQL e da `config_hash`); `GET /catalog`, `/catalog/facets`, `/catalog/status`, `POST /catalog/update|cancel`,
+  `PUT /catalog/config`, `/collection`; aggiornamento a comando (`new`, `backfill`, `prices`) con sito finto nei test. Misure (5.000 carte sintetiche,
+  macchina del cloud): ricalcolo totale 1,6 s, `GET /catalog` (60 carte) 0,03 s, filtri 0,03 s, facets 0,01 s, ricalcolo mirato dopo un prezzo cambiato 0,18 s.
+
 ### NON verificato — controllare per primo (nessuna rete dal cloud, nessun Windows)
 - **yt-dlp contro YouTube vero:** la forma del suo JSON (`channel_follower_count`, `automatic_captions`, capitoli) è scritta a memoria e testata solo con finti.
-- **FUT.GG vero:** `fetch.py` e il crawl dell'automazione non hanno mai parlato col sito; l'URL elenco di default e il parametro `page` sono ipotesi.
+- **FUT.GG vero:** `fetch.py`, il crawl dell'automazione e l'aggiornamento del catalogo non hanno mai parlato col sito; l'URL elenco di default e il parametro `page` sono ipotesi.
+- **Catalogo, indirizzo dell'elenco «ultime uscite»:** non sappiamo l'URL esatto dell'ordinamento per novità. `config/catalog.json` ha `setup_confirmed: false`
+  (l'aggiornamento non parte, `needs_setup`) finché l'utente non incolla l'indirizzo (`PUT /catalog/config` o `catalog.local.json`). Controllare dal vivo: ordine
+  dell'elenco, parametro `page`, fine dell'elenco (pagina oltre l'ultima: 404 o vuota?), prezzi `EXTINCT`, FUTBIN bloccato (403).
+- **Catalogo, date:** «Added On» di FUT.GG e «Release date» di FUTBIN sono lette da pagine vere, ma possono differire per la stessa carta (viste 18 ago contro 11 set
+  per «Chloe Kelly Gold 86», probabilmente versioni diverse con la stessa etichetta); vince l'ultima lettura, tranne che una data senza ora non toglie la stessa data con l'ora.
 - **Qualità dell'estrazione su trascrizioni vere:** il corpus l'ha scritto lo stesso agente che ha scritto l'estrattore. Prima di fidarsi del
   salvataggio automatico, **misurare su una decina di trascrizioni reali etichettate a mano** e regolare `min_confidence` (oggi 0,6).
 - **Finestra nativa sul PC dell'utente:** nessun livello della catena è mai stato visto su Windows. Usare `python start.py --diagnosi`.
@@ -73,11 +84,13 @@ python start.py --window app|pywebview|browser   # forza un livello (--browser =
 python start.py --diagnosi              # rapporto da copiare/incollare (Python, git, pywebview, browser, porta, commit)
 python build_windows.py                 # .exe con PyInstaller (Windows, NON provato)
 python start.py --lan                   # accesso in rete locale con chiave in .token
-python -m pytest -q                     # tutta la suite (424 test)
+python -m pytest -q                     # tutta la suite (499 test)
 python -m eafcmeta.auto run|status|undo # raccolta automatica a mano / stato / annulla i pareri automatici (NON provata dal vivo)
 python -m eafcmeta.importer data/esempio.csv        # 30 carte FITTIZIE di prova
 python -m eafcmeta.collect cartella_con_pagine/     # importa pagine HTML salvate
 python -m eafcmeta.fetch "https://www.fut.gg/players/?nation_id=[54]" --max 30   # NON TESTATO sul sito vero
+python -m eafcmeta.catalog update [--mode new|backfill|prices] [--pages N]     # aggiorna il catalogo a comando (NON TESTATO sul sito vero)
+python -m eafcmeta.catalog status|recompute                                      # stato / ricalcolo di tutte le valutazioni in cache
 ```
 Variabili d'ambiente: `EAFCMETA_DB` (file SQLite, default `eafcmeta.db` nella cartella), `EAFCMETA_TOKEN` (chiave API; la imposta `--lan`),
 `EAFCMETA_LOCAL_CONFIG` (percorso di `local.json` e dei file personali accanto, usato nei test), `EAFCMETA_AUTO=0` (spegne lo scheduler, impostato nei test).
@@ -99,14 +112,17 @@ Monolite Python: **FastAPI + SQLite**; frontend statico a moduli ES (nessun buil
 | Dati siti | `sources.py`, `collect.py`, `fetch.py`, `importer.py`, `opinions_import.py` | Lettura pagine FUT.GG/FUTBIN, import, crawl gentile. |
 | Ricerca | `research/` (pipeline, sources, resolver, extract, criteria, store, text, llm) | Testo → proposte di parere; criteri. |
 | Automatico | `auto/` (runner, scheduler, ytdlp, transcript, discovery, videos, opinions, futgg, schema, config) | Ciclo giornaliero di raccolta. |
-| Dati | `db.py`, `models.py` | SQLite (cards, price_history, opinions, proposals, criteria, channels, processed_items, auto_runs), validazioni Pydantic. |
-| Config | `config/patch.json`, `rules.json`, `criteria.json`, `research.json`, `pros.json`, `auto.json` | Tutti i parametri. Personali (ignorati da git): `local.json`, `rules.local.json`, `auto.local.json`. |
+| Catalogo | `catalog/` (versions, dates, schema, config, evaluation, query, updater, `__main__`), `api_catalog.py` | Database di tutte le carte: date di uscita, cache delle valutazioni, elenco filtrabile, aggiornamento a comando, collezione. |
+| Dati | `db.py`, `models.py` | SQLite (cards, price_history, opinions, proposals, criteria, channels, processed_items, auto_runs, evaluations, catalog_runs, catalog_state, collection), validazioni Pydantic. |
+| Config | `config/patch.json`, `rules.json`, `criteria.json`, `research.json`, `pros.json`, `auto.json`, `catalog.json` | Tutti i parametri. Personali (ignorati da git): `local.json`, `rules.local.json`, `auto.local.json`, `catalog.local.json`. |
 | UI | `static/index.html`, `css/`, `js/` (main, router, sections, state, api, ui, card, charts, detail, form, labels, `views/*`) | Interfaccia. |
-| Test | `tests/` | 424 test; `ui_smoke.py` e `research_eval.py` non girano in pytest di default. |
+| Test | `tests/` | 499 test; `ui_smoke.py` e `research_eval.py` non girano in pytest di default. |
 
 ### Dati
 - `cards`: chiave naturale nome + versione + posizione. Una carta letta da due siti si **fonde** (`db.find_card`: nome contenuto nell'altro e stats ≥ 90% entro ±2,
   oppure stesso club/nazione). `data` JSON: stats, PlayStyle, body type, stelle, `signals`, altezza, peso, AcceleRATE, club, lega, nazione, ruoli.
+- `cards` ha in più `released_at` (ISO UTC, nullable), `first_seen`, `rating`, `url` (migrazione idempotente in `catalog/schema.py`, richiamata da `db.connect`).
+  `evaluations` = cache (una riga per carta; i trigger SQL su `cards`/`opinions` mettono `config_hash=''` = obsoleta); `collection` = «La mia collezione».
 - `opinions(card_id, creator, stance, score, reason, url, ts, auto, confidence)`: un parere per creator e carta. `auto=1` = raccolto dall'automazione (rimovibile in blocco;
   un parere manuale non viene mai sovrascritto).
 
@@ -123,7 +139,13 @@ Monolite Python: **FastAPI + SQLite**; frontend statico a moduli ES (nessun buil
 5. **Analisi** (`analysis.describe` + `rules.py`): punti di forza e deboli, scatto, PlayStyle utili/fuori ruolo, body type, stelle, prezzo, pareri con discordanze,
    discordanze sui criteri, "cosa ha contato", consiglio finale (matrice in `rules.json`).
 6. **Apprendimento** (`rules.learn`): dai criteri citati nei pareri (tabella `criteria`), propone regole se ≥ 5 menzioni da ≥ 2 creator e consenso ≥ 0,6; mai attive senza approvazione.
-7. **Calibrazione:** con ≥ 12 carte con parere di un creator (escluso il voto automatico della community) propone soglie (accuratezza bilanciata, ≥ 4 carte per classe, ±3 punti),
+7. **Catalogo e cache** (`catalog/evaluation.py`): stessi passi 1-4 per ogni carta, salvati in `evaluations`. La curva del verdetto è una per posizione; mercati piccoli
+   (≤ `verdict.exact_market_max` altre carte) restano esatti (curva per carta senza la carta stessa), mercati grandi usano una curva condivisa con **sottocampione
+   deterministico** oltre `curve_max_points` (300) punti. `config_hash` = hash di config effettiva + regole risolte + parametri del catalogo. `ensure_fresh` ricalcola
+   solo le righe obsolete/mancanti (e rifà i verdetti delle posizioni toccate sulla nuova curva). Non invalida da solo: il passare del tempo (freschezza dei pareri),
+   la cancellazione di una carta (la curva della sua posizione si rifà alla prossima modifica di quella posizione). `/cards` e `/cards/{id}` restano calcolati al volo con
+   lo stesso codice (`evaluation.score_card`, `evaluation.Markets`), quindi coerenti con la cache.
+8. **Calibrazione:** con ≥ 12 carte con parere di un creator (escluso il voto automatico della community) propone soglie (accuratezza bilanciata, ≥ 4 carte per classe, ±3 punti),
    pesi (±30% da `patch.json`) e delta delle regole; applica e ripristina; riparte sempre dai valori originali (nessuna deriva).
 
 ## 6. Motore di regole — stato (era il "Lavoro A")
@@ -176,12 +198,33 @@ Punti da sapere:
 
 ---
 
+## 7c. Catalogo e aggiornamento a comando (fatto — `eafcmeta/catalog/`)
+
+Richiesta dell'utente (cambio di impostazione): il database di TUTTE le carte, aggiornato **a comando**, in ordine di uscita; la collezione dell'utente resta come scheda secondaria.
+- `updater.py`: `run_update(mode, pages, …)` sincrono con tutto iniettabile (fetch, orologio, pause, annullamento); `CatalogService` lo esegue in un thread (lock in memoria + riga
+  `in_corso` in `catalog_runs`, quindi anche tra app e riga di comando). `new` si ferma alla prima pagina elenco di sole carte note; `backfill` usa un cursore in `catalog_state`
+  (`backfill:<url elenco>` = prossima pagina, oppure `fine`); `prices` = prezzi dagli elenchi + pagine delle carte recenti (`price_source: list+cards`, tetto `max_price_pages`).
+  Carte riconosciute per indirizzo (`cards.url`, percorso) oppure per nome+versione+posizione (`db.find_card`, come `collect.apply_list`).
+- `fetch.py` ha ora la classe `Fetcher` (robots, pausa, host consentiti, errori di fila) usata da `crawl()` e dal catalogo; `validate_url`/`http_get` accettano `hosts`
+  (il catalogo consente anche `futbin.com`; `crawl` e l'automazione restano solo `fut.gg`). `auto/futgg.page_url` è l'URL della pagina N di un elenco.
+- Configurazione: `config/catalog.json` + `catalog.local.json`; `PUT /catalog/config` valida (https, host consentiti, ≤ 5 indirizzi, pagine 1-20, lookback 1-365) e
+  segna `setup_confirmed`. Con `setup_confirmed=false` o prima pagina non riconosciuta: `needs_setup`, nessun passo oltre.
+- L'automazione può chiamare il passo `catalogo` (`auto.json` → `catalog.enabled`, **false di default**): lo scheduler non lo esegue mai da solo se non è abilitato.
+- Hunk nei file condivisi (piccoli): `db.py` (import, una riga in `_prepare`, `upsert_card`/`update_card` scrivono `released_at/first_seen/rating/url`, `pick_released`),
+  `models.py` (`CardIn`: `released_at`, `rating`, `url`, `in_collection`), `sources.py` (date e rating nei parser, `to_card`), `api.py` (`_scored`/`_Markets` delegano a
+  `catalog.evaluation`, `POST /cards` con `in_collection`, una riga per il router), `fetch.py` (`Fetcher`), `auto/` (`page_url`, passo `catalogo`, regola `catalog.enabled`).
+
+---
+
 ## 8. Cose che vanno sapute sulle pagine dei siti (struttura verificata a ottobre 2026)
 
 **FUT.GG** (pagina carta): JSON-LD `BreadcrumbList` (nome, «Versione NN OVR») e `WebPage` (descrizione con `NN OVR POS (Club)`, `url`). Il resto si legge a **token di testo**
 ancorati alle etichette (`Attributes`/`Chemistry Style`, `Skill Moves`, `Weak Foot`, `Body Type`, `Current price`, `Tier vote`, `View All`). **PlayStyle:** `div[title]` con `svg height=42`;
 il **PlayStyle+ ha una forma dell'icona diversa dal rombo** (`M128,12.808L243.192,128…` = normale). Stat dei portieri: etichette semplici (`Diving`, `Reflexes`…); fine blocco `GK Basic`.
 **Lista:** `a[href*=/players/]` con `.fc-card`, `img[alt="Nome - NN - Versione"]`, token `[POS, GGrating, prezzo|EXTINCT]`; prezzi abbreviati (`6.8M`, `783K`).
+
+**Data di uscita:** FUT.GG ha il token «Added On» seguito da «Sep 25, 2026, 5:01 PM UTC»; FUTBIN a volte «Release date:  2026-09-11» (solo il giorno) e a volte nessuna data.
+Lette da `sources.release_futgg/release_futbin` → `catalog/dates.parse_release_date`. Le liste non hanno date (solo rating e prezzo).
 
 **FUTBIN** (pagina carta): token `… NN POS ++ … Nome … Add to Compare`; prezzo console in `.price-box.platform-ps-only .lowest-price-1`; **PlayStyle** `a.playStyle-table-icon.active`,
 **PlayStyle+ = classe `psplus`**; stats tra `Player Stats` e `Total Chem. style added:`; rarità dal JSON-LD `Product` («Nome Rarità EA FC 27 Player Card», es. `All Icons`).
@@ -213,7 +256,7 @@ Se cambiano i siti, chiedere all'utente di risalvare una pagina e adeguare `sour
 
 ## 11. Primi passi consigliati a chi parte ora
 
-1. Clonare, `pip install -r requirements-dev.txt`, `python -m pytest -q` (424 test), `python start.py --diagnosi`, poi `python start.py` e guardare cosa succede (finestra o browser).
+1. Clonare, `pip install -r requirements-dev.txt`, `python -m pytest -q` (499 test), `python start.py --diagnosi`, poi `python start.py` e guardare cosa succede (finestra o browser).
 2. Caricare carte vere: salvare dal browser 5–10 pagine FUT.GG/FUTBIN e usare **Importa → Pagine salvate**; oppure provare `python -m eafcmeta.fetch` (mai provato dal vivo).
 3. Provare l'automazione **dal vivo, a mano e con pochi dati:** `python -m eafcmeta.auto run` con `max_channels` e `videos_per_channel` bassi in `auto.local.json`; controllare le righe di
    `auto_runs`, i canali scoperti (accettati solo se nome e iscritti combaciano) e i pareri salvati. Correggere la forma dei dati di yt-dlp se non coincide.
