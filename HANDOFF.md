@@ -29,7 +29,7 @@ Sono descritti nelle sezioni 6 e 7. Tutto il resto è già funzionante.
 
 ## 2. Stato: cosa funziona e cosa no
 
-### Funziona ed è verificato (58 test, `pytest`; UI controllata con Playwright su telefono/desktop, chiaro/scuro)
+### Funziona ed è verificato (oltre 260 test, `pytest`; UI controllata con Playwright su telefono/desktop, chiaro/scuro)
 - Punteggio per carta: stats per ruolo + bonus (PlayStyle per tier e ruolo, body type, 5★) → soft cap → fusione 70/30 col "pro".
 - Verdetto sul prezzo: curva robusta (Theil-Sen) score–ln(prezzo) per posizione, soglia adattiva. Servono ≥ 8 carte con ≥ 4 prezzi diversi.
 - Analisi scritta per carta (`analysis.py`): etichetta meta, perché sì / perché no, consiglio.
@@ -128,10 +128,13 @@ Monolite Python: **FastAPI + SQLite**, un solo file HTML statico come frontend, 
    poi *soft cap* sopra 90 (tanh verso 100).
 2. **Score finale** = 70% base + 30% pro (se non ci sono pareri vale solo il base; l'API segnala `pro_missing`).
 3. **Verdetto sul prezzo**: confronto con la curva delle carte della stessa posizione (Theil-Sen), soglia = `max(min_gap, k·σ residui)`.
+   Fuori da [min/2, max·2] dei prezzi del mercato: NEUTRAL (niente estrapolazione); atteso limitato a [0, 100]. La curva si calcola una volta per
+   posizione e per richiesta (mercato ≤ 60 carte: senza la carta stessa; oltre: curva condivisa).
 4. **Etichetta meta** (`analysis.meta_level`): soglie su `base` (score senza pareri, la stessa grandezza che la calibrazione usa) — `top` 90, `meta` 84, `playable` 76.
 5. **Testo** (`analysis.describe`): punti di forza/debolezza per ruolo, scatto/velocità, PlayStyle utili o fuori ruolo, body type, skill/piede debole, prezzo, pareri.
 6. **Calibrazione** (`calibration.py`): con ≥ 12 carte con parere di un creator (esclusa la community automatica), confronta il nostro `base` col voto medio dei pro
-   (approvata se ≥ 80), propone soglia "meta" che massimizza l'accordo e pesi per ruolo = `peso·(1 + shrink·corr)` con `shrink = 0.5·n/(n+20)`, minimo 0.2.
+   (approvata se ≥ 80), propone soglia "meta" che massimizza l'accuratezza *bilanciata* (servono ≥ 4 carte approvate e ≥ 4 no; spostamento ≤ ±3 punti da patch.json) e pesi per
+   ruolo = `peso_patch·(1 + shrink·corr)` con `shrink = 0.5·n/(n+20)`, sempre da `patch.json` (nessuna deriva) e entro ±30%.
 
 ### Dove le regole sono ancora scritte nel codice (da portare nell'engine, vedi §6)
 In `analysis.py`: forza se stat ≥ 88; debolezza se stat < 70 con peso ≥ 2; scatto+velocità media ≥ 88 «da vertice», < 72 «basso» (ST/W/FB/WB/CF), < 66 per i CB;

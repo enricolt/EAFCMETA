@@ -194,8 +194,12 @@ def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float, float] |
     return a, b, sigma
 
 
-def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict) -> dict:
-    """Confronta lo score con quello atteso al prezzo (curva robusta del mercato nella stessa posizione)."""
+_FIT = object()  # "calcola tu la curva"
+
+
+def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict, curve=_FIT) -> dict:
+    """Confronta lo score con quello atteso al prezzo (curva robusta del mercato nella stessa posizione).
+    `curve` = risultato gia' calcolato di fit_curve(market) (o None): serve a non rifare il Theil-Sen O(m^2) per ogni carta."""
     v = cfg["verdict"]
     market = [(p, s) for p, s in market if p > 0]
     unreliable = {"verdict": "NEUTRAL", "value_gap": None,
@@ -203,7 +207,8 @@ def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: di
                             f"per un confronto affidabile (ora: {len(market)})."}
     if price <= 0 or len(market) < v["min_cards_for_curve"] or len({p for p, _ in market}) < v["min_distinct_prices"]:
         return unreliable
-    curve = fit_curve(market)
+    if curve is _FIT:
+        curve = fit_curve(market)
     if curve is None or curve[1] <= 0:
         return {**unreliable, "reason": "Nel mercato inserito prezzo e score non sono correlati: confronto non affidabile."}
     lo, hi = min(p for p, _ in market) / v["price_range_factor"], max(p for p, _ in market) * v["price_range_factor"]

@@ -61,11 +61,36 @@ def _scored(conn) -> dict:
     return out
 
 
-def _eval(card_id: int, scored: dict) -> dict:
+class _Markets:
+    """Mercato per posizione, costruito UNA volta per richiesta. Il Theil-Sen e' O(m^2): rifarlo per ogni carta su /cards
+    costava ~17 s con 500 carte. Mercato piccolo (<= verdict.exact_market_max altre carte): curva per carta senza la carta
+    stessa (esatta, costa poco). Mercato grande: una curva condivisa per posizione (la carta pesa 1/m), calcolata una volta."""
+
+    def __init__(self, scored: dict, cfg: dict):
+        self.limit = cfg["verdict"]["exact_market_max"]
+        self.pts: dict[str, list[tuple[int, float, float]]] = {}
+        for i, (c, _, f) in scored.items():
+            self.pts.setdefault(c["position"], []).append((i, c["price"], f))
+        self._shared: dict[str, tuple[list, tuple | None]] = {}
+
+    def for_card(self, card_id: int, position: str):
+        """(mercato [(prezzo, score)] per il verdetto, curva gia' calcolata o scoring._FIT, n. di altre carte)."""
+        pts = self.pts[position]
+        if len(pts) - 1 <= self.limit:
+            return [(p, f) for i, p, f in pts if i != card_id], scoring._FIT, len(pts) - 1
+        if position not in self._shared:
+            mk = [(p, f) for _, p, f in pts]
+            self._shared[position] = (mk, scoring.fit_curve([(p, f) for p, f in mk if p > 0]))
+        mk, curve = self._shared[position]
+        return mk, curve, len(pts) - 1
+
+
+def _eval(card_id: int, scored: dict, markets: "_Markets | None" = None) -> dict:
     cfg = scoring.load_config()
     card, ex, final = scored[card_id]
-    market = [(c["price"], f) for i, (c, _, f) in scored.items() if i != card_id and c["position"] == card["position"]]
-    v = scoring.verdict(final, card["price"], market, cfg)
+    markets = markets or _Markets(scored, cfg)
+    market, curve, n_others = markets.for_card(card_id, card["position"])
+    v = scoring.verdict(final, card["price"], market, cfg, curve)
     weights = cfg["role_weights"][ex["role"]]
     top = sorted(weights, key=lambda k: (-weights[k], -card["stats"][k]))[:4]
     return {"id": card_id, "name": card["name"], "top_stats": [{"k": k, "v": card["stats"][k]} for k in top],
@@ -77,7 +102,7 @@ def _eval(card_id: int, scored: dict) -> dict:
             "verdict": v["verdict"], "value_gap": v["value_gap"], "verdict_reason": v["reason"],
             "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"], "rules_delta": ex.get("rules_delta", 0.0),
                           "unknown_playstyles": ex["unknown_playstyles"]},
-            "market_size": len(market), "meta_level": analysis.meta_level(ex["base"], cfg)[0],
+            "market_size": n_others, "meta_level": analysis.meta_level(ex["base"], cfg)[0],
             "meta_label": analysis.meta_level(ex["base"], cfg)[1],
             "_v": v, "_ex": ex, "_final": final, "_card": card}
 
@@ -94,11 +119,11 @@ def _public(e: dict) -> dict:
 def list_cards(conn: sqlite3.Connection = Conn, position: str | None = None, q: str | None = None,
                limit: int = 500, offset: int = 0):
     scored = _scored(conn)
-    out = [_public(_eval(i, scored)) for i in scored]
-    if position:
-        out = [e for e in out if e["position"] == position.upper()]
-    if q:
-        out = [e for e in out if q.lower() in f"{e['name']} {e['version']}".lower()]
+    ids = [i for i, (c, _, _) in scored.items()  # filtra prima di valutare: il mercato resta quello completo
+           if (not position or c["position"] == position.upper())
+           and (not q or q.lower() in f"{c['name']} {c['version']}".lower())]
+    markets = _Markets(scored, scoring.load_config())
+    out = [_public(_eval(i, scored, markets)) for i in ids]
     out.sort(key=lambda e: e["scores"]["final_score"], reverse=True)
     return out[max(offset, 0):max(offset, 0) + min(max(limit, 1), 1000)]
 
