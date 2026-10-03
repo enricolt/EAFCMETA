@@ -42,7 +42,7 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
 def validate_config(cfg: dict) -> None:
     """Controlla la configurazione all'avvio: meglio un errore chiaro subito che un KeyError dopo."""
     for key in ("score_weights", "role_weights", "position_to_role", "playstyle_bonus", "playstyles",
-                "body_type_bonus", "verdict", "stat_keys", "max_bonus", "soft_cap_start", "meta", "stance_scores"):
+                "body_type_bonus", "verdict", "stat_keys", "max_bonus", "soft_cap_start", "meta", "stance_scores", "opinion_weighting"):
         if key not in cfg:
             raise ValueError(f"patch.json: manca '{key}'")
     sw = cfg["score_weights"]
@@ -60,6 +60,10 @@ def validate_config(cfg: dict) -> None:
             raise ValueError(f"patch.json: playstyle '{name}' non valido")
     if set(cfg["stance_scores"]) != {"yes", "maybe", "no"}:
         raise ValueError("patch.json: stance_scores deve avere yes, maybe, no")
+    ow = cfg["opinion_weighting"]
+    if not (ow["half_life_days"] > 0 and 0 < ow["min_recency"] <= 1 and ow["k"] > 0 and ow["default_creator_weight"] >= 0
+            and all(v >= 0 for v in ow["creator_weights"].values())):
+        raise ValueError("patch.json: opinion_weighting non valido")
     m = cfg["meta"]
     if not 0 < m["playable"] < m["meta"] < m["top"] <= 100:
         raise ValueError("patch.json: meta deve rispettare playable < meta < top <= 100")
@@ -131,17 +135,18 @@ def base_score(card: dict, cfg: dict) -> float:
 
 
 def pro_from_opinions(opinions: list[dict], cfg: dict) -> float | None:
-    """Media dei pareri dei creator: usa il voto se c'è, altrimenti il valore associato a sì/dipende/no."""
-    vals = [o["score"] if o["score"] is not None else cfg["stance_scores"][o["stance"]] for o in opinions]
-    return sum(vals) / len(vals) if vals else None
+    """Parere complessivo dei creator (media pesata, vedi opinion_model)."""
+    from . import opinion_model
+    return opinion_model.aggregate(opinions, cfg)["pro"]
 
 
-def final_score(base: float, pro: float | None, cfg: dict) -> float:
-    """Se manca il parere dei pro, si usa solo lo score base (e l'API lo segnala)."""
+def final_score(base: float, pro: float | None, cfg: dict, pro_share: float | None = None) -> float:
+    """Se manca il parere dei pro si usa solo lo score base. `pro_share` è la quota del parere (di solito calcolata da
+    opinion_model.aggregate); se non indicata vale il massimo `score_weights.pro` (voto manuale senza creator)."""
     if pro is None:
         return base
-    w = cfg["score_weights"]
-    return base * w["stats"] + pro * w["pro"]
+    share = cfg["score_weights"]["pro"] if pro_share is None else pro_share
+    return base * (1 - share) + pro * share
 
 
 def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float, float] | None:

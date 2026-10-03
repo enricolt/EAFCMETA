@@ -111,6 +111,11 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     else:
         cons.append("Manca il parere dei creator: il giudizio si basa solo su statistiche, PlayStyle e prezzo.")
 
+    if opinions and card.get("pro_share") is not None:
+        agg = card.get("pro_agg") or {}
+        ops["influence"] = (f"I pareri pesano il {card['pro_share'] * 100:.0f}% dello score finale "
+                            f"({len(opinions)} parer{'e' if len(opinions) == 1 else 'i'}; peso complessivo {agg.get('n_eff', 0):g}): "
+                            "più creator e più recenti = più peso.")
     advice = rules.advice(level, v, verdict["value_gap"] is None, cfg)
     if ops["status"] == "disagree":
         advice = "Opinioni divise tra i creator. " + advice

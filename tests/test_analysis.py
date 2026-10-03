@@ -89,3 +89,66 @@ def test_hint_when_stats_and_creators_clash(client):
     cid = client.post("/api/v1/cards", json=card(playstyles=["Finesse Shot+", "Rapid+"], body_type="Lean")).json()["id"]
     d = _op(client, cid, "Exeed", "no", reason="Non si sente reattiva").json()
     assert "i creator la bocciano" in d["analysis"]["opinions"]["hint"]
+
+
+# ---------------------------------------------------------------- peso dei pareri sul punteggio
+
+def test_share_grows_with_number_of_creators(client):
+    cid = client.post("/api/v1/cards", json=card()).json()["id"]
+    shares = []
+    for creator in ("A", "B", "C", "D"):
+        d = _op(client, cid, creator, "yes", score=90).json()
+        shares.append(d["scores"]["pro_share"])
+    assert shares == sorted(shares) and shares[0] < shares[-1] <= 0.30
+    assert abs(shares[0] - 0.30 * 1 / (1 + 2)) < 1e-3  # un solo creator: 10%
+    assert "pesano il" in d["analysis"]["opinions"]["influence"]
+
+
+def test_community_counts_less_and_low_votes_count_zero(client):
+    cid = client.post("/api/v1/cards", json=card()).json()["id"]
+    _op(client, cid, "Exeed", "no", score=40)
+    _op(client, cid, "FUT.GG (community)", "yes", score=90, reason="Tier S per il 79% di 321 voti della community.")
+    d = client.get(f"/api/v1/cards/{cid}").json()
+    items = {i["creator"]: i for i in d["pro_breakdown"]["items"]}
+    assert items["FUT.GG (community)"]["weight"] < items["Exeed"]["weight"]  # 0,3 contro 1
+    assert d["scores"]["pro_sentiment_score"] < 65  # la media pende verso il creator
+    _op(client, cid, "FUT.GG (community)", "yes", score=90, reason="Tier B per il 18% di 17 voti (pochi voti: poco affidabile).")
+    d = client.get(f"/api/v1/cards/{cid}").json()
+    assert {i["creator"]: i for i in d["pro_breakdown"]["items"]}["FUT.GG (community)"]["weight"] == 0
+
+
+def test_old_opinions_weigh_less():
+    from datetime import datetime, timedelta, timezone
+
+    from eafcmeta import opinion_model, scoring
+    cfg = scoring.load_config()
+    now = datetime(2026, 10, 3, tzinfo=timezone.utc)
+    fresh = {"creator": "X", "stance": "yes", "score": None, "reason": "", "ts": "2026-10-03 00:00"}
+    old = {**fresh, "ts": (now - timedelta(days=120)).strftime("%Y-%m-%d %H:%M")}
+    assert opinion_model.opinion_weight(old, cfg, now) < opinion_model.opinion_weight(fresh, cfg, now)
+    assert opinion_model.opinion_weight(old, cfg, now) >= cfg["opinion_weighting"]["min_recency"]  # mai sotto il minimo
+
+
+def test_incoherent_vote_is_rejected(client):
+    cid = client.post("/api/v1/cards", json=card()).json()["id"]
+    assert _op(client, cid, "X", "no", score=95).status_code == 422
+    assert _op(client, cid, "X", "yes", score=30).status_code == 422
+    assert _op(client, cid, "X", "maybe", score=55).status_code == 200
+
+
+def test_bulk_opinions_import(client):
+    a = client.post("/api/v1/cards", json=card(name="Chloe Kelly", version="Gold 86")).json()["id"]
+    b = client.post("/api/v1/cards", json=card(name="Kika Nazareth", version="Gold 83")).json()["id"]
+    txt = ("carta;creator;scelta;voto;motivo;link\n"
+           "Kelly;Exeed;sì;88;Scatto top;https://x.com/a\n"
+           "Kika Nazareth;Exeed;no;;Troppo lenta;\n"
+           "Kelly;Hollywood285;dipende;70;;\n")
+    r = client.post("/api/v1/import/opinions", json={"text": txt, "dry_run": True}).json()
+    assert r["count"] == 3 and not r["errors"] and not r["saved"]
+    assert client.get(f"/api/v1/cards/{a}").json()["opinions"] == []
+    r = client.post("/api/v1/import/opinions", json={"text": txt, "dry_run": False}).json()
+    assert r["saved"] and len(client.get(f"/api/v1/cards/{a}").json()["opinions"]) == 2
+    assert client.get(f"/api/v1/cards/{b}").json()["opinions"][0]["stance"] == "no"
+    bad = "carta;creator;scelta\nNessuno;X;sì\nKelly;X;boh\nKelly;;sì\n"
+    r = client.post("/api/v1/import/opinions", json={"text": bad, "dry_run": False}).json()
+    assert [e["row"] for e in r["errors"]] == [2, 3, 4] and not r["saved"]

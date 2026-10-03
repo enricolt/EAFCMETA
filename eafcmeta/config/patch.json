@@ -1,5 +1,5 @@
 {
- "patch_version": "1.5",
+ "patch_version": "1.6",
  "last_updated": "2026-10-02",
  "score_weights": {
   "stats": 0.7,
@@ -507,5 +507,16 @@
   "pro_meta_at": 80,
   "min_cards": 12,
   "min_cards_role": 8
+ },
+ "opinion_weighting": {
+  "default_creator_weight": 1.0,
+  "creator_weights": {
+   "FUT.GG (community)": 0.3
+  },
+  "half_life_days": 60,
+  "min_recency": 0.3,
+  "k": 2.0,
+  "low_confidence_marker": "pochi voti",
+  "low_confidence_factor": 0.0
  }
 }

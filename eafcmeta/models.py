@@ -144,6 +144,7 @@ class PagesIn(BaseModel):
 
 
 class OpinionIn(BaseModel):
+    """Parere di un creator. Il voto, se c'è, deve essere coerente con sì/dipende/no."""
     creator: str = Field(min_length=1, max_length=40)
     stance: Literal["yes", "maybe", "no"]
     score: float | None = Field(None, ge=0, le=100)
@@ -161,3 +162,9 @@ class OpinionIn(BaseModel):
         if v and not v.lower().startswith(("http://", "https://")):
             raise ValueError("il link deve iniziare con http:// o https://")
         return v
+
+    @model_validator(mode="after")
+    def _coherent(self):
+        if self.score is not None and ((self.stance == "yes" and self.score < 70) or (self.stance == "no" and self.score > 60)):
+            raise ValueError("il voto non è coerente con la scelta (sì ≥ 70, no ≤ 60)")
+        return self

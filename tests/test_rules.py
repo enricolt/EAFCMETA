@@ -375,7 +375,7 @@ def _rated(client, n=20):
         acc = 60 + 2 * i
         cid = client.post("/api/v1/cards", json=card(name=f"ST{i}", price=1000 * (i + 1),
                                                      stats={**ST, "acceleration": acc, "sprint_speed": acc})).json()["id"]
-        client.put(f"/api/v1/cards/{cid}/opinions", json={"creator": "Exeed", "stance": "yes", "score": 90 if acc >= 88 else 50})
+        client.put(f"/api/v1/cards/{cid}/opinions", json={"creator": "Exeed", "stance": "yes" if acc >= 88 else "no", "score": 90 if acc >= 88 else 50})
 
 
 def test_rules_calibration_needs_data(client):

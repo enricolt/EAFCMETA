@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel
 
-from . import analysis, calibration, collect, db, importer, scoring
+from . import analysis, calibration, collect, db, importer, opinion_model, opinions_import, scoring
 from .models import CardIn, ImportIn, OpinionIn, PagesIn, ProIn
 
 
@@ -50,12 +50,13 @@ def _scored(conn) -> dict:
     for r in conn.execute("SELECT * FROM cards"):
         c = db.row_to_card(r)
         if c["id"] in ops:  # con pareri dei creator, il punteggio "pro" è la loro media
-            c["pro_score"] = scoring.pro_from_opinions(ops[c["id"]], cfg)
+            agg = opinion_model.aggregate(ops[c["id"]], cfg)
+            c["pro_score"], c["pro_share"], c["pro_agg"] = agg["pro"], agg["share"], agg
         try:
             ex = scoring.explain(c, cfg)
         except ValueError:
             continue  # carta non più valida con la config corrente: ignorata
-        out[c["id"]] = (c, ex, scoring.final_score(ex["base"], c["pro_score"], cfg))
+        out[c["id"]] = (c, ex, scoring.final_score(ex["base"], c["pro_score"], cfg, c.get("pro_share")))
     return out
 
 
@@ -70,7 +71,7 @@ def _eval(card_id: int, scored: dict) -> dict:
             "bonus_playstyles": [p for p in card["playstyles"] if p.endswith("+")][:3], "version": card["version"], "position": card["position"],
             "is_sbc": card["is_sbc"], "cost_credits": card["price"],
             "scores": {"base_score": round(ex["base"], 2), "pro_sentiment_score": card["pro_score"],
-                       "final_score": round(final, 2)},
+                       "final_score": round(final, 2), "pro_share": round(card.get("pro_share", cfg["score_weights"]["pro"]) if card["pro_score"] is not None else 0, 4)},
             "pro_missing": card["pro_score"] is None, "pro_notes": card["pro_notes"],
             "verdict": v["verdict"], "value_gap": v["value_gap"], "verdict_reason": v["reason"],
             "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"], "rules_delta": ex.get("rules_delta", 0.0),
@@ -123,6 +124,7 @@ def get_card(card_id: int, conn: sqlite3.Connection = Conn):
     cfg = scoring.load_config()
     return {**_public(e), "card": _raw(scored[card_id][0]), "price_history": db.history(conn, card_id),
             "opinions": db.opinions_by_card(conn, card_id).get(card_id, []),
+            "pro_breakdown": scored[card_id][0].get("pro_agg"),
             "analysis": analysis.describe(e["_card"], e["_ex"], e["_final"], e["_v"], e["market_size"], cfg,
                                           db.opinions_by_card(conn, card_id).get(card_id, []),
                                           criteria_notes=_criteria_notes(conn, e["_ex"]["role"], cfg))}
@@ -181,6 +183,11 @@ def delete_opinion(card_id: int, opinion_id: int, conn: sqlite3.Connection = Con
 @router.post("/import")
 def import_cards(body: ImportIn, conn: sqlite3.Connection = Conn):
     return importer.import_text(conn, body.text, body.dry_run)
+
+
+@router.post("/import/opinions")
+def import_opinion_rows(body: ImportIn, conn: sqlite3.Connection = Conn):
+    return opinions_import.import_opinions(conn, body.text, body.dry_run)
 
 
 @router.post("/prices")
