@@ -1,0 +1,4 @@
+{
+ "_nota": "Elenco dei pro/creator da seguire, popolabile in seguito. Ogni voce: name (obbligatorio), youtube_channel_id (UC...) e/o youtube_handle (@nome) opzionali: se mancano, l'app cerca il canale per nome e lo accetta solo se combacia bene. Esempio: {\"name\": \"Nome Creator\", \"youtube_handle\": \"@nome\"}",
+ "pros": []
+}

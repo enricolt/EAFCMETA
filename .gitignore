@@ -12,3 +12,4 @@ diagnosi.txt
 build/
 dist/
 rules.local.json
+auto.local.json
