@@ -267,3 +267,101 @@ def test_low_vote_community_is_flagged(client):
     cid = client.get("/api/v1/cards").json()[0]["id"]
     op = client.get(f"/api/v1/cards/{cid}").json()["opinions"][0]
     assert op["stance"] == "maybe" and "pochi voti" in op["reason"]
+
+
+# --- altezza, peso, AcceleRATE, piede, club, lega, nazione, età, chimica, ruoli (pagine ricostruite) ---
+GG_ROLES = "View All|ST|87.9|‎|Advanced Forward|++|#70 Ranked|CM|87.5|‎|Box to Box|+|#43 Ranked"
+GG_INFO = ("Player Information|Name|Francisca Ramos Nazareth Sousa|Club|FC Barcelona|League|Liga F|Nation|Portugal|Rarity|Gold|"
+           "Position|CM|Height|170cm (5'7\")|Weight|67kg (147lbs)|Foot|Right|Skill Moves|4|Weak Foot|4|AcceleRATE|Controlled|"
+           "Body Type|Lean Short|Real Face|No|Age|24|Player ID|1|"
+           "Community Chemistry Styles|‎|Hunter|58%|‎|Engine|20%|Select a chemistry style to vote")
+FB_BARS = ('<a class="accelerate-bar hidden" data-accelerate-id="1"><div>Explosive</div></a>'
+           '<a class="accelerate-bar" data-accelerate-id="2" data-original="1"><div>Controlled</div></a>'
+           '<a class="accelerate-bar hidden" data-accelerate-id="3"><div>Lengthy</div></a>')
+FB_BOX = ('<div class="player-info-box"><a><img alt="Nation" title="Portugal"><span>Portugal</span></a>'
+          '<a><img alt="League" title="Liga F Moeve"><span>Liga F Moeve</span></a>'
+          '<a><img alt="Club" title="FC Barcelona"><span>FC Barcelona</span></a></div>')
+FB_BIO = "Height|170cm | 5'7\"|Foot|Right|Age|23 years old"
+FB_TOP = "Top 3 community voted|Finisher|40%|Artist|14%|Engine|13%"
+FB_ROLES = ("FUTBIN Rating|Best Ratings|RPP Map|83.4|CM|Playmaker++|Rank #85|Best Chem.|83.3|CAM|Playmaker|Rank #115|Best Chem.|"
+            "83|CAM|Shadow Striker+|Rank #128|Best Chem.|CM|83.4|CAM|83.3")
+divs = lambda s: "".join(f"<div>{t}</div>" for t in s.split("|"))
+
+
+def gg_full(**kw):
+    return gg_page(**kw).replace("<div>Attributes</div>", divs(GG_ROLES) + "<div>Attributes</div>", 1) \
+        .replace("</body>", divs(GG_INFO) + "</body>")
+
+
+def fb_full(**kw):
+    return fb_page(**kw).replace("<body>", "<body>" + FB_BOX, 1) \
+        .replace("</body>", divs(FB_BIO) + FB_BARS + divs(FB_TOP) + divs(FB_ROLES) + "</body>")
+
+
+def test_futgg_extras():
+    d = sources.parse_page(gg_full())
+    assert (d["height_cm"], d["weight_kg"], d["accelerate"], d["foot"], d["age"]) == (170, 67, "Controlled", "Right", 24)
+    assert (d["club"], d["league"], d["nation"], d["chem_style_top"]) == ("FC Barcelona", "Liga F", "Portugal", "Hunter")
+    assert d["roles"] == [{"role": "ST", "rating": 87.9, "name": "Advanced Forward++", "site": "futgg", "rank": 70},
+                          {"role": "CM", "rating": 87.5, "name": "Box to Box+", "site": "futgg", "rank": 43}]
+    assert d["stats"]["dribbling"] == 86  # le stats non sono toccate
+
+
+def test_futbin_extras_without_weight():
+    d = sources.parse_page(fb_full())
+    assert (d["height_cm"], d["accelerate"], d["foot"], d["age"]) == (170, "Controlled", "Right", 23)
+    assert (d["club"], d["league"], d["nation"], d["chem_style_top"]) == ("FC Barcelona", "Liga F Moeve", "Portugal", "Finisher")
+    assert "weight_kg" not in d  # su FUTBIN non c'è: assente, senza errori
+    assert [(r["role"], r["rating"], r["name"], r["rank"]) for r in d["roles"]] == [
+        ("CM", 83.4, "Playmaker++", 85), ("CAM", 83.3, "Playmaker", 115), ("CAM", 83.0, "Shadow Striker+", 128)]
+
+
+def test_pages_without_extras_still_parse():
+    for html in (gg_page(), fb_page()):
+        d = sources.parse_page(html)
+        assert not any(k in d for k in ("height_cm", "weight_kg", "accelerate", "foot", "club", "age", "chem_style_top", "roles"))
+        assert sources.to_card(d).roles == []
+
+
+def test_implausible_extras_are_dropped():
+    assert sources._clean_extras({"height_cm": 17, "accelerate": "Boh", "foot": "Both", "age": 24, "weight_kg": 67}) == {
+        "age": 24, "weight_kg": 67}
+
+
+def test_extras_in_api_merge_and_survive_edit(client):
+    gg = gg_full(name="Kelly X", rating=86, rarity="Rare")
+    fb = fb_full(name="Kelly X", rating="86")
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "a", "html": gg}], "dry_run": False})
+    cid = client.get("/api/v1/cards").json()[0]["id"]
+    card = client.get(f"/api/v1/cards/{cid}").json()["card"]
+    assert card["height_cm"] == 170 and card["weight_kg"] == 67 and card["accelerate"] == "Controlled" and len(card["roles"]) == 2
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "b", "html": fb}], "dry_run": False})
+    det = client.get(f"/api/v1/cards/{cid}").json()
+    card = det["card"]
+    assert card["weight_kg"] == 67  # FUTBIN non ha il peso: il vecchio resta
+    assert card["league"] == "Liga F Moeve" and card["age"] == 23  # dove c'è, il nuovo aggiorna
+    assert sorted({r["site"] for r in card["roles"]}) == ["futbin", "futgg"] and len(card["roles"]) == 5
+    # rilettura della stessa pagina: i ruoli del sito si sostituiscono, non si duplicano
+    client.post("/api/v1/import/pages", json={"pages": [{"name": "b", "html": fb}], "dry_run": False})
+    assert len(client.get(f"/api/v1/cards/{cid}").json()["card"]["roles"]) == 5
+    # modifica manuale senza i nuovi campi (come la UI attuale): non li cancella
+    body = {"name": det["name"], "version": det["version"], "position": det["position"], "price": 5,
+            "stats": card["stats"], "playstyles": card["playstyles"], "body_type": card["body_type"],
+            "weak_foot": 4, "skill_moves": 4}
+    again = client.put(f"/api/v1/cards/{cid}", json=body).json()["card"]
+    assert again["height_cm"] == 170 and again["weight_kg"] == 67 and len(again["roles"]) == 5
+    # e rimandando indietro tutto il "card" restituito dall'API (come nel test dei segnali) resta valido
+    assert client.put(f"/api/v1/cards/{cid}", json={**body, **again}).status_code == 200
+
+
+def test_old_cards_have_empty_extras(client):
+    from eafcmeta import db
+    from tests.conftest import ST
+    r = client.post("/api/v1/cards", json={"name": "X", "position": "ST", "price": 10, "stats": ST})
+    assert r.status_code == 201
+    conn = db.connect()
+    c = db.row_to_card(conn.execute("SELECT * FROM cards").fetchone())
+    conn.close()
+    assert c["height_cm"] is None and c["weight_kg"] is None and c["roles"] == []
+    card = client.get(f"/api/v1/cards/{r.json()['id']}").json()["card"]
+    assert card["height_cm"] is None and card["roles"] == []
