@@ -1,0 +1,25 @@
+{
+ "_nota": "Configurazione della ricerca automatica dei pareri. 'channel_id' (UC...) o 'handle' (@nome) vanno compilati a mano dall'utente dopo aver verificato il canale reale: NON sono stati inventati. 'aliases' sono i soprannomi dei giocatori (chiave normalizzata -> nome da cercare nel DB).",
+ "creators": [
+  {"name": "Team Gullit", "channel_id": "", "handle": ""},
+  {"name": "Exeed",       "channel_id": "", "handle": ""},
+  {"name": "Nassada",     "channel_id": "", "handle": ""}
+ ],
+ "limits": {"max_text_chars": 30000, "max_reason_chars": 400, "max_excerpt_chars": 600, "max_videos": 5},
+ "youtube": {"languages": ["it", "en"]},
+ "aliases": {
+  "cr7": "Cristiano Ronaldo",
+  "el pibe": "Maradona"
+ },
+ "generic_versions": ["", "gold", "rare", "common", "normal", "rare gold", "non-rare", "silver", "bronze"],
+ "keyword_polarity": {
+  "_nota": "Parole chiave dei criteri che portano già una polarità (es. 'lento' = scatto negativo). Le altre prendono la polarità dalla parola positiva/negativa più vicina nella frase.",
+  "positive": ["veloce", "rapido", "rapida", "agile", "alto", "alta", "economico", "economica", "robusto", "robusta", "reattivo", "reattiva", "fluida", "gigante"],
+  "negative": ["lento", "lenta", "fragile", "caro", "cara", "basso", "bassa", "piccolo", "piccola", "legnosa", "si stanca"]
+ },
+ "stance_phrases": {
+  "yes": ["lo consiglio", "la consiglio", "consigliatissimo", "consigliatissima", "da prendere", "prendetelo", "prendetela", "compratelo", "compratela", "must have", "must buy", "spacca", "è meta", "e meta", "top assoluto", "vale ogni credito", "vale ogni moneta", "promossa", "promosso"],
+  "no": ["evitatelo", "evitatela", "evitate", "sconsiglio", "da evitare", "non lo prenderei", "non la prenderei", "non vale", "non lo consiglio", "non la consiglio", "buttare crediti", "soldi buttati", "bocciato", "bocciata", "skip"],
+  "maybe": ["dipende", "solo se", "a seconda", "discreto", "così così"]
+ }
+}

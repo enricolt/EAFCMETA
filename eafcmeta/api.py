@@ -231,6 +231,7 @@ def meta():
             "stat_names": analysis.NAMES, "calibrated": scoring.local_config_path().exists()}
 
 
+from .api_research import build_router as _research_router; app.include_router(_research_router(require_token, get_conn))
 app.include_router(router)
 
 

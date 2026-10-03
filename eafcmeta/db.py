@@ -45,6 +45,7 @@ def connect(path: str | None = None) -> sqlite3.Connection:
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_card ON cards(name COLLATE NOCASE, version COLLATE NOCASE, position)")
     except sqlite3.IntegrityError:
         pass
+    from .research.store import ensure_schema; ensure_schema(conn)  # tabelle proposals/criteria (ricerca pareri)
     return conn
 
 
