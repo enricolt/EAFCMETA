@@ -83,6 +83,28 @@ discordano l'app lo dice e riporta i motivi di ciascuno (“secondo Team Gullit 
 punteggio “pro” (30% dello score) è la media dei pareri; senza voto, sì = 85, dipende = 70, no = 50 (`stance_scores`).
 I pareri e i motivi li inserisci tu: l'app non li legge dai video. Soglie “meta” in `patch.json` (`meta`).
 
+## Ricerca dei pareri dei pro (proposte da rivedere)
+Il pacchetto `eafcmeta/research` trasforma testi dei creator in **proposte** di parere: l'app riconosce la carta
+(nome, cognome, soprannome, versione; se è ambigua propone tutte le candidate), estrae sì/dipende/no, motivo e **criteri**
+(scatto, finalizzazione, animazioni...) e **non salva nulla nei pareri finché non accetti** (puoi correggere stance,
+voto, motivo e carta). Senza chiave usa l'estrazione a parole chiave (gratis, deterministica); con `ANTHROPIC_API_KEY`
+usa un modello linguistico (costo a parte; modello in `EAFCMETA_LLM_MODEL`). I testi sono trattati come dati: mai istruzioni.
+
+Fonti (chiavi solo in variabili d'ambiente, mai nel repository):
+- **Testo incollato** (sempre disponibile): post, didascalia o trascrizione di **qualsiasi** social.
+- **YouTube** (`YOUTUBE_API_KEY`): API ufficiale, solo metadati pubblici (titolo, descrizione, capitoli). L'API ufficiale
+  **non** permette di scaricare i sottotitoli dei video altrui: senza un provider di trascrizioni (opzionale, da collegare
+  a mano) si estrae da titolo/descrizione/capitoli e le proposte hanno confidenza ridotta.
+- **X** (`X_BEARER_TOKEN`): API v2 **a pagamento a consumo** (circa 0,005 $ per post letto, nessun piano gratuito per
+  i nuovi account). Si leggono i post recenti di un handle con un **tetto obbligatorio** (`max_posts`, default 100,
+  massimo 500) e la stima del costo viene mostrata prima di eseguire. Nessuno scraping.
+- **TikTok e Instagram: nessuna fonte automatica** (le loro API non sono accessibili a un privato): incolla il testo a mano.
+
+`eafcmeta/config/research.json`: Team Gullit ed Exeed sono **organizzazioni** di esports; handle X, canale YouTube e
+persone sono vuoti da compilare (nessun dato inventato); "Nassada" è da confermare.
+Uso: `python -m eafcmeta.research sources | paste | youtube | x | list | accept ID | reject ID`, oppure le API
+`/api/v1/research/...` (`/docs`).
+
 ## Calibrazione dal meta dei pro (🎯 Calibra)
 I parametri dell'analisi (soglie meta e pesi delle statistiche) si ricavano da ciò che ritengono meta i pro: con almeno
 12 carte che hanno il parere di un creator, “Calibra” mostra quanto il nostro punteggio è allineato (accordo e
