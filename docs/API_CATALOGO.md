@@ -70,3 +70,19 @@ Ferma l'aggiornamento in corso: `{"ok": true}`.
 ## Rotte esistenti da mantenere
 `GET /cards/{id}` (dettaglio completo con analisi), `PUT/DELETE /cards/{id}`, `POST /cards` (aggiunta manuale), `PUT/DELETE /cards/{id}/opinions…`,
 import, calibrazione, regole, ricerca, automatico. `GET /cards` può restare ma l'elenco principale usa `/catalog`.
+
+---
+
+## Aggiunta: «La mia collezione» (scheda SECONDARIA)
+
+La collezione dell'utente **resta**, ma come scheda secondaria: è l'insieme delle carte del catalogo che l'utente segna come sue.
+Il catalogo (tutte le carte del gioco, in ordine di uscita) è sempre la home.
+
+- Tabella `collection(card_id PK → cards.id ON DELETE CASCADE, added_at, note)`.
+- Ogni elemento di `/catalog` (e di `/collection`) ha in più `"in_collection": true|false`.
+- `/catalog` accetta il filtro `in_collection` (`true` / `false`).
+- `GET /collection` — stesso formato e stessi parametri di `GET /catalog` (ordinamenti, filtri, paginazione), limitato alle carte in collezione; in più nella risposta
+  `"stats": {"cards": N, "total_value": somma dei prezzi, "avg_score": media dello score finale, "meta_count": N carte meta, "best": [id delle 3 carte con score più alto]}`.
+- `PUT /collection/{card_id}` — aggiunge (corpo facoltativo `{"note": "…"}`; idempotente) → `{"ok": true, "in_collection": true}`; `404` se la carta non esiste.
+- `DELETE /collection/{card_id}` — toglie (idempotente) → `{"ok": true, "in_collection": false}`.
+- Le carte aggiunte a mano (`POST /cards`) entrano nel catalogo e, se il corpo ha `"in_collection": true`, anche nella collezione.
