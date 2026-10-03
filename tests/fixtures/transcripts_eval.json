@@ -1,0 +1,4054 @@
+{
+ "_nota": "Corpus SINTETICO scritto a mano da chi ha scritto anche l'estrattore (NON sono trascrizioni reali di creator). Etichette: card = id nella lista cards; stance = verita' (non l'output atteso del motore); thin = prova esile (una frase breve: non ci si aspetta confidenza alta); criteria = criteri davvero discussi con polarita'; criteria_ignore = criteri genuinamente misti, non valutati. Split: 'dev' = usato per mettere a punto parole chiave e regole; 'holdout' = scritto dopo aver congelato la prima versione (le correzioni fatte dopo la prima misura sono state generiche, vedi il report); 'holdout2' = terzo lotto scritto dopo quelle correzioni (una sola etichetta, h2-en-04, e' stata corretta dopo la prima misura perche' sbagliata nel merito); 'holdout3' = ultimo lotto, con lessico volutamente vario/non previsto, scritto dopo tutte le correzioni.",
+ "cards": [
+  {
+   "id": 1,
+   "name": "Kylian Mbappé",
+   "version": "TOTY",
+   "position": "ST"
+  },
+  {
+   "id": 2,
+   "name": "Cristiano Ronaldo",
+   "version": "Icon",
+   "position": "ST"
+  },
+  {
+   "id": 3,
+   "name": "Cristiano Ronaldo",
+   "version": "TOTY",
+   "position": "ST"
+  },
+  {
+   "id": 4,
+   "name": "Bernardo Silva",
+   "version": "TOTW",
+   "position": "RW"
+  },
+  {
+   "id": 5,
+   "name": "David Silva",
+   "version": "Icon",
+   "position": "CAM"
+  },
+  {
+   "id": 6,
+   "name": "Erling Haaland",
+   "version": "TOTY",
+   "position": "ST"
+  },
+  {
+   "id": 7,
+   "name": "Lamine Yamal",
+   "version": "TOTW",
+   "position": "RW"
+  },
+  {
+   "id": 8,
+   "name": "Jude Bellingham",
+   "version": "TOTS",
+   "position": "CM"
+  },
+  {
+   "id": 9,
+   "name": "Vinicius Junior",
+   "version": "TOTY",
+   "position": "LW"
+  },
+  {
+   "id": 10,
+   "name": "Rodri",
+   "version": "Hero",
+   "position": "CDM"
+  },
+  {
+   "id": 11,
+   "name": "Virgil van Dijk",
+   "version": "TOTW",
+   "position": "CB"
+  },
+  {
+   "id": 12,
+   "name": "Thibaut Courtois",
+   "version": "TOTW",
+   "position": "GK"
+  },
+  {
+   "id": 13,
+   "name": "Lionel Messi",
+   "version": "Icon",
+   "position": "RW"
+  },
+  {
+   "id": 14,
+   "name": "Phil Foden",
+   "version": "TOTS",
+   "position": "CAM"
+  },
+  {
+   "id": 15,
+   "name": "Harry Kane",
+   "version": "TOTW",
+   "position": "ST"
+  },
+  {
+   "id": 16,
+   "name": "Rafael Leão",
+   "version": "TOTW",
+   "position": "LW"
+  },
+  {
+   "id": 17,
+   "name": "Federico Valverde",
+   "version": "TOTW",
+   "position": "CM"
+  },
+  {
+   "id": 18,
+   "name": "Achraf Hakimi",
+   "version": "TOTW",
+   "position": "RB"
+  },
+  {
+   "id": 19,
+   "name": "Theo Hernandez",
+   "version": "TOTW",
+   "position": "LB"
+  },
+  {
+   "id": 20,
+   "name": "Declan Rice",
+   "version": "TOTW",
+   "position": "CDM"
+  },
+  {
+   "id": 21,
+   "name": "Mohamed Salah",
+   "version": "TOTW",
+   "position": "RW"
+  },
+  {
+   "id": 22,
+   "name": "Antonio Rudiger",
+   "version": "TOTW",
+   "position": "CB"
+  },
+  {
+   "id": 23,
+   "name": "Gianluigi Donnarumma",
+   "version": "TOTW",
+   "position": "GK"
+  },
+  {
+   "id": 24,
+   "name": "Pedri",
+   "version": "TOTS",
+   "position": "CM"
+  }
+ ],
+ "transcripts": [
+  {
+   "id": "it-pos-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "positivo"
+   ],
+   "text": "allora ragazzi oggi vi parlo di mbappe toty che sono riuscito a provare per una decina di partite devo dire che questa carta è assurda lo scatto è devastante e la finalizzazione è top ha un tiro a giro che entra sempre il piede debole a quattro stelle è comunque ottimo secondo me è meta e la consiglio a tutti vale ogni credito voto nove su dieci",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "weak_foot": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-pos-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "misto-prezzo"
+   ],
+   "text": "haaland toty ragazzi che bestia fisico pazzesco ti sposta chiunque e davanti alla porta è freddissimo praticamente non sbaglia mai il problema è il prezzo che è un po alto ma per me vale la pena la prendo sempre nella squadra",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "yes",
+     "criteria": {
+      "physical": 1,
+      "finishing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-pos-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "positivo"
+   ],
+   "text": "vinicius junior toty è una macchina da guerra velocissimo il dribbling ubriaca tutti la skill è da cinque stelle le animazioni sono fluide pazzesco devo dire che non ho niente da dire il miglior esterno che ho provato lo consiglio al cento per cento",
+   "expected": [
+    {
+     "card": 9,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1,
+      "animations": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "skill_moves"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-pos-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "negazione-positiva"
+   ],
+   "text": "courtois totw portiere ragazzi para tutto riflessi incredibili le uscite sono sicure è un muro non so come dire è sicuramente il miglior portiere del gioco compratelo e non ve ne pentirete",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {
+      "goalkeeping": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-pos-05",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "condizione-prezzo"
+   ],
+   "text": "lionel messi icon ragazzi cioè è semplicemente rotto il dribbling è fuori scala controllo palla incredibile il passaggio filtrante arriva sempre e finalizza pure benissimo è un acquisto obbligato se avete i crediti",
+   "expected": [
+    {
+     "card": 13,
+     "stance": "yes",
+     "criteria": {
+      "dribbling": 1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "finishing",
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-pos-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "alright guys so today we are looking at bellingham tots and honestly he is insane the pace is good the dribbling is really smooth and his finishing is clinical i would highly recommend him he is worth every coin ten out of ten",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "dribbling",
+      "animations"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-pos-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "so salah totw review let me tell you this card is broken he is so fast the acceleration is crazy and the weak foot is five stars so he can shoot with both feet the chem style hunter makes him even more deadly honestly a must buy",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "weak_foot": 1,
+      "playstyle": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-pos-03",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "foden tots is such a clean card good passing great dribbling finesse shot is so nice i love him play him in cam he is easily one of the best cams right now",
+   "expected": [
+    {
+     "card": 14,
+     "stance": "yes",
+     "criteria": {
+      "passing": 1,
+      "dribbling": 1,
+      "playstyle": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-pos-04",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "van dijk totw is a beast at the back strong tall fast enough for the meta and his defending is elite no brainer for cb",
+   "expected": [
+    {
+     "card": 11,
+     "stance": "yes",
+     "criteria": {
+      "defending": 1,
+      "pace": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "height",
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-neg-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "alias"
+   ],
+   "text": "cr7 toty ragazzi sinceramente delusione totale è lentissimo non si muove e il fisico non lo aiuta lo scatto è scarso la finalizzazione è buona ma per il prezzo che costa lo skippo non vale i crediti",
+   "expected": [
+    {
+     "card": 3,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "finishing": 1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-neg-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negativo"
+   ],
+   "text": "declan rice totw ragazzi non lo consiglio assolutamente è scarso in fase difensiva si fa saltare sempre il passaggio sbaglia spesso troppo sopravvalutato",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {
+      "defending": -1,
+      "passing": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-neg-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negativo"
+   ],
+   "text": "leao totw allora questo è un giocatore che vi sconsiglio è fragile fisicamente si stanca dopo settanta minuti le animazioni sono legnose e non ha un buon dribbling alla fine è solo hype lasciatelo perdere",
+   "expected": [
+    {
+     "card": 16,
+     "stance": "no",
+     "criteria": {
+      "physical": -1,
+      "stamina": -1,
+      "animations": -1,
+      "dribbling": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-neg-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "riportato"
+   ],
+   "text": "hakimi totw boh ragazzi non mi ha convinto per niente dicono che sia veloce ma io lo trovo lentissimo il tiro è debole e non vale il prezzo",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "finishing": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-neg-05",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negativo"
+   ],
+   "text": "theo hernandez totw ragazzi bocciato è lento in fase difensiva e il prezzo è esagerato prendete altro",
+   "expected": [
+    {
+     "card": 19,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-neg-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "negativo"
+   ],
+   "text": "rudiger totw guys i am not gonna lie this card is trash he is slow the strength is not what you expect and he gets beaten all the time such a waste of coins skip him",
+   "expected": [
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-neg-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "negativo"
+   ],
+   "text": "so kane totw i wanted to like him but honestly he is overrated the finishing is average the pace is awful and his animations are clunky i would not buy him",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "no",
+     "criteria": {
+      "finishing": -1,
+      "pace": -1,
+      "animations": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-neg-03",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "negativo"
+   ],
+   "text": "donnarumma totw is bad guys his reflexes are slow and he lets in everything the diving is stiff avoid this keeper",
+   "expected": [
+    {
+     "card": 23,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-multi-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "multi",
+    "non-citato"
+   ],
+   "text": "allora ragazzi eccoci con la review del totw di questa settimana partiamo da bernardo silva che è un giocatore pazzesco il dribbling è fuori scala e i passaggi sono precisi lo consiglio poi passiamo a haaland che invece è deludente è lento e non segna niente da evitare e infine kane che sinceramente non ho provato quindi non vi dico niente",
+   "expected": [
+    {
+     "card": 4,
+     "stance": "yes",
+     "criteria": {
+      "dribbling": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "passing"
+     ],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-multi-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "multi",
+    "confronto"
+   ],
+   "text": "mbappe è meglio di haaland sotto ogni punto di vista mbappe è veloce e letale haaland è lento e macchinoso io prendo mbappe e voi",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-multi-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "confronto-solo"
+   ],
+   "text": "il mio centrocampista preferito resta bellingham che è molto più forte di valverde e ha un dribbling migliore di quello di pedri",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-multi-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lista"
+   ],
+   "text": "oggi vi porto tre centrocampisti valverde pedri e bellingham sono tutti ottimi",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-multi-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "multi"
+   ],
+   "text": "welcome back guys todays pack has some totw cards first salah he is fast and finishes everything solid card then rudiger honestly i do not like him he is slow and weak so skip and last one courtois well courtois is a wall best keeper hands down",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {
+      "goalkeeping": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-multi-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "multi",
+    "confronto"
+   ],
+   "text": "salah is better than mbappe in my opinion mbappe is overrated at that price",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {
+      "price": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-negaz-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negazione",
+    "misto"
+   ],
+   "text": "yamal totw non è male come carta non è veloce come pensavo ma il dribbling è buono non lo comprerei a quel prezzo",
+   "expected": [
+    {
+     "card": 7,
+     "stance": "maybe",
+     "criteria": {
+      "pace": -1,
+      "dribbling": 1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-negaz-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negazione",
+    "doppia-negazione"
+   ],
+   "text": "kane totw non è lento anzi è piuttosto rapido non è nemmeno scarso in finalizzazione non c è niente da dire è un attaccante completo",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-negaz-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negazione",
+    "ambiguo"
+   ],
+   "text": "non è che non sia forte declan rice però non è nemmeno un fenomeno insomma dipende",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-negaz-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "negazione"
+   ],
+   "text": "pedri tots is not slow at all in fact he is pretty quick and his passing is not bad either honestly not a bad card",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "passing": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-negaz-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "negazione"
+   ],
+   "text": "i dont think hakimi is fast anymore he used to be insane but now he feels slow and the price is way too high i wouldnt get him",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-negaz-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "negazione-distanza"
+   ],
+   "text": "non penso che rudiger totw sia lento",
+   "expected": [
+    {
+     "card": 22,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-ironia-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "ironia"
+   ],
+   "text": "bravissima ea complimenti ancora una volta hanno rotto haaland toty lo hanno fatto lentissimo bellissima carta eh grazie ea",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "en-ironia-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "ironia"
+   ],
+   "text": "oh great another totw card thanks ea salah is so fast he can barely move wow what a surprise i just love paying for slow wingers",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "pace"
+     ],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "it-ironia-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "ironia"
+   ],
+   "text": "ah certo mbappe toty è fortissimo ma figurati ho perso quattro partite di fila con lui uno scarso totale",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "it-ironia-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "ironia"
+   ],
+   "text": "che bella carta eh mbappe toty lento come una tartaruga grazie ea",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "it-nulla-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "pack"
+   ],
+   "text": "ragazzi apriamo questo pack da cinquantamila crediti speriamo di trovare qualcosa di buono ecco abbiamo mbappe toty e anche haaland wow che pack incredibile non ci credo ragazzi grazie al pack",
+   "expected": []
+  },
+  {
+   "id": "it-nulla-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "notizie"
+   ],
+   "text": "oggi è uscito il nuovo aggiornamento ea ha cambiato il sistema di valutazione delle carte e hanno annunciato che il totw di questa settimana includerà haaland e mbappe non so ancora cosa pensare",
+   "expected": []
+  },
+  {
+   "id": "en-nulla-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "nessun-parere",
+    "pack"
+   ],
+   "text": "today we are opening the totw pack i pulled kane and rudiger and i have no idea who to put in my team the packs this year are really good",
+   "expected": []
+  },
+  {
+   "id": "it-nulla-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "dati"
+   ],
+   "text": "mbappe toty ha novantotto di scatto novantasei di finalizzazione e cinque stelle di skill il body type è lean e il prezzo attuale è di centomila crediti",
+   "expected": []
+  },
+  {
+   "id": "en-nulla-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "nessun-parere",
+    "sbc"
+   ],
+   "text": "the sbc of the day requires a rare gold team with at least eighty five chemistry the price is around twelve thousand coins for the sbc not sure if it is worth it yet",
+   "expected": []
+  },
+  {
+   "id": "it-promo-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "promo"
+   ],
+   "text": "iscrivetevi al canale e attivate la campanella usate il codice sconto rodri per avere il dieci percento di sconto sulle monete è una offerta fortissima poi parliamo di haaland toty che sinceramente è scarso e lento lo sconsiglio",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-promo-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "promo"
+   ],
+   "text": "if you like the video smash that like button and subscribe use my code ronaldo for ten percent off at the coin shop best prices in the market super fast delivery",
+   "expected": []
+  },
+  {
+   "id": "it-promo-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "promo"
+   ],
+   "text": "questo video è sponsorizzato da un sito di monete il link in descrizione è sicurissimo e velocissimo mbappe toty è la carta che stavo aspettando",
+   "expected": []
+  },
+  {
+   "id": "it-confr-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "confronto-solo"
+   ],
+   "text": "invece di haaland vi consiglio kane che costa meno ed è altrettanto forte",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-confr-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "confronto-solo"
+   ],
+   "text": "pedri is the best cm right now way better than rodri and valverde",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-confr-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "confronto",
+    "multi"
+   ],
+   "text": "per la difesa mi trovo meglio con van dijk che con rudiger rudiger è più lento e meno solido",
+   "expected": [
+    {
+     "card": 11,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-asr-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "halland toty ragazzi spacca scatto devastante e finalizzazione top lo consiglio a tutti è rotto",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-asr-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "mbape toty allora questo mbape è veloce ma veloce veloce la finalizzazione è top il piede debole è scarso comunque lo prenderei",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "weak_foot": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-asr-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "van dyke is unreal the best cb in the game strong fast and great at tackling",
+   "expected": [
+    {
+     "card": 11,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-asr-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "e vinicio junior ragazzi ha uno scatto folle il dribbling è incredibile e la skill è da cinque stelle assurdo",
+   "expected": [
+    {
+     "card": 9,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-misto-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "misto",
+    "dipende"
+   ],
+   "text": "kane totw ha un tiro devastante ma è lentissimo e il fisico è fragile in compenso il passaggio è ottimo il prezzo è giusto direi che dipende dal ruolo se lo usate come punta di appoggio va bene",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "maybe",
+     "criteria": {
+      "finishing": 1,
+      "pace": -1,
+      "physical": -1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-misto-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "misto",
+    "dipende"
+   ],
+   "text": "valverde totw is strong and his stamina is great but he is slow and not good in tight spaces it depends if you play counter attacks",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "maybe",
+     "criteria": {
+      "stamina": 1,
+      "pace": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-misto-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "misto"
+   ],
+   "text": "foden tots è bellissimo da vedere il dribbling è top ma sul campo è inutile scatto basso e finalizzazione pessima",
+   "expected": [
+    {
+     "card": 14,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": false,
+     "criteria_ignore": [
+      "dribbling",
+      "pace",
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-dipende-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "dipende"
+   ],
+   "text": "salah totw dipende da come giochi se giocate di contropiede è un missile altrimenti non vale i crediti per me è una carta di nicchia",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": false,
+     "criteria_ignore": [
+      "price",
+      "pace"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-dipende-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "dipende"
+   ],
+   "text": "hakimi totw it depends on your playstyle he is fast but if you build from the back he is not worth it",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": false,
+     "criteria_ignore": [
+      "pace",
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-adv-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lista",
+    "negazione"
+   ],
+   "text": "mbappe haaland kane salah non sono lenti e fanno tanti gol",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-adv-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "ipotesi"
+   ],
+   "text": "mbappe toty sarebbe perfetto se fosse un po più veloce e avesse più fisico",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "pace",
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-adv-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "riportato"
+   ],
+   "text": "tutti dicono che rice totw è fortissimo io sinceramente non lo trovo cosi speciale è nella media",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-adv-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "soggetto-diverso"
+   ],
+   "text": "mbappe toty è fortissimo ma il gioco quest anno è davvero lento e pesante ea deve sistemare i server",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-adv-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "riportato"
+   ],
+   "text": "people say salah totw is amazing but i dont see it he is average at best",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-adv-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "domanda"
+   ],
+   "text": "is hakimi totw worth it let me know in the comments i think he is fast but i have not tried him",
+   "expected": []
+  },
+  {
+   "id": "en-adv-03",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "promo",
+    "positivo"
+   ],
+   "text": "kane totw is a monster by the way use code kane for ten percent off",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-01",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo",
+    "outro-promo"
+   ],
+   "text": "ciao ragazzi e benvenuti in un nuovo video oggi parliamo di mbappe toty una delle carte più attese di questa stagione l ho provata per circa venti partite in rivals quindi posso dirvi come si comporta davvero allora partiamo dallo scatto lo scatto è devastante cioè davvero non ho mai visto una carta così veloce in questo gioco ti salta il terzino in uno contro uno praticamente sempre poi la finalizzazione è top ha un tiro a giro che entra quasi sempre e dentro l area è freddissimo il piede debole è a quattro stelle quindi riesce a tirare bene anche di sinistro per quanto riguarda il dribbling è ottimo agile e il controllo palla è fluido le animazioni sono molto reattive ragazzi non c è paragone con le altre carte della stessa fascia il fisico non è il massimo ovviamente ma per il tipo di carta che è non è un problema dal punto di vista del prezzo costa tanto lo so ma secondo me vale ogni credito perché ti cambia la squadra quindi in conclusione la consiglio assolutamente è meta e per me è un acquisto obbligato voto nove su dieci ci vediamo al prossimo video lasciate un like e iscrivetevi al canale",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "weak_foot": 1,
+      "dribbling": 1,
+      "animations": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-02",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "negativo"
+   ],
+   "text": "allora ragazzi eccoci qui con hakimi totw che tutti mi chiedevano di provare io ero molto curioso perché sulla carta sembrava forte e invece devo dire che sono rimasto deluso partiamo dallo scatto che è la cosa più importante per un terzino ecco lo scatto non è affatto quello che mi aspettavo è lento ti recuperano tutti i corridori e sugli esterni non tiene il passo poi in fase difensiva è scarso si fa saltare sempre dagli esterni avversari e il posizionamento è sbagliato la finalizzazione è debole il tiro non entra mai e i cross sono imprecisi non so perché ma ha anche delle animazioni legnose si gira male e sembra pesante in quanto al prezzo è esagerato per quello che offre io non lo consiglio assolutamente è sopravvalutato se volete un terzino prendete altro lo skip senza pensarci ci vediamo alla prossima",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1,
+      "finishing": -1,
+      "animations": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "passing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-long-01",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "positivo"
+   ],
+   "text": "hey guys welcome back to the channel today we are testing bellingham tots and i have to say this card is one of the best i have ever used in the middle of the park so let us start with the pace he is really quick for a cm the acceleration is great and the sprint speed is pretty good so he gets away from defenders easily the dribbling is amazing very smooth and his ball control is elite then the passing is also really good the through balls are precise and the vision is crazy his finishing is clinical he scores from outside the box all the time the weak foot is four stars so he is comfortable with both feet the body type is great too he is strong and he wins every duel honestly i cannot find any weakness the price is a bit high but he is worth every coin i would highly recommend him for any team nine out of ten thanks for watching",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1,
+      "passing": 1,
+      "finishing": 1,
+      "weak_foot": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical",
+      "animations"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-long-02",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "negativo"
+   ],
+   "text": "what is going on guys today i want to talk about rudiger totw and honestly this review is going to be pretty negative because i was really disappointed with this card first of all he is slow the pace is bad and he gets beaten by every striker that has a bit of speed second the defending is not good at all he is out of position all the time and the tackling is poor he is also weak physically which is crazy for a center back the animations are stiff he turns like a truck and the price is way too high for what you get i would not buy him i would avoid this card it is a waste of coins there are much better options at this price so skip him see you in the next video",
+   "expected": [
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1,
+      "physical": -1,
+      "animations": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-03",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "multi"
+   ],
+   "text": "ragazzi bentornati sul canale oggi facciamo la review del totw della settimana ci sono tantissime carte quindi cerco di essere veloce partiamo da bernardo silva allora questa carta è pazzesca il dribbling è fuori scala il controllo palla è incredibile e i passaggi sono precisi lo consiglio a tutti vale il prezzo poi passiamo a haaland che invece è deludente è lento non ha animazioni fluide il fisico è buono ma la finalizzazione è scarsa non segna niente secondo me è da evitare non vale i crediti andiamo avanti con courtois che è un portiere incredibile para tutto i riflessi sono pazzeschi e le uscite sono sicure è un muro vi consiglio di prenderlo ultimo kane ragazzi kane non l ho provato quindi non posso dirvi niente di preciso vedremo la settimana prossima grazie a tutti",
+   "expected": [
+    {
+     "card": 4,
+     "stance": "yes",
+     "criteria": {
+      "dribbling": 1,
+      "passing": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "animations": -1,
+      "finishing": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    },
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {
+      "goalkeeping": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-04",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo",
+    "sponsor"
+   ],
+   "text": "prima di iniziare questo video è sponsorizzato da un sito di monete sicuro usate il codice sconto fortissimo per avere il dieci percento di sconto il link è in descrizione e adesso iniziamo con la review di vinicius junior toty ragazzi questa carta è una bomba lo scatto è fulmineo il dribbling è devastante e la skill è da cinque stelle quindi puoi fare quello che vuoi le animazioni sono fluide e la carta risponde benissimo ai comandi la finalizzazione è ottima il piede debole è buono il prezzo è alto ma per me vale la pena lo consiglio assolutamente è il miglior esterno sinistro del gioco iscrivetevi al canale e lasciate un like grazie ragazzi",
+   "expected": [
+    {
+     "card": 9,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1,
+      "animations": 1,
+      "finishing": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "skill_moves",
+      "weak_foot"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-long-03",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "multi"
+   ],
+   "text": "welcome back everyone this is the totw review for this week let us jump right in first we have salah and he is a monster the pace is insane the finishing is clinical and the dribbling is smooth i highly recommend him he is worth the price next we have hakimi and honestly i am not impressed he is slow for a right back the defending is average and the price is too high i would skip him last one is courtois he is an elite keeper the reflexes are amazing the diving is great and he is a wall in goal you should definitely buy him that is it for this week",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "dribbling",
+      "animations"
+     ],
+     "tag": ""
+    },
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {
+      "goalkeeping": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-05",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "nessun-parere",
+    "pack"
+   ],
+   "text": "ragazzi oggi pack opening grandissimo abbiamo cinque pack da centomila crediti l uno speriamo bene apriamo il primo ok ragazzi ecco una carta oro niente di che passiamo al secondo wow ragazzi guardate qui abbiamo mbappe toty che pack incredibile non ci credo ragazzi è pazzesco passiamo al terzo e anche qui abbiamo haaland toty siamo in un momento pazzesco ragazzi che fortuna incredibile ok quarto pack ecco una carta rara niente di speciale ultimo pack e anche qui una carta oro ragazzi sono quasi senza parole è stato un pack opening fantastico grazie a tutti e ci vediamo al prossimo video",
+   "expected": []
+  },
+  {
+   "id": "it-long-06",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "misto",
+    "dipende"
+   ],
+   "text": "allora ragazzi oggi vi parlo di kane totw è una carta particolare e vi spiego perché partiamo dalla finalizzazione che è devastante il tiro è potente e preciso e dentro l area è letale però lo scatto è lentissimo ti recuperano tutti e il fisico è fragile si fa spostare facilmente per fortuna il passaggio è ottimo ha una visione di gioco molto buona e i lanci sono precisi quindi dipende tanto da come giocate se giocate con una punta di movimento kane non vi piacerà se invece giocate palla a terra con una punta di appoggio può andare bene il prezzo è giusto direi che dipende dal vostro stile",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "maybe",
+     "criteria": {
+      "finishing": 1,
+      "pace": -1,
+      "physical": -1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-07",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "negativo"
+   ],
+   "text": "ragazzi sono qui con donnarumma totw e devo dire che sono rimasto molto deluso come portiere non para niente i riflessi sono lenti si tuffa sempre tardi e le uscite sono un disastro prende gol da tutte le parti ragazzi è un colabrodo la distribuzione è scarsa i rinvii sono imprecisi non lo consiglio per niente è sopravvalutato non vale il prezzo lo skippo assolutamente prendete courtois che è molto meglio grazie a tutti",
+   "expected": [
+    {
+     "card": 23,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "en-long-04",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "positivo"
+   ],
+   "text": "alright guys this is pedri tots and i have been using him for a week now let me tell you he is incredible first the dribbling is smooth the agility is great and he turns on a dime then the passing is elite the short passing is perfect and the long passes are accurate his vision is insane he has the tiki taka playstyle which makes him even better in tight spaces the finishing is not amazing but it is decent for a cm he is not fast but he is not slow either the stamina is great he runs all game the price is fair and honestly he is a must buy for any team i love this card",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "dribbling": 1,
+      "passing": 1,
+      "playstyle": 1,
+      "stamina": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "finishing",
+      "pace",
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-08",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "confronto",
+    "multi"
+   ],
+   "text": "sfida tra due attaccanti mbappe contro haaland io li ho provati tutti e due per un mese e vi dico subito che mbappe è molto meglio di haaland mbappe è veloce letale ha un dribbling ottimo e una finalizzazione top haaland invece è lento macchinoso non ha animazioni fluide e anche se il fisico è buono non basta il prezzo di mbappe è alto ma vale ogni credito mentre haaland è sopravvalutato io prendo mbappe senza dubbio voi cosa ne pensate scrivetemi nei commenti",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1,
+      "finishing": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "animations": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "it-long-09",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "ironia"
+   ],
+   "text": "ragazzi vi racconto una cosa mbappe toty ah certo fortissimo come no ho perso sette partite di fila con lui sul serio bravissima ea complimenti per questa carta lentissima che non para niente cioè non para ovviamente è un attaccante ma sembra un portiere scarso che bella carta eh grazie ea per l ennesima delusione ho speso trecentomila crediti per questa meraviglia ahah che genio",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "en-long-05",
+   "split": "dev",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "ironia"
+   ],
+   "text": "okay so guys i just got salah totw and wow thanks ea what a surprise he is so fast he can barely get past the defender oh great another amazing card love how it takes five seconds to turn the finishing is incredible if you like missing open goals yeah right best card ever sure sure i totally recommend wasting your coins on him slow clap",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "pace",
+      "finishing"
+     ],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "it-long-10",
+   "split": "dev",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "riportato",
+    "negativo"
+   ],
+   "text": "tutti dicono che rice totw sia fortissimo la community lo ama i pro dicono che è meta e che è un must ma io dopo trenta partite devo dire che non sono d accordo è lento in fase di recupero il passaggio è impreciso sbaglia troppo e in difesa si fa saltare facilmente non vale il prezzo secondo me è sopravvalutato lo sconsiglio",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {
+      "defending": -1,
+      "passing": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "pace"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-mix-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "anglicismi"
+   ],
+   "text": "ragazzi allora oggi ho provato yamal totw e vi dico subito che è una carta meta il pace è assurdo ha una acceleration pazzesca il dribbling è fluidissimo e con il chem style shadow diventa ancora più forte la weak foot è a quattro stelle quindi tira bene anche di sinistro lo consiglio è un must do worth every coin",
+   "expected": [
+    {
+     "card": 7,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "weak_foot": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "dribbling",
+      "animations",
+      "playstyle"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-mix-02",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "anglicismi"
+   ],
+   "text": "so guys oggi review di leao totw e sinceramente non mi convince lo scatto è buono ma il resto è mediocre il tiro è debole e la skill non basta il prezzo è troppo alto lo skippo",
+   "expected": [
+    {
+     "card": 16,
+     "stance": "no",
+     "criteria": {
+      "pace": 1,
+      "finishing": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "skill_moves",
+      "dribbling"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-punct-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "punteggiatura"
+   ],
+   "text": "Provato Vinicius Junior TOTY per 15 partite. Verdetto: da evitare. Scatto ottimo, ma finalizzazione scarsa e animazioni legnose. Non vale i crediti.",
+   "expected": [
+    {
+     "card": 9,
+     "stance": "no",
+     "criteria": {
+      "pace": 1,
+      "finishing": -1,
+      "animations": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-punct-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "positivo",
+    "punteggiatura"
+   ],
+   "text": "Bellingham TOTS is a menace. Pace? Elite. Dribbling? Silky. Finishing? Clinical. 10/10, easy S tier.",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1,
+      "finishing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-ts-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "timestamp",
+    "multi"
+   ],
+   "text": "0:00 ciao a tutti 0:04 oggi recensiamo 0:08 hakimi totw 0:12 che è una carta 0:15 molto deludente 0:19 lenta e fragile 0:23 non la consiglio 0:40 passiamo ad altro 0:44 vediamo salah che invece 0:47 è una bomba veloce e letale",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "physical": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-neg-dist-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negazione-distanza"
+   ],
+   "text": "non credo che dopo tanti test si possa dire che bellingham totw sia scarso anzi è un giocatore completo",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-meh-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "negazione",
+    "dipende"
+   ],
+   "text": "kane totw is not bad he is not great either just average",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-sponsor-mid-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "promo",
+    "positivo"
+   ],
+   "text": "mbappe toty è forte lo scatto è devastante e la finalizzazione è top comunque prima di continuare vi ricordo che il video è sponsorizzato usate il codice fortissimo per lo sconto sulle monete e adesso torniamo alla carta il dribbling è ottimo e le animazioni sono fluide lo consiglio",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "dribbling": 1,
+      "animations": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-quote-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "riportato",
+    "positivo"
+   ],
+   "text": "ho letto che salah totw è lentissimo ma io l ho provato e vi dico che è velocissimo lo scatto è top lo consiglio",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-cmp-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "confronto",
+    "multi"
+   ],
+   "text": "tra rodri e pedri preferisco pedri pedri è molto più creativo nel passaggio rodri è più statico",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 10,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-hype-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "negazione",
+    "dipende"
+   ],
+   "text": "the hype around yamal totw is crazy but honestly he is just decent not a game changer",
+   "expected": [
+    {
+     "card": 7,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-asr-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "m bappe toty è fortissimo lo scatto è devastante lo consiglio",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-asr-02",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "asr-nome"
+   ],
+   "text": "erling aaland toty è un mostro fisico potente e un finalizzatore clinico lo consiglio assolutamente",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "yes",
+     "criteria": {
+      "physical": 1,
+      "finishing": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-gk-neg-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negativo"
+   ],
+   "text": "courtois totw sinceramente non mi è piaciuto i riflessi non sono granché e le uscite sono rischiose lo trovo sopravvalutato",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-gk-pos-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "donnarumma totw is a wall guys unreal reflexes elite diving best keeper i have used no brainer",
+   "expected": [
+    {
+     "card": 23,
+     "stance": "yes",
+     "criteria": {
+      "goalkeeping": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-ps-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "playstyle"
+   ],
+   "text": "valverde totw con rapid più è un missile e con il chem style engine fa tutto il campo ottimo lo consiglio",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "playstyle",
+      "stamina"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-body-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "misto",
+    "body-type"
+   ],
+   "text": "foden tots ha un body type unique che lo rende fluidissimo le animazioni sono top ma l altezza è un problema è basso e si fa spostare",
+   "expected": [
+    {
+     "card": 14,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "body_type",
+      "animations",
+      "height",
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-skill-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "kane totw has five star skill moves which is crazy for a striker and the weak foot is four stars the finishing is elite",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {
+      "skill_moves": 1,
+      "weak_foot": 1,
+      "finishing": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-irony-02",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "ironia",
+    "prezzo"
+   ],
+   "text": "ah che bello il prezzo di rice totw duecentomila crediti una cosa normalissima eh figuriamoci",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "h-en-cond-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "ipotesi"
+   ],
+   "text": "if hakimi were faster he would be perfect but right now he is just slow and overpriced",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-sbc-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "sbc",
+    "nessun-parere"
+   ],
+   "text": "questa sbc ti regala rice totw non conviene farla costa troppo per quello che ottieni",
+   "expected": []
+  },
+  {
+   "id": "h-en-tier-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "tier-list",
+    "multi"
+   ],
+   "text": "tier list time salah s tier kane tier a hakimi d tier rudiger c tier",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-cm-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "nessun-parere"
+   ],
+   "text": "il cm di quest anno è top ma non parlo di bellingham",
+   "expected": []
+  },
+  {
+   "id": "h-it-score-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "voto"
+   ],
+   "text": "pedri tots rating 8 su 10 passaggi top dribbling top scatto basso ma non importa",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "passing": 1,
+      "dribbling": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "pace"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-intens-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "intensificatori"
+   ],
+   "text": "troppo lento troppo fragile troppo caro leao totw non fa per me",
+   "expected": [
+    {
+     "card": 16,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "physical": -1,
+      "price": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-neg-02",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "negativo"
+   ],
+   "text": "i dont recommend rice tots at all the passing is poor and defensively he is weak",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {
+      "passing": -1,
+      "defending": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-facts-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "sbc"
+   ],
+   "text": "oggi vi mostro come si fanno le sbc per ottenere kane totw è facile basta seguire i passaggi",
+   "expected": []
+  },
+  {
+   "id": "h-en-promo-02",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "promo",
+    "misto"
+   ],
+   "text": "check the link in the description for cheap coins also mbappe toty is insane but overpriced",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-nulla-04",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "tattica"
+   ],
+   "text": "parliamo un attimo di tattica il pressing alto funziona bene con tre attaccanti haaland e mbappe e kane possono giocare insieme se hai le giuste catene sulle fasce e il centrocampo deve coprire gli spazi",
+   "expected": []
+  },
+  {
+   "id": "h-en-nulla-03",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "nessun-parere",
+    "news"
+   ],
+   "text": "ea announced the next promo will feature salah and hakimi and the leaks say the prices will drop before the weekend",
+   "expected": []
+  },
+  {
+   "id": "h-it-pos-02",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "positivo"
+   ],
+   "text": "valverde totw ragazzi che motorino corre tutta la partita non si stanca mai il passaggio è preciso e in difesa recupera un sacco di palloni il fisico è robusto lo consiglio a tutti",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "yes",
+     "criteria": {
+      "stamina": 1,
+      "defending": 1,
+      "physical": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "passing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-neg-03",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "negativo"
+   ],
+   "text": "theo hernandez totw is such a letdown he looks slow he cannot defend the passing is inaccurate and the price is a joke skip him honestly",
+   "expected": [
+    {
+     "card": 19,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "passing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-neg-06",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "alias"
+   ],
+   "text": "ronaldo icon ragazzi non so che dire è lentissimo i movimenti sono legnosi il tiro è debole mi ha deluso non lo consiglio per niente",
+   "expected": [
+    {
+     "card": 2,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "animations": -1,
+      "finishing": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-dup-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "sottotitoli-ripetuti"
+   ],
+   "text": "haaland toty è lentissimo haaland toty è lentissimo è lentissimo e fragile non lo consiglio è lentissimo e fragile non lo consiglio",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "physical": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-ambig-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "ambiguo"
+   ],
+   "text": "silva è fortissimo il dribbling è top lo consiglio",
+   "expected": [
+    {
+     "card": 4,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 5,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-ambig-02",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "ambiguo",
+    "nome-completo"
+   ],
+   "text": "bernardo silva è fortissimo il dribbling è top lo consiglio silva è davvero un mostro",
+   "expected": [
+    {
+     "card": 4,
+     "stance": "yes",
+     "criteria": {
+      "dribbling": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-ronaldo-01",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "ambiguo",
+    "versione"
+   ],
+   "text": "ronaldo icon is the best striker in the game the finishing is clinical and the strength is great i would buy him",
+   "expected": [
+    {
+     "card": 2,
+     "stance": "yes",
+     "criteria": {
+      "finishing": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-long-01",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo",
+    "promo"
+   ],
+   "text": "quindi ciao ragazzi e benvenuti sul canale prima di iniziare iscrivetevi e attivate la campanella oggi vi parlo di mbappe toty che ho usato per due settimane lo scatto è devastante non ho mai visto una carta così veloce dopo la patch il campionato online è diventato davvero pesante e lento comunque la finalizzazione è top e il tiro a giro entra sempre quindi il dribbling è ottimo e il controllo palla è fluido comunque le animazioni sono molto reattive e la carta risponde subito ai comandi il piede debole è a quattro stelle quindi tira bene anche di sinistro allora mi scrivono in tanti sui social chiedendomi consigli sulla squadra quindi il fisico non è il massimo ma nel complesso non è un problema ieri ho giocato con degli amici su discord e ci siamo divertiti un sacco il chem style hunter lo rende ancora più letale in area ecco ho aperto un pack ieri sera e ho trovato una carta oro niente di che dopo trenta partite posso dirvi che è una delle carte più forti del gioco il prezzo è alto ma per me vale ogni credito la consiglio assolutamente è meta e per me è un acquisto obbligato cioè comunque il gioco quest anno ha dei problemi con i server e ea deve sistemare tutto voto nove su dieci cioè grazie a tutti lasciate un like e ci vediamo al prossimo video",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "dribbling": 1,
+      "animations": 1,
+      "weak_foot": 1,
+      "playstyle": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-long-02",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "negativo",
+    "promo"
+   ],
+   "text": "quindi hey guys welcome back to the channel today we are reviewing rudiger totw and i have used him for about twenty games first of all he is slow the pace is bad and strikers just run past him cioè after the patch the online mode feels so slow and heavy the defending is not good at all he is out of position all the time insomma just a reminder that totw drops every wednesday so keep an eye on prices he is weak physically which is crazy for a center back a lot of you are asking me about the squad on social media the animations are stiff and he turns like a truck the price is way too high for what you get insomma honestly this card is overrated diciamo i would not buy him i would avoid this card it is a waste of coins and there are much better options ragazzi so that is it thanks for watching smash the like button and subscribe",
+   "expected": [
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "defending": -1,
+      "physical": -1,
+      "animations": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-long-03",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "misto",
+    "dipende"
+   ],
+   "text": "tipo allora ragazzi oggi facciamo una review diversa di kane totw perché è una carta che divide la finalizzazione è devastante e il tiro è potente e preciso però lo scatto è lentissimo e ti recuperano tutti il fisico è fragile e si fa spostare facilmente il passaggio è ottimo e la visione di gioco è molto buona praticamente intanto vi ricordo che il totw esce ogni mercoledì quindi tenete d occhio i prezzi dipende tanto da come giocate allora ieri ho giocato con degli amici su discord e ci siamo divertiti un sacco tipo se giocate con una punta di movimento non vi piacerà se invece giocate palla a terra con una punta di appoggio può andare bene dipende dal vostro stile di gioco allora ho aperto un pack ieri sera e ho trovato una carta oro niente di che fatemi sapere nei commenti cosa ne pensate e alla prossima",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "maybe",
+     "criteria": {
+      "finishing": 1,
+      "pace": -1,
+      "physical": -1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-it-long-04",
+   "split": "holdout",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo"
+   ],
+   "text": "quindi ciao a tutti oggi vi porto la mia esperienza con pedri tots il centrocampista che tutti mi consigliavano il passaggio è elite sia corto che lungo e la visione è pazzesca allora comunque il gioco quest anno ha dei problemi con i server e ea deve sistemare tutto praticamente il dribbling è ottimo agile e il controllo palla è incredibile mi scrivono in tanti sui social chiedendomi consigli sulla squadra ecco la resistenza è ottima corre tutta la partita praticamente ho aperto un pack ieri sera e ho trovato una carta oro niente di che diciamo lo scatto non è il massimo ma non è lento allora la finalizzazione è nella media quindi ha il playstyle tiki taka che lo rende perfetto negli spazi stretti quindi dopo la patch il campionato online è diventato davvero pesante e lento la consiglio a tutti vale il prezzo cioè è un acquisto top e non ve ne pentirete intanto vi ricordo che il totw esce ogni mercoledì quindi tenete d occhio i prezzi diciamo grazie ragazzi ci vediamo alla prossima",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "passing": 1,
+      "dribbling": 1,
+      "stamina": 1,
+      "playstyle": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "pace",
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h-en-long-05",
+   "split": "holdout",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "misto",
+    "dipende"
+   ],
+   "text": "welcome back everyone today we test hakimi totw at right back and i have a lot of mixed feelings cioè the pace is incredible he is so fast that nobody can catch him ragazzi i opened a pack yesterday and got a boring gold card nothing special tipo the stamina is great he runs the whole game the defending is poor he gets beaten in one on one situations the finishing is weak and the crossing is inaccurate diciamo the price is too high for a right back diciamo it depends on your playstyle allora anyway the servers this week have been terrible and ea needs to fix them ragazzi if you like counter attacks he is great otherwise not worth it a lot of you are asking me about the squad on social media see you in the next video thanks for watching",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "maybe",
+     "criteria": {
+      "pace": 1,
+      "stamina": 1,
+      "defending": -1,
+      "finishing": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-01",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "colloquiale"
+   ],
+   "text": "ragazzi vi giuro questo leao è una roba assurda cioè lo scatto è da urlo fa gol da tutte le parti non lo cambio più la prendete subito",
+   "expected": [
+    {
+     "card": 16,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-02",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "colloquiale"
+   ],
+   "text": "sinceramente courtois totw mi ha fatto cagare scusate il termine ho preso un gol dopo trenta secondi è una papera vivente",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-01",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "positivo",
+    "slang"
+   ],
+   "text": "bro this yamal totw is cracked frfr the pace is nuts the dribbling is filthy go get him",
+   "expected": [
+    {
+     "card": 7,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "dribbling"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-02",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "negativo",
+    "slang"
+   ],
+   "text": "honestly rice totw is mid at best i would not spend my coins on him",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-03",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "negazione",
+    "doppia-negazione"
+   ],
+   "text": "non è che bellingham totw sia lento però non è nemmeno questo fulmine diciamo che è nella media",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-04",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "multi",
+    "confronto"
+   ],
+   "text": "salah totw è fortissimo ma io preferisco mbappe toty che è ancora più forte",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-05",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "patch"
+   ],
+   "text": "ea ha rovinato mbappe toty con questa patch ora lo scatto è lentissimo e non si muove più",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-06",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "classifica"
+   ],
+   "text": "classifica dei migliori attaccanti del totw al primo posto kane al secondo haaland al terzo mbappe",
+   "expected": []
+  },
+  {
+   "id": "h2-en-04",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "dipende"
+   ],
+   "text": "he is fast but not that fast hakimi is okay nothing crazy",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "etichetta-corretta-dopo-la-prima-misura"
+    }
+   ]
+  },
+  {
+   "id": "h2-it-07",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "non-provata"
+   ],
+   "text": "forse rudiger totw potrebbe essere una buona carta ma non lo so non l ho ancora provata",
+   "expected": []
+  },
+  {
+   "id": "h2-en-05",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "positivo"
+   ],
+   "text": "mbappe toty feels amazing to play with the first touch is crisp and every shot goes in highly recommended",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "animations": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "playstyle"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-08",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "misto",
+    "verdetto-finale"
+   ],
+   "text": "il portiere courtois totw è ottimo però per il prezzo che costa onestamente non lo consiglio perché ci sono alternative più economiche che parano quasi uguale",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": 1,
+      "price": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-09",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "multi",
+    "punteggiatura"
+   ],
+   "text": "Allora, Mbappé. Scatto devastante, finalizzazione top, dribbling ottimo. Lo consiglio! Poi Haaland: lento, fragile, evitatelo. Infine Kane, sinceramente non l'ho provato.",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "dribbling": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "physical": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-10",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "punteggiatura",
+    "nome-sconosciuto"
+   ],
+   "text": "Mbappé è fortissimo. Tevez invece è lentissimo. Maradona era un fenomeno.",
+   "expected": [
+    {
+     "card": 1,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-06",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "multi",
+    "punteggiatura"
+   ],
+   "text": "Salah is a beast. Hakimi is slow. Rudiger is overrated.",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-11",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "dati"
+   ],
+   "text": "rice totw costa duecentomila crediti",
+   "expected": []
+  },
+  {
+   "id": "h2-it-12",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "dati"
+   ],
+   "text": "mbappe è alto un metro e settantotto e ha un body type lean",
+   "expected": []
+  },
+  {
+   "id": "h2-it-13",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "stelle"
+   ],
+   "text": "haaland toty ha piede debole tre stelle e skill due stelle quindi non è proprio adatto al dribbling",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {
+      "skill_moves": -1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "weak_foot",
+      "dribbling"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-07",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "positivo",
+    "voto"
+   ],
+   "text": "kane totw eight out of ten would use again",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-14",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "negativo"
+   ],
+   "text": "non dategli nemmeno una possibilità hakimi totw è inguardabile",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-15",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "ironia"
+   ],
+   "text": "bravo ea ancora una volta complimenti haaland toty sembra un fenomeno invece non si muove",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "h2-it-16",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "domanda-risposta"
+   ],
+   "text": "e quindi secondo voi vinicius toty vale i crediti io dico di sì perché ha uno scatto assurdo e un dribbling top",
+   "expected": [
+    {
+     "card": 9,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "dribbling": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-long-05",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo",
+    "promo"
+   ],
+   "text": "ecco ciao ragazzi bentornati sul canale oggi parliamo di valverde totw un centrocampista che sto usando da tre settimane la resistenza è ottima corre tutta la partita e non si stanca mai ragazzi lo scatto è buono e la velocità di punta è alta ho aperto un pack ieri sera e ho trovato una carta oro niente di che quindi in difesa recupera un sacco di palloni e i contrasti sono puliti quindi il fisico è robusto e vince quasi tutti i duelli cioè il passaggio è preciso e la visione di gioco è buona comunque la finalizzazione è nella media ma il tiro da fuori è letale tipo lo consiglio assolutamente è un acquisto obbligato dopo la patch il campionato online è diventato davvero pesante e lento ragazzi è sicuramente il miglior centrocampista del totw mi scrivono in tanti sui social chiedendomi consigli sulla squadra ecco grazie ragazzi lasciate un like e iscrivetevi al canale ci vediamo al prossimo video",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "yes",
+     "criteria": {
+      "stamina": 1,
+      "pace": 1,
+      "defending": 1,
+      "physical": 1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-long-06",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "positivo",
+    "promo"
+   ],
+   "text": "hey everyone welcome back today we are testing salah totw and i played around thirty matches with him cioè the pace is insane he is incredibly fast and the acceleration is crazy i opened a pack yesterday and got a boring gold card nothing special praticamente the finishing is clinical he scores from every angle i played with some friends on discord yesterday and had a blast the dribbling is smooth and his ball control is elite the weak foot is four stars so he can shoot with both feet allora anyway the servers this week have been terrible and ea needs to fix them his stamina is great and he runs all game comunque the price is high but he is worth every coin quindi just a reminder that totw drops every wednesday so keep an eye on prices i highly recommend him and honestly he is a must buy easily one of the best wingers right now nine out of ten a lot of you are asking me about the squad on social media cioè thanks for watching smash the like button and subscribe use my code for ten percent off at the shop",
+   "expected": [
+    {
+     "card": 21,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "finishing": 1,
+      "dribbling": 1,
+      "weak_foot": 1,
+      "stamina": 1,
+      "price": 1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-long-07",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "nessun-parere",
+    "tattica"
+   ],
+   "text": "ragazzi oggi parliamo di tattica e di come impostare la squadra quest anno il meta è cambiato parecchio dopo l ultima patch quindi vi spiego come uso io haaland e kane in coppia davanti con mbappe largo a sinistra il centrocampo con rodri davanti alla difesa e valverde come mezzala il pressing alto funziona se i due attaccanti chiudono le linee di passaggio invece con il pressing basso conviene stare compatti e ripartire in velocità sulle fasce ho provato diverse formazioni come il quattro tre tre e il quattro due tre uno il quattro tre tre dà più ampiezza ma lascia spazi tra le linee il quattro due tre uno è più coperto però sacrifica un attaccante nelle istruzioni personalizzate io metto il pressing a cinquanta e la linea difensiva a sessanta per i terzini dipende da come giocate se volete spingere mettete la sovrapposizione se volete coprire mettete resta indietro questo è tutto per oggi se vi è piaciuto il video lasciate un like e iscrivetevi",
+   "expected": []
+  },
+  {
+   "id": "h2-it-17",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "domanda"
+   ],
+   "text": "che ne dite di mbappe toty pensate che valga i crediti scrivetemelo nei commenti",
+   "expected": []
+  },
+  {
+   "id": "h2-it-18",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "anglicismi"
+   ],
+   "text": "pedri tots con il playstyle tiki taka plus è una roba da pazzi il first touch è perfetto e il dribbling è smooth lo consiglio è un game changer",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "playstyle": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "dribbling",
+      "animations"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-en-08",
+   "split": "holdout2",
+   "lang": "en",
+   "tags": [
+    "negativo",
+    "slang"
+   ],
+   "text": "courtois totw is trash he lets everything in his reflexes are garbage dont buy",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "no",
+     "criteria": {
+      "goalkeeping": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h2-it-19",
+   "split": "holdout2",
+   "lang": "it",
+   "tags": [
+    "misto"
+   ],
+   "text": "messi icon ha un dribbling fuori scala e un passaggio perfetto ma il fisico è debole e lo scatto è lento quindi dipende",
+   "expected": [
+    {
+     "card": 13,
+     "stance": "maybe",
+     "criteria": {
+      "dribbling": 1,
+      "passing": 1,
+      "physical": -1,
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-01",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "gergo"
+   ],
+   "text": "messi icon è un cavallo ragazzi lo scatto è un treno il dribbling è irreale sembra di giocare con il burro non lo venderei mai è la carta migliore che ho avuto da quando gioco",
+   "expected": [
+    {
+     "card": 13,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "dribbling",
+      "animations"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-02",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "gergo"
+   ],
+   "text": "rudiger totw ragazzi non ci siamo proprio sembra un burattino si muove male lo scatto è inesistente una cagata pazzesca lo vendo subito",
+   "expected": [
+    {
+     "card": 22,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "animations": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-01",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "positivo",
+    "slang"
+   ],
+   "text": "yamal totw is so buttery smooth honestly one of the best wingers right now the pace is crazy and he never misses a shot ten out of ten would recommend",
+   "expected": [
+    {
+     "card": 7,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "animations",
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-02",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "negativo",
+    "slang"
+   ],
+   "text": "hakimi totw feels so glitchy and boring the pace is not there anymore and the price is a joke kinda mid honestly",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "price": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-03",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "ironia-lieve"
+   ],
+   "text": "che meraviglia leao totw otto ore per fare un gol uno scatto da tartaruga davvero spettacolare",
+   "expected": [
+    {
+     "card": 16,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "pace"
+     ],
+     "tag": "ironia"
+    }
+   ]
+  },
+  {
+   "id": "h3-it-04",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "misto"
+   ],
+   "text": "bellingham tots è un po un cavallo di razza il passaggio è buono ma il dribbling è normale e il prezzo è un po altino direi che è sufficiente",
+   "expected": [
+    {
+     "card": 8,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "passing",
+      "dribbling",
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-05",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "positivo",
+    "multi-frase"
+   ],
+   "text": "pedri tots allora ragazzi questo è il mio centrocampista preferito in assoluto la visione di gioco è top i passaggi sono chirurgici il controllo palla è incollato al piede la resistenza è infinita il piede debole è a quattro stelle per me è un acquisto obbligato",
+   "expected": [
+    {
+     "card": 24,
+     "stance": "yes",
+     "criteria": {
+      "passing": 1,
+      "dribbling": 1,
+      "stamina": 1,
+      "weak_foot": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "finishing"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-03",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "negativo",
+    "multi-frase"
+   ],
+   "text": "okay guys rice totw review i wanted this card so bad but the pace is trash the dribbling is clunky and he cannot defend which is the whole point of a cdm the price is insane for what he does i regret buying him honestly avoid",
+   "expected": [
+    {
+     "card": 20,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "dribbling": -1,
+      "defending": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-06",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "multi",
+    "confronto"
+   ],
+   "text": "se dovete scegliere tra salah e hakimi io prendo hakimi hakimi è molto più veloce salah è un po lento",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 21,
+     "stance": "no",
+     "criteria": {
+      "pace": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-04",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "multi"
+   ],
+   "text": "kane is a monster up front and mbappe is nothing special for the price honestly",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    },
+    {
+     "card": 1,
+     "stance": "no",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-07",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "domanda"
+   ],
+   "text": "vi piace donnarumma totw come portiere io non l ho ancora provato ditemi voi",
+   "expected": []
+  },
+  {
+   "id": "h3-it-08",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "nessun-parere",
+    "storia"
+   ],
+   "text": "courtois è stato votato miglior portiere della stagione l anno scorso e ha vinto il campionato con il real",
+   "expected": []
+  },
+  {
+   "id": "h3-en-05",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "nessun-parere",
+    "stats"
+   ],
+   "text": "salah totw has ninety four pace ninety one shooting and four star skill moves and costs about eighty thousand coins",
+   "expected": []
+  },
+  {
+   "id": "h3-it-09",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "promo",
+    "positivo"
+   ],
+   "text": "ragazzi il codice sconto kane vi da il dieci per cento su ogni acquisto di monete detto questo kane totw è fortissimo la finalizzazione è top lo scatto è devastante lo consiglio",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "yes",
+     "criteria": {
+      "finishing": 1,
+      "pace": 1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-06",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "positivo",
+    "punteggiatura"
+   ],
+   "text": "Rodri is the engine of my team. Stamina: unreal. Passing: elite. Defending: solid. Easy buy, 9/10.",
+   "expected": [
+    {
+     "card": 10,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "stamina",
+      "passing",
+      "defending"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-10",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "negativo",
+    "punteggiatura"
+   ],
+   "text": "Valverde TOTW. Lento, fragile, impreciso. Sconsigliato. Non vale il prezzo.",
+   "expected": [
+    {
+     "card": 17,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "physical": -1,
+      "price": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-11",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "negazione",
+    "positivo"
+   ],
+   "text": "non posso dire che courtois totw sia scarso anzi non ha nessun difetto e non mi pento di averlo preso",
+   "expected": [
+    {
+     "card": 12,
+     "stance": "yes",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-07",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "negazione",
+    "negativo"
+   ],
+   "text": "i cannot say that foden tots is good he is not fast he is not strong and his finishing is not clinical at all",
+   "expected": [
+    {
+     "card": 14,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "finishing": -1
+     },
+     "thin": true,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-12",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "misto",
+    "dipende"
+   ],
+   "text": "haaland toty è fortissimo se hai un fisico da ariete davanti però se vuoi uno che si muove bene lascia perdere dipende",
+   "expected": [
+    {
+     "card": 6,
+     "stance": "maybe",
+     "criteria": {},
+     "thin": true,
+     "criteria_ignore": [
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-08",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "riportato",
+    "negativo"
+   ],
+   "text": "everyone on twitter says kane totw is the best striker but in my games he feels slow and the finishing is average",
+   "expected": [
+    {
+     "card": 15,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "finishing": -1
+     },
+     "thin": true,
+     "criteria_ignore": [],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-long-01",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "positivo",
+    "promo"
+   ],
+   "text": "praticamente ciao ragazzi bentornati sul mio canale oggi review di hakimi totw che ho giocato per un paio di settimane in rivals lo scatto è fulmineo non c è nessuno che lo prende sulla fascia cioè la resistenza è incredibile fa avanti e indietro per tutta la partita praticamente comunque il gioco quest anno ha dei problemi con i server e ea deve sistemare tutto in fase difensiva è solido e i contrasti sono puliti dopo la patch il campionato online è diventato davvero pesante e lento cioè il cross è preciso e la visione è buona ieri ho giocato con degli amici su discord e ci siamo divertiti un sacco quindi la finalizzazione è debole ma è un terzino quindi pazienza il prezzo è esagerato secondo me ma per chi ha i crediti vale ogni moneta ho aperto un pack ieri sera e ho trovato una carta oro niente di che comunque io lo consiglio assolutamente è meta cioè voto otto su dieci grazie a tutti lasciate un like e iscrivetevi alla prossima",
+   "expected": [
+    {
+     "card": 18,
+     "stance": "yes",
+     "criteria": {
+      "pace": 1,
+      "stamina": 1,
+      "defending": 1,
+      "finishing": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "passing",
+      "price"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-en-long-02",
+   "split": "holdout3",
+   "lang": "en",
+   "tags": [
+    "lungo",
+    "negativo",
+    "promo"
+   ],
+   "text": "ragazzi welcome back guys today we are looking at foden tots and i have been using him for about a month ragazzi the pace is pretty bad he is slow and gets caught from behind cioè the dribbling is okay but the animations are clunky quindi his finishing is average and he misses easy chances cioè anyway the servers this week have been terrible and ea needs to fix them he is weak physically and loses every duel the price is way too high for what he offers honestly he is overrated and i would not buy him cioè save your coins and skip this card thanks for watching see you next time smash the like button",
+   "expected": [
+    {
+     "card": 14,
+     "stance": "no",
+     "criteria": {
+      "pace": -1,
+      "animations": -1,
+      "finishing": -1,
+      "physical": -1,
+      "price": -1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "dribbling"
+     ],
+     "tag": ""
+    }
+   ]
+  },
+  {
+   "id": "h3-it-long-03",
+   "split": "holdout3",
+   "lang": "it",
+   "tags": [
+    "lungo",
+    "misto",
+    "dipende"
+   ],
+   "text": "allora ragazzi eccoci con rodri hero che mi avete chiesto in tantissimi la resistenza è ottima e il fisico è robusto in difesa recupera tantissimi palloni e l anticipo è ottimo quindi il passaggio è preciso e la visione è molto buona lo scatto è lento ma per un mediano non è un problema comunque mi scrivono in tanti sui social chiedendomi consigli sulla squadra dipende dal modulo che usate quindi se giocate con un centrocampo a tre è perfetto altrimenti rischia di essere isolato allora fatemi sapere nei commenti cosa ne pensate",
+   "expected": [
+    {
+     "card": 10,
+     "stance": "maybe",
+     "criteria": {
+      "stamina": 1,
+      "defending": 1,
+      "passing": 1
+     },
+     "thin": false,
+     "criteria_ignore": [
+      "pace",
+      "physical"
+     ],
+     "tag": ""
+    }
+   ]
+  }
+ ]
+}
