@@ -125,3 +125,13 @@ def test_version_family(version, family):
 def test_rating_from_version():
     assert versions.rating_from_version("Gold 86") == 86
     assert versions.rating_from_version("Icon") is None and versions.rating_from_version("Gold 5") is None
+
+
+def test_real_default_config_points_to_new_players_page():
+    """La configurazione vera del repository (non quella dei test): elenco «ultime uscite» indicato dall'utente."""
+    import json
+    from pathlib import Path
+    cfg = json.loads((Path(__file__).parent.parent / "eafcmeta" / "config" / "catalog.json").read_text(encoding="utf-8"))
+    assert cfg["list_urls"] == ["https://www.fut.gg/players/new/"] and cfg["setup_confirmed"] is True
+    from eafcmeta import fetch
+    assert fetch.is_allowed_url(cfg["list_urls"][0]) if hasattr(fetch, "is_allowed_url") else cfg["list_urls"][0].startswith("https://www.fut.gg/")

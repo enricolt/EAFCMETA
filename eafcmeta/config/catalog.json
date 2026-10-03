@@ -1,7 +1,9 @@
 {
- "_nota": "Parametri del catalogo. Le tue modifiche personali stanno in catalog.local.json (ignorato da git, scritto anche da PUT /api/v1/catalog/config) e vincono su questo file. Nessun segreto qui. L'indirizzo dell'elenco 'ultime uscite' NON e' verificato sul sito vero: setup_confirmed resta false finche' non lo incolli dall'app (o non cambi il file locale). Con setup_confirmed=false l'aggiornamento non parte e chiede di configurare l'indirizzo.",
- "list_urls": ["https://www.fut.gg/players/"],
- "setup_confirmed": false,
+ "_nota": "Parametri del catalogo. Le tue modifiche personali stanno in catalog.local.json (ignorato da git, scritto anche da PUT /api/v1/catalog/config) e vincono su questo file. Nessun segreto qui. L'elenco 'ultime uscite' https://www.fut.gg/players/new/ e' stato indicato dall'utente ma NON e' ancora verificato dal vivo (nemmeno la paginazione ?page=N): se la prima pagina non contiene carte riconoscibili l'aggiornamento si ferma e chiede di configurare l'indirizzo.",
+ "list_urls": [
+  "https://www.fut.gg/players/new/"
+ ],
+ "setup_confirmed": true,
  "pages_per_update": 3,
  "lookback_days": 14,
  "page_param": "page",
@@ -16,5 +18,8 @@
   "max_consecutive_errors": 3
  },
  "curve_max_points": 300,
- "summary": {"strong_stat": 88, "elite_stat": 92}
+ "summary": {
+  "strong_stat": 88,
+  "elite_stat": 92
+ }
 }

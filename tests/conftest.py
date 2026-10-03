@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -12,6 +14,8 @@ def isolated_local_config(tmp_path, monkeypatch):
     monkeypatch.setenv("EAFCMETA_AUTO", "0")  # raccolta automatica spenta nei test (niente thread, niente rete)
     monkeypatch.setenv("EAFCMETA_AUTO_LOCAL_CONFIG", str(tmp_path / "auto.local.json"))
     monkeypatch.setenv("EAFCMETA_PROS_CONFIG", str(tmp_path / "pros.json"))
+    # configurazione di base del catalogo fissa per i test (non dipende dall'indirizzo reale scelto dall'utente)
+    monkeypatch.setenv("EAFCMETA_CATALOG_CONFIG", str(Path(__file__).parent / "fixtures" / "catalog_test.json"))
     scoring.load_config.cache_clear()
     yield
     scoring.load_config.cache_clear()
