@@ -64,16 +64,25 @@ def summarize_opinions(opinions: list[dict], level: str) -> dict:
     return {"status": status, "summary": summary, "groups": groups, "hint": hint}
 
 
+def _num(x) -> float | None:
+    """Numero finito oppure None: dati vecchi o sporchi (testo) non devono mai far fallire la pagina."""
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and abs(v) != float("inf") else None
+
+
 def site_signals(card: dict) -> list[str]:
     sig, out = card.get("signals") or {}, []
-    if "gg_rating" in sig:
-        r = f"FUT.GG: GG Rating {sig['gg_rating']:g} come {sig.get('gg_role', '?')}"
-        r += f" (n°{sig['gg_rank']} nel ruolo)" if "gg_rank" in sig else ""
+    if _num(sig.get("gg_rating")) is not None:
+        r = f"FUT.GG: GG Rating {_num(sig['gg_rating']):g} come {sig.get('gg_role', '?')}"
+        r += f" (n°{_num(sig['gg_rank']):g} nel ruolo)" if _num(sig.get("gg_rank")) is not None else ""
         r += f" — rende meglio come {sig['gg_role']} che come {card['position']}" if sig.get("gg_role") not in (None, card["position"]) else ""
         out.append(r + ".")
-    if "futbin_rating" in sig:
-        r = f"FUTBIN: Rating {sig['futbin_rating']:g} come {sig.get('futbin_role', '?')}"
-        r += f" (n°{sig['futbin_rank']} nel ruolo)" if "futbin_rank" in sig else ""
+    if _num(sig.get("futbin_rating")) is not None:
+        r = f"FUTBIN: Rating {_num(sig['futbin_rating']):g} come {sig.get('futbin_role', '?')}"
+        r += f" (n°{_num(sig['futbin_rank']):g} nel ruolo)" if _num(sig.get("futbin_rank")) is not None else ""
         out.append(r + ".")
     return out
 

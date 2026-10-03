@@ -25,7 +25,8 @@ app = FastAPI(title="EA FC Meta", lifespan=lifespan)
 def require_token(x_token: str | None = Header(default=None)):
     """Se EAFCMETA_TOKEN è impostato (es. con start.py --lan) serve l'header X-Token."""
     expected = os.environ.get("EAFCMETA_TOKEN")
-    if expected and not (x_token and hmac.compare_digest(x_token, expected)):
+    # confronto sui byte: compare_digest su str non-ASCII lancia TypeError (500 invece di 401)
+    if expected and not (x_token and hmac.compare_digest(x_token.encode("utf-8"), expected.encode("utf-8"))):
         raise HTTPException(401, "token mancante o errato")
 
 
@@ -104,9 +105,14 @@ def list_cards(conn: sqlite3.Connection = Conn, position: str | None = None, q: 
 
 @router.post("/cards", status_code=201)
 def add_card(card: CardIn, conn: sqlite3.Connection = Conn):
-    cid, status = db.upsert_card(conn, card)
-    conn.commit()
-    return {"id": cid, "status": status}
+    for attempt in range(2):  # due richieste insieme sulla stessa carta nuova: la seconda perde la corsa, si riprova (ora aggiorna)
+        try:
+            cid, status = db.upsert_card(conn, card)
+            conn.commit()
+            return {"id": cid, "status": status}
+        except sqlite3.IntegrityError:
+            conn.rollback()
+    raise HTTPException(409, "la carta è stata inserita nello stesso momento da un'altra richiesta: riprova")
 
 
 def _exists(conn, card_id: int) -> None:

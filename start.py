@@ -67,12 +67,26 @@ def read_text(path: Path) -> str | None:
         return None
 
 
-def write_text(path: Path, text: str) -> bool:
+def write_text(path: Path, text: str, private: bool = False) -> bool:
+    """Scrive un file di testo; con private=True lo crea leggibile solo dal proprietario (600, dove il sistema lo supporta)."""
     try:
-        path.write_text(text, encoding="utf-8")
+        if private:
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(text)
+            restrict(path)
+        else:
+            path.write_text(text, encoding="utf-8")
         return True
     except OSError:
         return False
+
+
+def restrict(path: Path) -> None:
+    try:
+        os.chmod(path, 0o600)
+    except OSError:  # Windows o filesystem senza permessi: pazienza
+        pass
 
 
 def find_git() -> str | None:
@@ -183,9 +197,10 @@ def lan_token() -> str:
     f = DATA / ".token"
     t = (read_text(f) or "").strip()
     if t:
+        restrict(f)  # anche un .token creato da una versione precedente
         return t
     t = secrets.token_urlsafe(12)
-    if not write_text(f, t):
+    if not write_text(f, t, private=True):
         say("[lan] non riesco a salvare la chiave: vale solo per questa sessione.")
     return t
 
