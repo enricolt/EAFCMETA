@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import math
 
-from . import db, scoring
+from . import db, rules, scoring
 
 DEFAULTS = {"pro_meta_at": 80, "min_cards": 12, "min_cards_role": 8}
 
@@ -36,7 +36,7 @@ def collect(conn, cfg: dict) -> list[dict]:
             ex = scoring.explain(c, cfg)
         except ValueError:
             continue
-        rows.append({"card": c, "base": ex["base"], "role": ex["role"], "pro": scoring.pro_from_opinions(pros, cfg)})
+        rows.append({"card": c, "ex": ex, "base": ex["base"], "role": ex["role"], "pro": scoring.pro_from_opinions(pros, cfg)})
     return rows
 
 
@@ -48,6 +48,58 @@ def _confusion(rows: list[dict], threshold: float, pro_at: float) -> dict:
     return {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "accuracy": round((tp + tn) / len(rows), 3)}
 
 
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs)
+
+
+def _split(rule: dict, rows: list[dict], cfg: dict) -> tuple[list[float], list[float]]:
+    """Voti dei pro per le carte che la regola colpisce e per le altre dello stesso ruolo."""
+    hit, other = [], []
+    for r in rows:
+        if not rules.applies_to(rule, r["role"]):
+            continue
+        ctx = rules.make_ctx(r["card"], r["role"], cfg, r["ex"]["unknown_playstyles"])
+        (hit if rules.match(rule["when"], ctx) is not None else other).append(r["pro"])
+    return hit, other
+
+
+def rules_calibration(rows: list[dict], cfg: dict) -> dict:
+    """Soglie e delta delle regole ATTIVE: spinge il delta verso ciò che i pro mostrano (media dei voti delle carte colpite
+    meno quella delle altre), a piccoli passi e solo con dati sufficienti. Le soglie si spostano al massimo di un passo."""
+    res = rules.resolve(cfg)
+    st = res["settings"]["calibration"]
+    cap, out = res["settings"]["max_rule_delta"], []
+    for rule in res["rules"]:
+        if rule["status"] != "active":
+            continue
+        hit, other = _split(rule, rows, cfg)
+        if len(hit) < st["min_cards_rule"] or len(other) < st["min_cards_rule"]:
+            continue
+        diff = _mean(hit) - _mean(other)
+        old = float(rule["effect"].get("score", 0))
+        new = old
+        if abs(diff) >= st["min_diff"]:
+            new = round(max(-cap, min(cap, old + st["delta_step"] * (1 if diff > 0 else -1))), 3)
+        change = {"id": rule["id"], "n_hit": len(hit), "n_other": len(other), "diff": round(diff, 1),
+                  "delta": {"old": old, "new": new}, "threshold": None}
+        w = rule["when"]
+        cmp_keys = [k for k in rules.COMPARATORS if k in w]
+        if w["type"] in rules.THRESHOLD_TYPES and len(cmp_keys) == 1:
+            k, cur = cmp_keys[0], w[cmp_keys[0]]
+            best, best_d = cur, abs(diff)
+            for cand in (cur - st["threshold_step"], cur + st["threshold_step"]):
+                h2, o2 = _split({**rule, "when": {**w, k: cand}}, rows, cfg)
+                if len(h2) >= st["min_cards_rule"] and len(o2) >= st["min_cards_rule"]:
+                    d2 = abs(_mean(h2) - _mean(o2))
+                    if d2 > best_d + 1e-9:
+                        best, best_d = cand, d2
+            if best != cur:
+                change["threshold"] = {"field": k, "old": cur, "new": best}
+        if new != old or change["threshold"]:
+            out.append(change)
+    return {"min_cards_rule": st["min_cards_rule"], "changes": out}
+
+
 def report(conn, cfg: dict) -> dict:
     cal = {**DEFAULTS, **cfg.get("calibration", {})}
     rows = collect(conn, cfg)
@@ -57,6 +109,7 @@ def report(conn, cfg: dict) -> dict:
     if not out["ready"]:
         out["message"] = (f"Servono almeno {cal['min_cards']} carte con il parere di almeno un creator per calibrare "
                           f"(ora {n}). Più creator e più carte inserisci, più la calibrazione è affidabile.")
+        out["rules"] = {"changes": []}
         return out
     m = cfg["meta"]
     out["correlation"] = _pearson([r["base"] for r in rows], [r["pro"] for r in rows])
@@ -85,10 +138,11 @@ def report(conn, cfg: dict) -> dict:
             changes.append({"stat": stat, "old": old, "new": new, "corr": round(c, 2)})
         if changes:
             out["suggested"]["weights"][role] = {"n": len(sub), "changes": sorted(changes, key=lambda x: -abs(x["corr"]))}
+    out["rules"] = rules_calibration(rows, cfg)
     return out
 
 
-def apply(conn, cfg: dict, thresholds: bool, weights: bool) -> dict:
+def apply(conn, cfg: dict, thresholds: bool, weights: bool, rules_too: bool = False) -> dict:
     rep = report(conn, cfg)
     if not rep["ready"]:
         raise ValueError(rep["message"])
@@ -101,6 +155,13 @@ def apply(conn, cfg: dict, thresholds: bool, weights: bool) -> dict:
         for role, info in rep["suggested"]["weights"].items():
             new = {c["stat"]: c["new"] for c in info["changes"]}
             rw[role] = {**cfg["role_weights"][role], **new}  # le stat senza dati restano com'erano
+    if rules_too:
+        ov = local.setdefault("rules", {}).setdefault("overrides", {})
+        for ch in rep["rules"]["changes"]:
+            o = ov.setdefault(ch["id"], {})
+            o["effect"] = {"score": ch["delta"]["new"]}
+            if ch["threshold"]:
+                o["when"] = {ch["threshold"]["field"]: ch["threshold"]["new"]}
     base = json.loads(scoring.CONFIG_PATH.read_text(encoding="utf-8"))
     scoring.validate_config(scoring._merge(base, local))  # se non è valida non si scrive nulla
     path.write_text(json.dumps(local, indent=1), encoding="utf-8")

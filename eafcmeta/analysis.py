@@ -1,6 +1,8 @@
 """Analisi scritta di una carta: è meta? Su quali basi prenderla o no. Regole fisse sui dati (nessun LLM)."""
 from __future__ import annotations
 
+from . import rules
+
 NAMES = {
     "acceleration": "accelerazione", "sprint_speed": "velocità di punta", "agility": "agilità", "balance": "equilibrio",
     "reactions": "reattività", "ball_control": "controllo palla", "dribbling": "dribbling", "composure": "freddezza",
@@ -13,7 +15,6 @@ NAMES = {
     "fk_accuracy": "punizioni", "penalties": "rigori"}
 ROLE_IT = {"ST": "attaccante", "CF": "seconda punta", "W": "esterno", "CAM": "trequartista", "CM": "centrocampista",
            "CDM": "mediano", "FB": "terzino", "WB": "esterno basso", "CB": "difensore centrale", "GK": "portiere"}
-MOVERS = {"ST", "CF", "W", "CAM", "FB", "WB", "CB"}  # ruoli in cui scatto e velocità fanno la differenza
 
 
 def meta_level(final: float, cfg: dict) -> tuple[str, str]:
@@ -78,53 +79,16 @@ def site_signals(card: dict) -> list[str]:
 
 
 def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int, cfg: dict,
-             opinions: list[dict] | None = None) -> dict:
+             opinions: list[dict] | None = None, criteria_notes: list[dict] | None = None) -> dict:
     role = ex["role"]
-    weights = cfg["role_weights"][role]
-    stats = card["stats"]
     level, label = meta_level(final, cfg)
     pros, cons = [], []
 
-    top = sorted(weights, key=lambda k: (-weights[k], -stats.get(k, 0)))
-    strong = [k for k in top[:6] if stats.get(k, 0) >= 88][:4]
-    if strong:
-        pros.append("Punti di forza per il ruolo: " + ", ".join(f"{NAMES[k]} {stats[k]}" for k in strong) + ".")
-    weak = sorted((k for k in weights if weights[k] >= 2 and stats.get(k, 0) < 70), key=lambda k: stats[k])[:3]
-    if weak:
-        cons.append("Punti deboli che contano per il ruolo: " + ", ".join(f"{NAMES[k]} {stats[k]}" for k in weak) + ".")
-
-    if role in MOVERS:
-        pace = (stats.get("acceleration", 0) + stats.get("sprint_speed", 0)) / 2
-        if pace >= 88:
-            pros.append(f"Scatto e velocità da vertice (media {pace:.0f}): nel meta attuale fanno spesso la differenza.")
-        elif pace < 72 and role in ("ST", "W", "FB", "WB", "CF"):
-            cons.append(f"Scatto e velocità bassi (media {pace:.0f}) per un {ROLE_IT[role]}: soffrirà contro avversari rapidi.")
-        elif pace < 66 and role == "CB":
-            cons.append(f"Difensore lento (velocità media {pace:.0f}): rischioso contro attaccanti veloci.")
-
-    plus_ok, plus_off = [], []
-    for ps in card.get("playstyles", []):
-        info = cfg["playstyles"].get(ps)
-        if ps.endswith("+") and info:
-            (plus_ok if role in info["roles"] else plus_off).append(f"{ps} (tier {info['tier']})")
-    if plus_ok:
-        pros.append("PlayStyle+ utili al ruolo: " + ", ".join(plus_ok) + ".")
-    if plus_off:
-        cons.append("PlayStyle+ poco utili a questo ruolo (contano meno): " + ", ".join(plus_off) + ".")
-    if ex["unknown_playstyles"]:
-        cons.append("PlayStyle+ non in tabella (bonus minimo): " + ", ".join(ex["unknown_playstyles"]) + ".")
-
-    if card.get("body_type") in ("Lean", "Unique", "Custom") and role != "GK":
-        pros.append(f"Body type {card['body_type']}: animazioni più reattive.")
-    if role in ("ST", "CF", "W", "CAM"):
-        if card.get("skill_moves", 3) >= 5:
-            pros.append("5 stelle di skill: dribbling e finte complete.")
-        elif card.get("skill_moves", 3) <= 2:
-            cons.append(f"Solo {card['skill_moves']}★ di skill moves: poche finte per un ruolo offensivo.")
-        if card.get("weak_foot", 3) >= 5:
-            pros.append("5★ di piede debole: letale con entrambi i piedi.")
-        elif card.get("weak_foot", 3) <= 2:
-            cons.append(f"Solo {card['weak_foot']}★ di piede debole: prevedibile nelle conclusioni.")
+    # tutte le regole del giudizio (forza/debolezza, scatto, PlayStyle, body type, skill, piede debole, regole apprese
+    # approvate) vengono da rules.json tramite l'unico valutatore rules.evaluate
+    rd = ex.get("rules") or rules.evaluate(card, ex, cfg)
+    pros += rd["reasons_pro"]
+    cons += rd["reasons_con"]
 
     v = verdict["verdict"]
     if verdict["value_gap"] is None:
@@ -147,7 +111,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     else:
         cons.append("Manca il parere dei creator: il giudizio si basa solo su statistiche, PlayStyle e prezzo.")
 
-    advice = _advice(level, v, verdict["value_gap"] is None, card)
+    advice = rules.advice(level, v, verdict["value_gap"] is None, cfg)
     if ops["status"] == "disagree":
         advice = "Opinioni divise tra i creator. " + advice
     shown = f"{final:.0f}"
@@ -155,23 +119,8 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
         {"top": ": tra le migliori del suo ruolo.", "meta": ": competitiva ai livelli alti.",
          "playable": ": usabile ma non decisiva.", "below": ": sotto il livello che serve ai livelli alti."}[level])
     return {"meta_level": level, "meta_label": label, "headline": headline, "pros": pros, "cons": cons, "advice": advice,
-            "opinions": ops, "site_signals": site_signals(card)}
+            "opinions": ops, "site_signals": site_signals(card),
+            "contributions": rd["contributions"], "rules_score_delta": rd["score_delta"],
+            "rules_score_delta_raw": rd["score_delta_raw"], "rules_capped": rd["capped"],
+            "rules_pending": rd["pending"], "criteria_disagreements": criteria_notes or []}
 
-
-def _advice(level: str, verdict: str, no_market: bool, card: dict) -> str:
-    cheap = {"MUST_DO": True}.get(verdict, False)
-    if level in ("top", "meta"):
-        if verdict == "MUST_DO":
-            return "Da prendere: è forte e costa meno di quanto vale."
-        if verdict == "AVOID":
-            return "Forte ma cara per quello che offre: valuta alternative più economiche prima di spendere."
-        return ("Buona carta: prendila se ti serve il ruolo" +
-                (" (confronta il prezzo con altre carte quando ne avrai inserite di più)." if no_market else "."))
-    if level == "playable":
-        if cheap:
-            return "Non è meta, ma per il prezzo è un buon acquisto di ripiego."
-        if verdict == "AVOID":
-            return "Da evitare: non è meta e costa troppo."
-        return "Opzionale: giocabile ma non fa la differenza; prendila solo se la trovi a poco."
-    return ("Da evitare per giocare ai livelli alti: " + ("regge solo come riempitivo molto economico." if cheap
-            else "non è competitiva e il prezzo non la giustifica."))
