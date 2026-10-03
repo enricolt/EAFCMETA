@@ -459,7 +459,7 @@ def test_cap_of_opinions_per_run(world):
     conn, fake, _ = world
     add_card(conn, "Vinicius Junior", "TOTY", "LW")
     conn.commit()
-    txt = STRONG + ["poi Vinicius Junior TOTY è una bestia", "scatto devastante e finalizzazione top", "lo consiglio assolutamente è meta"]
+    txt = STRONG + ["Vinicius Junior TOTY invece è fortissimo", "dribbling devastante e agilità top", "lo consiglio è da prendere", "voto 9/10 fatelo subito"]
     fake.subs["vid1"] = json3(txt)
     res = go(conn, fake, cfg_of(limits={"max_opinions_per_run": 1}))
     s = res["summary"]
@@ -471,8 +471,7 @@ def test_cap_of_opinions_per_video(world):
     conn, fake, _ = world
     add_card(conn, "Vinicius Junior", "TOTY", "LW")
     conn.commit()
-    fake.subs["vid1"] = json3(STRONG + ["poi Vinicius Junior TOTY è una bestia", "scatto devastante e finalizzazione top",
-                                        "lo consiglio assolutamente è meta"])
+    fake.subs["vid1"] = json3(STRONG + ["Vinicius Junior TOTY invece è fortissimo", "dribbling devastante e agilità top", "lo consiglio è da prendere", "voto 9/10 fatelo subito"])
     res = go(conn, fake, cfg_of(thresholds={"max_opinions_per_video": 1}))
     assert res["summary"]["pareri_salvati"] == 1 and res["summary"]["pareri_scartati"] == 1
     assert any("per video" in r["note"] for r in conn.execute("SELECT note FROM proposals"))
