@@ -11,12 +11,12 @@ GG_STATS = ("Attributes|Chemistry Style|Pace|87|Acceleration|83|Sprint Speed|90|
             "Slide Tackle|68|Physical|83|Jumping|89|Stamina|91|Strength|81|Aggression|74|Basic|C")
 
 
-def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4", plus=(), name="Kika Nazareth", rating=86, rarity="Destined for Glory"):
+def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4", plus=(), name="Kika Nazareth", rating=86, rarity="Destined for Glory", stats=GG_STATS):
     ld = [{"@type": "BreadcrumbList", "itemListElement": [{"name": "Players"}, {"name": name},
                                                             {"name": f"{rarity} {rating} OVR"}]},
           {"@type": "WebPage", "description": f"{name} {rarity} {rating} OVR CM (FC Barcelona) on EA FC 27."}]
     scripts = "".join(f'<script type="application/ld+json">{json.dumps(x)}</script>' for x in ld)
-    body = "|".join(["Players", "Skill Moves", skills, "Weak Foot", "4", "Body Type", "Lean Short", GG_STATS,
+    body = "|".join(["Players", "Skill Moves", skills, "Weak Foot", "4", "Body Type", "Lean Short", stats,
                      price, "Current price", "· Updated"])
     shape = lambda p: "M12.8,104.9L68.1,21" if p in plus else "M128,12.808L243.192,128,12.8,128Z"
     icons = "".join(f'<div title="{p}"><svg height="42"><path d="{shape(p)}"/></svg></div>' for p in ps)
@@ -102,8 +102,15 @@ def test_rare_and_gold_versions_unify():
     assert sources.parse_page(gg_page())["version"] == "Destined for Glory 86"
 
 
+def gg_stats_like_futbin():
+    """Le stats di FUTBIN scritte con le etichette di FUT.GG: sulla stessa carta i due siti mostrano gli stessi numeri."""
+    return (FB_STATS.replace("Player Stats|", "Attributes|Chemistry Style|").replace("Att. Position", "Att. Pos.")
+            .replace("FK Acc.", "Fk Acc.").replace("Def. Aware|", "Def. Aware.|").replace("Total Chem. style added:", "Basic|C"))
+
+
 def test_same_card_from_both_sites_is_not_duplicated(client):
-    pages = [{"name": "gg.html", "html": gg_page(name="Chloe Kelly", rarity="Rare", rating=86, price="11,750")},
+    # la fusione per nome parziale ("Kelly" = "Chloe Kelly") richiede stats quasi uguali: qui le due pagine hanno gli stessi numeri
+    pages = [{"name": "gg.html", "html": gg_page(name="Chloe Kelly", rarity="Rare", rating=86, price="11,750", stats=gg_stats_like_futbin())},
              {"name": "fb.html", "html": fb_page(name="Kelly", rating="86", price="12,000")}]
     r = client.post("/api/v1/import/pages", json={"pages": pages, "dry_run": False}).json()
     assert (r["new"], r["updated"]) == (1, 1)

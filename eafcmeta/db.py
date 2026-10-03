@@ -1,6 +1,9 @@
 import json
 import os
+import re
 import sqlite3
+import threading
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -11,12 +14,26 @@ def db_path() -> str:
     return os.environ.get("EAFCMETA_DB") or str(ROOT / "eafcmeta.db")
 
 
+_SCHEMA_DONE: set[str] = set()  # file gia' preparati in questo processo (DDL e indice unico una volta sola)
+_SCHEMA_LOCK = threading.Lock()
+
+
 def connect(path: str | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(path or db_path(), timeout=5)
+    path = path or db_path()
+    conn = sqlite3.connect(path, timeout=5)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=5000")
     conn.execute("PRAGMA foreign_keys=ON")
+    with _SCHEMA_LOCK:
+        if path in _SCHEMA_DONE and (path == ":memory:" or os.path.exists(path)):
+            return conn
+        _prepare(conn)
+        _SCHEMA_DONE.add(path)
+    return conn
+
+
+def _prepare(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """CREATE TABLE IF NOT EXISTS cards (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +63,6 @@ def connect(path: str | None = None) -> sqlite3.Connection:
     except sqlite3.IntegrityError:
         pass
     from .research.store import ensure_schema; ensure_schema(conn)  # tabelle proposals/criteria (ricerca pareri)
-    return conn
 
 
 # Dati opzionali letti dai siti, dentro il JSON "data" (nessuna colonna in più). Carte vecchie: valgono None / [].
@@ -81,20 +97,66 @@ def _add_history(conn, card_id: int, price: int) -> None:
 
 
 def _words(name: str) -> set[str]:
-    return set(name.lower().replace(".", " ").replace("-", " ").split())
+    """Parole del nome senza accenti, maiuscole e punteggiatura: 'Vinícius Júnior' = 'vinicius junior'."""
+    t = unicodedata.normalize("NFKD", name or "")
+    t = "".join(ch for ch in t if not unicodedata.combining(ch)).casefold()
+    return set(re.sub(r"[^\w]+", " ", t).split())
+
+
+MERGE_DEFAULTS = {"min_common_stats": 5, "stat_tolerance": 2, "min_stat_share": 0.9}
+
+
+def _same_stats(a: dict, b: dict, cfg: dict) -> bool:
+    """Stats quasi uguali: almeno `min_stat_share` delle stat in comune entro +-`stat_tolerance` (min `min_common_stats`)."""
+    common = [k for k in a if k in b]
+    if len(common) < cfg["min_common_stats"]:
+        return False
+    close = sum(abs(a[k] - b[k]) <= cfg["stat_tolerance"] for k in common)
+    return close / len(common) >= cfg["min_stat_share"]
+
+
+def _norm(v) -> str:
+    return " ".join(sorted(_words(v))) if isinstance(v, str) else ""
+
+
+def _same_origin(new, old: dict) -> bool:
+    """Stesso club/nazione, quando disponibili da entrambe le parti: tutte le coppie note devono coincidere."""
+    pairs = [(_norm(getattr(new, k, None)), _norm(old.get(k))) for k in ("club", "nation")]
+    pairs = [(x, y) for x, y in pairs if x and y]
+    return bool(pairs) and all(x == y for x, y in pairs)
 
 
 def find_card(conn, card) -> sqlite3.Row | None:
-    """Stessa carta: nome+versione+posizione uguali; oppure stesso ruolo/versione e nome contenuto nell'altro
-    ('Kelly' su FUTBIN = 'Chloe Kelly' su FUT.GG), purché il candidato sia uno solo."""
+    """Stessa carta: nome+versione+posizione uguali (senza accenti/maiuscole); oppure stesso ruolo/versione e nome
+    contenuto nell'altro ('Kelly' su FUTBIN = 'Chloe Kelly' su FUT.GG), ma SOLO con una prova che e' lo stesso giocatore:
+    stats quasi uguali oppure stesso club/nazione. Senza prova (es. elenchi, che non hanno le stats) niente fusione,
+    cosi' 'Silva' non si fonde con 'Bernardo Silva'. Il candidato deve essere uno solo."""
     row = conn.execute("SELECT id, name, price FROM cards WHERE name = ? COLLATE NOCASE AND version = ? COLLATE NOCASE "
                        "AND position = ?", (card.name, card.version, card.position)).fetchone()
     if row is not None:
         return row
     mine = _words(card.name)
-    cands = [r for r in conn.execute("SELECT id, name, price FROM cards WHERE version = ? COLLATE NOCASE AND position = ?",
-                                     (card.version, card.position))
-             if mine and _words(r["name"]) and (mine <= _words(r["name"]) or _words(r["name"]) <= mine)]
+    if not mine:
+        return None
+    rows = list(conn.execute("SELECT id, name, price, data FROM cards WHERE version = ? COLLATE NOCASE AND position = ?",
+                             (card.version, card.position)))
+    same = [r for r in rows if _words(r["name"]) == mine]  # stesso nome a meno di accenti/punteggiatura
+    if len(same) == 1:
+        return same[0]
+    try:
+        from . import scoring
+        cfg = {**MERGE_DEFAULTS, **scoring.load_config().get("merge", {})}
+    except Exception:  # noqa: BLE001 - config non leggibile: valori di default
+        cfg = MERGE_DEFAULTS
+    stats = getattr(card, "stats", None) or {}
+    cands = []
+    for r in rows:
+        w = _words(r["name"])
+        if not w or not (mine <= w or w <= mine):
+            continue
+        old = json.loads(r["data"])
+        if (stats and _same_stats(stats, old.get("stats") or {}, cfg)) or _same_origin(card, old):
+            cands.append(r)
     return cands[0] if len(cands) == 1 else None
 
 
