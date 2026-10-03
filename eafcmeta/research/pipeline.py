@@ -58,6 +58,10 @@ def process_items(conn, items: list[Item], extractor, card_id: int | None = None
             continue
         ex = extractor.extract(text, cands, it.creator, it.url)
         report["warnings"].extend(ex.warnings)
+        if it.low_confidence:  # es. video senza trascrizione: solo titolo/descrizione/capitoli
+            for p in ex.proposals:
+                p.confidence = round(p.confidence * 0.5, 2)
+                p.note = (p.note + "; " if p.note else "") + "fonte senza trascrizione: solo titolo/descrizione/capitoli"
         new, dup = store.add_proposals(conn, ex.proposals, it.source, text)
         report["created"].extend(new)
         report["duplicates"].extend(dup)

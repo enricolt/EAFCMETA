@@ -9,7 +9,7 @@ from eafcmeta import api_research, db
 from eafcmeta.api import app
 from eafcmeta.research import criteria as C, extract as E, llm as L, pipeline, resolver, store
 from eafcmeta.research.sources import (ConfigError, Item, MissingKeyError, NoCaptionsError, PastedText,
-                                       QuotaExceededError, SourceError, YouTubeSource)
+                                       QuotaExceededError, SourceError, XSource, YouTubeSource, chapters)
 
 W_STATS = {"acceleration": 88, "sprint_speed": 88, "agility": 85, "balance": 80, "ball_control": 87, "crossing": 82,
            "dribbling": 88, "short_passing": 84}
@@ -66,7 +66,11 @@ def test_research_json_channels_are_empty():
     from eafcmeta.research import config
     names = [c["name"] for c in config.research_config()["creators"]]
     assert {"Team Gullit", "Exeed", "Nassada"} <= set(names)
-    assert all(c["channel_id"] == "" and c["handle"] == "" for c in config.research_config()["creators"])
+    cs = {c["name"]: c for c in config.research_config()["creators"]}
+    assert all(c["channel_id"] == "" and c["handle"] == "" and c["x_handle"] == "" and c["members"] == []
+               for c in cs.values())  # nulla di inventato
+    assert cs["Team Gullit"]["kind"] == cs["Exeed"]["kind"] == "organizzazione"
+    assert cs["Nassada"].get("da_confermare") is True
 
 
 # ---------------- risoluzione della carta ----------------
@@ -287,22 +291,40 @@ SEARCH_OK = (200, {"items": [
     {"id": {"videoId": "v1"}, "snippet": {"title": "Mbappé TOTY recensione", "publishedAt": "2026-05-01T10:00:00Z"}},
     {"id": {"videoId": "v2"}, "snippet": {"title": "Altro", "publishedAt": "2026-05-02T10:00:00Z"}},
     {"id": {"kind": "x"}, "snippet": {}}]})
+DESC1 = "Recensione completa.\n0:00 Intro\n1:30 Scatto e finalizzazione\n12:05 Verdetto finale\nSeguimi su ..."
+VIDEOS_OK = (200, {"items": [
+    {"id": "v1", "snippet": {"title": "Mbappé TOTY recensione", "description": DESC1,
+                              "publishedAt": "2026-05-01T10:00:00Z"}},
+    {"id": "v2", "snippet": {"title": "Altro", "description": "Niente di che", "publishedAt": "2026-05-02T10:00:00Z"}}]})
+YT = {"/search": SEARCH_OK, "/videos": VIDEOS_OK}
 
 
-def test_youtube_search_with_transcripts():
-    http = fake_http({"/search": SEARCH_OK})
+def test_chapters_parsing():
+    assert chapters(DESC1) == ["0:00 Intro", "1:30 Scatto e finalizzazione", "12:05 Verdetto finale"]
+    assert chapters("nessun capitolo qui") == []
 
+
+def test_youtube_without_transcript_provider_uses_metadata_low_confidence():
+    http = fake_http(YT)
+    src = YouTubeSource("Exeed", channel_id="UCfinto", api_key="K", http_get=http)
+    items = src.search("Mbappé")
+    assert [i.url for i in items] == ["https://www.youtube.com/watch?v=v1", "https://www.youtube.com/watch?v=v2"]
+    assert all(i.low_confidence and i.source == "youtube" and i.creator == "Exeed" for i in items)
+    assert "Scatto e finalizzazione" in items[0].text and "Capitoli:" in items[0].text and items[0].date == "2026-05-01"
+    assert [c[0].rsplit("/", 1)[1] for c in http.calls] == ["search", "videos"]  # solo endpoint ufficiali di metadati
+    assert http.calls[0][1]["channelId"] == "UCfinto" and http.calls[0][1]["key"] == "K"
+    assert any("senza trascrizione" in w for w in src.warnings)
+
+
+def test_youtube_with_injected_transcript_provider():
     def tr(vid, langs):
         if vid == "v2":
-            raise NoCaptionsError("niente sottotitoli")
+            raise NoCaptionsError("niente trascrizione per v2")
         return "Scatto devastante, lo consiglio."
-    src = YouTubeSource("Exeed", channel_id="UCfinto", api_key="K", http_get=http, transcript_fetcher=tr)
-    items = src.search("Mbappé")
-    assert [(i.url, i.creator, i.date, i.source) for i in items] == [
-        ("https://www.youtube.com/watch?v=v1", "Exeed", "2026-05-01", "youtube")]
-    assert "recensione" in items[0].text and "devastante" in items[0].text
-    assert http.calls[0][1]["channelId"] == "UCfinto" and http.calls[0][1]["key"] == "K"
-    assert len(src.warnings) == 1
+    src = YouTubeSource("Exeed", channel_id="UC", api_key="K", http_get=fake_http(YT), transcript_provider=tr)
+    a, b = src.search("x")
+    assert not a.low_confidence and "devastante" in a.text and b.low_confidence
+    assert any("v2" in w for w in src.warnings)
 
 
 def test_youtube_resolves_handle():
@@ -322,21 +344,63 @@ def test_youtube_errors_are_clear():
     with pytest.raises(ConfigError, match="research.json"):
         YouTubeSource("Exeed", api_key="K", http_get=fake_http({})).search("x")
 
-    def none(vid, langs):
-        raise NoCaptionsError("no")
-    with pytest.raises(NoCaptionsError, match="sottotitoli"):
-        YouTubeSource("Exeed", channel_id="UC", api_key="K", http_get=fake_http({"/search": SEARCH_OK}),
-                      transcript_fetcher=none).search("x")
+
+def test_no_unofficial_transcript_scraper_in_package():
+    import pathlib
+    src = "".join(p.read_text(encoding="utf-8") for p in pathlib.Path(api_research.__file__).parent.glob("research/*.py"))
+    assert "youtube_transcript_api" not in src and "timedtext" not in src
 
 
-def test_default_transcript_fetcher_without_library():
-    from eafcmeta.research.sources import default_transcript_fetcher
-    try:
-        import youtube_transcript_api  # noqa: F401
-        pytest.skip("libreria installata")
-    except ImportError:
-        with pytest.raises(NoCaptionsError, match="youtube-transcript-api"):
-            default_transcript_fetcher("v1", ["it"])
+# ---------------- X (API a consumo, tetto di spesa) ----------------
+
+def x_http(pages, calls):
+    def http(url, params, headers=None):
+        calls.append((url, dict(params), headers))
+        if "/users/by/username/" in url:
+            return pages["user"]
+        return pages["tweets"].pop(0)
+    return http
+
+
+def tweets(ids, nxt=None):
+    body = {"data": [{"id": str(i), "text": f"Mbappé TOTY lento e fragile, evitatelo {i}",
+                      "created_at": "2026-06-01T10:00:00Z"} for i in ids]}
+    if nxt:
+        body["meta"] = {"next_token": nxt}
+    return 200, body
+
+
+def test_x_source_cap_and_estimate():
+    calls = []
+    pages = {"user": (200, {"data": {"id": "42"}}), "tweets": [tweets(range(1, 8), "n1"), tweets(range(8, 15))]}
+    src = XSource("Exeed", "@exeed_x", max_posts=10, bearer_token="T", http_get=x_http(pages, calls))
+    assert XSource.estimate_cost(100) == 0.5 and "0.05" in XSource("E", "h", 10).estimate()
+    items = src.search()
+    assert len(items) == 10 and items[0].source == "x" and items[0].url == "https://x.com/exeed_x/status/1"
+    assert calls[0][2] == {"Authorization": "Bearer T"} and calls[1][1]["max_results"] == 10
+    assert calls[2][1]["max_results"] == 5 and calls[2][1]["pagination_token"] == "n1"  # minimo di X = 5, poi si tronca
+
+
+@pytest.mark.parametrize("bad", [0, -1, 501, True, "100"])
+def test_x_max_posts_is_mandatory_and_bounded(bad):
+    with pytest.raises(ValueError):
+        XSource("E", "h", max_posts=bad)
+    assert XSource("E", "h").max_posts == 100  # default
+
+
+def test_x_errors_are_clear(monkeypatch):
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
+    with pytest.raises(MissingKeyError, match="X_BEARER_TOKEN"):
+        XSource("E", "h", 5).search()
+    with pytest.raises(ConfigError, match="x_handle"):
+        XSource("E", "", 5, bearer_token="T").search()
+    for status, exc in ((401, SourceError), (403, SourceError), (402, SourceError), (429, QuotaExceededError)):
+        src = XSource("E", "h", 5, bearer_token="T", http_get=lambda u, p, h=None, s=status: (s, {}))
+        with pytest.raises(exc):
+            src.search()
+    src = XSource("E", "h", 5, bearer_token="T", http_get=lambda u, p, h=None: (200, {}))
+    with pytest.raises(SourceError, match="non trovato"):
+        src.search()
 
 
 # ---------------- pipeline, deduplica, accetta/rifiuta ----------------
@@ -505,14 +569,15 @@ def test_api_503_without_keys(client, cards, monkeypatch):
 
 def test_api_youtube_flow_with_fakes(client, cards):
     def factory(creator):
-        return YouTubeSource(creator, channel_id="UCfinto", api_key="K", http_get=fake_http({"/search": SEARCH_OK}),
-                             transcript_fetcher=lambda v, l: GULLIT if v == "v1" else "x")
+        return YouTubeSource(creator, channel_id="UCfinto", api_key="K", http_get=fake_http(YT),
+                             transcript_provider=lambda v, l: GULLIT if v == "v1" else "x")
     app.dependency_overrides[api_research.youtube_factory_dep] = lambda: factory
     try:
         r = client.post("/api/v1/research/youtube", json={"creator": "Team Gullit", "query": "Mbappé TOTY"})
         assert r.status_code == 200, r.text
         c = r.json()["created"]
         assert len(c) == 1 and c[0]["source"] == "youtube" and c[0]["url"].endswith("v=v1")
+        assert "nessuna carta riconosciuta" in " ".join(r.json()["warnings"])  # v2 non cita carte
         assert client.post("/api/v1/research/youtube", json={"creator": "Team Gullit",
                                                              "query": "Mbappé TOTY"}).json()["duplicates"]
     finally:
@@ -584,3 +649,60 @@ def test_accepting_one_ambiguous_candidate_closes_the_siblings(cards, conn):
     assert st == {cards["d_silva"]: "accepted", cards["b_silva"]: "rejected"}
     assert [r["card_id"] for r in conn.execute("SELECT card_id FROM opinions")] == [cards["d_silva"]]
     assert {r["opinion_id"] is not None for r in conn.execute("SELECT opinion_id FROM criteria")} == {True}
+
+
+def test_low_confidence_halves_confidence_and_notes_it(cards, conn):
+    full = pipeline.process_items(conn, [Item(GULLIT, "https://y/1", "Team Gullit", source="youtube")],
+                                  pipeline.make_extractor("offline"))["created"][0]
+    low = pipeline.process_items(conn, [Item(GULLIT, "https://y/2", "Team Gullit", source="youtube",
+                                             low_confidence=True)], pipeline.make_extractor("offline"))["created"][0]
+    conn.commit()
+    assert low["confidence"] == pytest.approx(full["confidence"] / 2, abs=0.01) and "senza trascrizione" in low["note"]
+
+
+def test_api_sources_endpoint_states_tiktok_instagram(client, monkeypatch):
+    monkeypatch.delenv("YOUTUBE_API_KEY", raising=False)
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
+    d = client.get("/api/v1/research/sources").json()
+    by = {x["name"]: x for x in d["sources"]}
+    assert by["paste"]["available"] and not by["youtube"]["available"] and not by["x"]["available"]
+    assert not by["tiktok"]["available"] and "incolla" in by["tiktok"]["note"] and "incolla" in by["instagram"]["note"]
+    assert "TikTok e Instagram" in d["note"]
+
+
+def test_api_x_estimate_first_then_confirm(client, cards, monkeypatch):
+    calls = []
+    pages = {"user": (200, {"data": {"id": "42"}}), "tweets": [tweets([1, 2, 3])]}
+
+    def factory(creator, handle, max_posts):
+        return XSource(creator, handle or "exeed_x", max_posts, bearer_token="T", http_get=x_http(pages, calls))
+    app.dependency_overrides[api_research.x_factory_dep] = lambda: factory
+    try:
+        r = client.post("/api/v1/research/x", json={"creator": "Exeed", "max_posts": 50})
+        assert r.status_code == 200 and r.json()["executed"] is False and r.json()["estimate"]["max_cost_usd"] == 0.25
+        assert calls == []  # nessuna lettura (e nessuna spesa) senza conferma
+        r = client.post("/api/v1/research/x", json={"creator": "Exeed", "max_posts": 50, "confirm": True})
+        assert r.status_code == 200 and r.json()["executed"] and r.json()["posts_read"] == 3
+        assert len(r.json()["created"]) == 3 and {p["source"] for p in r.json()["created"]} == {"x"}
+        assert client.post("/api/v1/research/x", json={"creator": "Exeed", "max_posts": 5000}).status_code == 422
+        assert client.post("/api/v1/research/x", json={"creator": "Exeed", "max_posts": 0}).status_code == 422
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_api_x_503_without_token(client, monkeypatch):
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
+    r = client.post("/api/v1/research/x", json={"creator": "Exeed", "handle": "boh", "confirm": True})
+    assert r.status_code == 503 and "X_BEARER_TOKEN" in r.json()["detail"]
+
+
+def test_cli_sources_and_x(client, monkeypatch, capsys):
+    from eafcmeta.research.__main__ import main
+    assert main(["sources"]) == 0 and "TikTok e Instagram" in capsys.readouterr().out
+    monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
+    assert main(["x", "--creator", "Exeed", "--handle", "boh", "--max-posts", "20", "--yes", "--mode", "offline"]) == 1
+    cap = capsys.readouterr()
+    assert "0.10 dollari" in cap.out and "X_BEARER_TOKEN" in cap.err  # stima mostrata prima, poi l'errore chiaro
+    monkeypatch.setattr("builtins.input", lambda *_: "n")
+    assert main(["x", "--creator", "Exeed", "--handle", "boh", "--mode", "offline"]) == 0
+    assert "nessuna spesa" in capsys.readouterr().out

@@ -1,9 +1,12 @@
 {
- "_nota": "Configurazione della ricerca automatica dei pareri. 'channel_id' (UC...) o 'handle' (@nome) vanno compilati a mano dall'utente dopo aver verificato il canale reale: NON sono stati inventati. 'aliases' sono i soprannomi dei giocatori (chiave normalizzata -> nome da cercare nel DB).",
+ "_nota": "Configurazione della ricerca automatica dei pareri. 'kind' = organizzazione | persona. 'x_handle', 'channel_id' (YouTube, UC...), 'handle' (YouTube, @nome) e 'members' (persone dell'organizzazione) vanno compilati a mano dall'utente dopo aver verificato i profili reali: NON è stato inventato nulla. 'aliases' sono i soprannomi dei giocatori (chiave normalizzata -> nome da cercare nel DB).",
  "creators": [
-  {"name": "Team Gullit", "channel_id": "", "handle": ""},
-  {"name": "Exeed",       "channel_id": "", "handle": ""},
-  {"name": "Nassada",     "channel_id": "", "handle": ""}
+  {"name": "Team Gullit", "kind": "organizzazione", "x_handle": "", "channel_id": "", "handle": "", "members": [],
+   "note": "Organizzazione di esports (non una persona): compila canale/handle e l'elenco delle persone che pubblicano i pareri."},
+  {"name": "Exeed", "kind": "organizzazione", "x_handle": "", "channel_id": "", "handle": "", "members": [],
+   "note": "Organizzazione di esports (non una persona): compila canale/handle e l'elenco delle persone che pubblicano i pareri."},
+  {"name": "Nassada", "kind": "", "da_confermare": true, "x_handle": "", "channel_id": "", "handle": "", "members": [],
+   "note": "NON verificato: confermare con l'utente chi è (persona o organizzazione) prima di usarlo."}
  ],
  "limits": {"max_text_chars": 30000, "max_reason_chars": 400, "max_excerpt_chars": 600, "max_videos": 5},
  "youtube": {"languages": ["it", "en"]},

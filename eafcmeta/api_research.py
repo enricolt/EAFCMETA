@@ -10,8 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from .research import llm as llm_mod, pipeline, store
-from .research.sources import (ConfigError, Item, MissingKeyError, NoCaptionsError, PastedText, QuotaExceededError,
-                               ResearchError, YouTubeSource)
+from .research.sources import (SOURCES_NOTE, X_MAX_POSTS_ALLOWED, ConfigError, MissingKeyError, NoCaptionsError,
+                               PastedText, QuotaExceededError, ResearchError, XSource, YouTubeSource)
 
 
 def llm_dep():
@@ -22,6 +22,11 @@ def llm_dep():
 def youtube_factory_dep() -> Callable[[str], YouTubeSource]:
     """Fabbrica di YouTubeSource per creator. Sostituibile nei test con una finta."""
     return YouTubeSource.for_creator
+
+
+def x_factory_dep() -> Callable[..., XSource]:
+    """Fabbrica di XSource (creator, handle, max_posts). Sostituibile nei test con una finta."""
+    return XSource.for_creator
 
 
 class PasteIn(BaseModel):
@@ -35,6 +40,14 @@ class PasteIn(BaseModel):
 class YouTubeIn(BaseModel):
     creator: str = Field(min_length=1, max_length=40)
     query: str = Field(min_length=1, max_length=200)
+    mode: str = "auto"
+
+
+class XIn(BaseModel):
+    creator: str = Field(min_length=1, max_length=40)
+    handle: str = Field("", max_length=40)  # se vuoto, x_handle da research.json
+    max_posts: int = Field(100, ge=1, le=X_MAX_POSTS_ALLOWED)  # tetto di spesa obbligatorio
+    confirm: bool = False  # false = solo stima del costo, nessuna lettura (e nessuna spesa)
     mode: str = "auto"
 
 
@@ -94,6 +107,35 @@ def build_router(require_token, get_conn) -> APIRouter:
             src = factory(body.creator)
             items = src.search(body.query)  # senza chiave YouTube: 503 prima di qualsiasi altra cosa
             return run(conn, items, extractor, None, getattr(src, "warnings", []))
+        except (ResearchError, ValueError) as e:
+            raise _http(e)
+
+    @r.get("/sources")
+    def sources():
+        import os
+        return {"note": SOURCES_NOTE, "sources": [
+            {"name": "paste", "available": True, "note": "Testo incollato: funziona per qualsiasi social."},
+            {"name": "youtube", "available": bool(os.environ.get("YOUTUBE_API_KEY")),
+             "note": "Metadati pubblici (titolo, descrizione, capitoli); trascrizioni solo con un provider collegato."},
+            {"name": "x", "available": bool(os.environ.get("X_BEARER_TOKEN")),
+             "note": "API a pagamento (~0,005 $ per post letto), tetto max_posts obbligatorio."},
+            {"name": "tiktok", "available": False, "note": "Nessuna fonte automatica: incolla il testo a mano."},
+            {"name": "instagram", "available": False, "note": "Nessuna fonte automatica: incolla il testo a mano."}]}
+
+    @r.post("/x")
+    def x_posts(body: XIn, conn: sqlite3.Connection = Depends(get_conn), llm=Depends(llm_dep),
+                factory=Depends(x_factory_dep)):
+        try:
+            extractor = pipeline.make_extractor(body.mode, llm)
+            src = factory(body.creator, body.handle, body.max_posts)
+            cost = {"max_posts": body.max_posts, "max_cost_usd": src.estimate_cost(body.max_posts),
+                    "message": src.estimate()}
+            if not body.confirm:  # prima la stima: nessuna chiamata, nessuna spesa
+                return {"executed": False, "estimate": cost,
+                        "note": "Per eseguire rimanda la richiesta con confirm=true."}
+            items = src.search("")
+            rep = run(conn, items, extractor, None, getattr(src, "warnings", []))
+            return {**rep, "executed": True, "estimate": cost, "posts_read": len(items)}
         except (ResearchError, ValueError) as e:
             raise _http(e)
 
