@@ -7,6 +7,7 @@ is_sbc/sbc, body_type/body, weak_foot/wf, skill_moves/sm, playstyles/ps + una co
 import csv
 import io
 import json
+import math
 import re
 import sys
 
@@ -16,6 +17,8 @@ from . import db, scoring
 from .models import CardIn
 
 MAX_ROWS = 2000
+# errori che un testo incollato strano puo' provocare: sempre errore di riga/di testo, mai un 500
+BAD_INPUT = (ValueError, TypeError, KeyError, OverflowError, RecursionError, csv.Error, json.JSONDecodeError)
 ALIASES = {"nome": "name", "versione": "version", "pos": "position", "posizione": "position", "prezzo": "price",
            "sbc": "is_sbc", "body": "body_type", "bodytype": "body_type", "wf": "weak_foot", "piede_debole": "weak_foot",
            "sm": "skill_moves", "skill": "skill_moves", "ps": "playstyles", "playstyle": "playstyles"}
@@ -31,7 +34,10 @@ def parse_price(v) -> int:
         mult, s = 1_000_000, s[:-1]
     if mult > 1:
         s = s.replace(",", ".")
-        return int(round(float(s) * mult))
+        n = float(s) * mult
+        if not math.isfinite(n):
+            raise ValueError(f"prezzo non valido: {v}")
+        return int(round(n))
     if not re.fullmatch(r"[\d.,]+", s):
         raise ValueError(f"prezzo non valido: {v}")
     return int(s.replace(".", "").replace(",", ""))
@@ -53,8 +59,11 @@ def _rows_from_text(text: str) -> list[dict]:
             raise ValueError("JSON non valido: serve una lista di carte")
         rows = []
         for d in data:
+            stats = d.get("stats") or {}
+            if not isinstance(stats, dict):
+                raise ValueError("JSON non valido: 'stats' deve essere un oggetto {stat: valore}")
             flat = {k: v for k, v in d.items() if k != "stats"}
-            flat.update(d.get("stats") or {})
+            flat.update(stats)
             rows.append(flat)
         return rows
     first = text.splitlines()[0]
@@ -78,6 +87,12 @@ def _to_card(raw: dict, stat_keys: set[str]) -> CardIn:
 def _err(e: Exception) -> str:
     if isinstance(e, ValidationError):
         return "; ".join(f"{'.'.join(map(str, x['loc']))}: {x['msg'].removeprefix('Value error, ')}" for x in e.errors())
+    if isinstance(e, (OverflowError, RecursionError)):
+        return "valore troppo grande o struttura troppo annidata"
+    if isinstance(e, csv.Error):
+        return f"CSV non valido: {e}"
+    if isinstance(e, (TypeError, KeyError)):
+        return f"dati non validi ({type(e).__name__})"
     return str(e)
 
 
@@ -86,7 +101,7 @@ def import_text(conn, text: str, dry_run: bool = False) -> dict:
     stat_keys = set(scoring.load_config()["stat_keys"])
     try:
         raw_rows = _rows_from_text(text)
-    except (ValueError, json.JSONDecodeError) as e:
+    except BAD_INPUT as e:
         return {"new": 0, "updated": 0, "errors": [{"row": 0, "error": _err(e)}], "saved": False, "total": 0}
     if len(raw_rows) > MAX_ROWS:
         return {"new": 0, "updated": 0, "errors": [{"row": 0, "error": f"troppe righe (max {MAX_ROWS})"}],
@@ -95,7 +110,7 @@ def import_text(conn, text: str, dry_run: bool = False) -> dict:
     for i, raw in enumerate(raw_rows, start=2):  # riga 1 = intestazione
         try:
             cards.append(_to_card(raw, stat_keys))
-        except (ValidationError, ValueError, TypeError) as e:
+        except (ValidationError, *BAD_INPUT) as e:
             errors.append({"row": i, "error": _err(e)})
     new = updated = 0
     try:
@@ -140,7 +155,7 @@ def update_prices(conn, text: str, dry_run: bool = False) -> dict:
             if len(ids) > 1:
                 raise ValueError(f"'{parts[0]}' è ambigua ({len(ids)} carte): indica anche la versione")
             plan.append((ids[0], price))
-        except ValueError as e:
+        except BAD_INPUT as e:
             errors.append({"row": n, "error": str(e)})
     if not errors and not dry_run:
         for cid, price in plan:

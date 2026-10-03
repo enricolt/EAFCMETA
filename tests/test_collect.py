@@ -62,8 +62,9 @@ def test_futbin():
 def test_unrecognized_and_broken_pages():
     with pytest.raises(sources.PageError):
         sources.parse_page("<html><body>ciao</body></html>")
-    with pytest.raises(sources.PageError):
-        sources.parse_page(gg_page(price="n/d"))
+    # prezzo illeggibile su una pagina carta: la carta NON si scarta (revisione E), prezzo 0 e avviso
+    d = sources.parse_page(gg_page(price="n/d"))
+    assert d["price"] == 0 and any("prezzo non trovato" in w for w in d["warnings"])
 
 
 def test_import_pages_flow(client):

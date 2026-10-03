@@ -54,17 +54,28 @@ def _int(v: str | None, what: str) -> int:
     return int(v)
 
 
-def _price(v: str | None) -> int:
-    if v is None or not re.fullmatch(r"[\d.,]+", v.strip()):
-        raise PageError("non trovo il prezzo")
+def _price(v: str | None) -> int | None:
+    """Prezzo intero, oppure None se manca o non e' un numero ('EXTINCT', 'N/A'): la carta non va scartata."""
+    if v is None or not re.fullmatch(r"\d[\d.,]*", v.strip()):
+        return None
     return int(re.sub(r"[.,]", "", v))
 
 
-def _body_type(text: str | None) -> str:
+def _price_or_zero(v: str | None, warnings: list[str]) -> int:
+    p = _price(v)
+    if p is None:
+        warnings.append(f"prezzo non trovato ({(v or 'assente')[:20]}): carta estinta o non in vendita? Salvata con prezzo 0.")
+        return 0
+    return p
+
+
+def _body_type(text: str | None, warnings: list[str] | None = None) -> str:
     t = (text or "").lower()
     for key, val in (("lean", "Lean"), ("stocky", "Stocky"), ("unique", "Unique"), ("custom", "Custom")):
         if key in t:
             return val
+    if warnings is not None and not re.search(r"\b(average|normal)\b", t):  # "Normal" e' il nome sito di Average
+        warnings.append(f"body type non riconosciuto ({(text or 'assente')[:30]}): uso Average (nessun bonus), controlla la carta.")
     return "Average"
 
 
@@ -101,16 +112,25 @@ def _num(x: str) -> float | None:
         return None
 
 
+def _view_all(t: list[str]) -> int | None:
+    """Indice del 'View All' della classifica dei ruoli: quello seguito da 'RUOLO | numero' (la pagina ne puo' avere altri)."""
+    for i, x in enumerate(t):
+        if x == "View All" and i + 2 < len(t) and re.fullmatch(r"[A-Z]{2,3}", t[i + 1]) and _num(t[i + 2]) is not None:
+            return i
+    return None
+
+
 def signals_futgg(t: list[str]) -> dict:
     """Voto della community (tier) e GG Rating, se presenti nella pagina."""
     sig: dict = {}
     if "Tier vote" in t:
         i = t.index("Tier vote")
         votes, tier, pct = t[i + 1:i + 2], t[i + 3:i + 4], t[i + 4:i + 5]
-        if votes and votes[0].isdigit() and tier and tier[0] in ("S", "A", "B", "C", "D", "F") and pct and pct[0].endswith("%"):
-            sig.update(gg_tier=tier[0], gg_tier_pct=int(pct[0][:-1]), gg_tier_votes=int(votes[0]))
-    if "View All" in t:  # classifica dei ruoli: "ST | 87.9 | Advanced Forward | ++ | #70 Ranked"
-        i = t.index("View All")
+        pm = re.fullmatch(r"(\d+(?:[.,]\d+)?)\s*%", pct[0].strip()) if pct else None  # anche "79.5%"
+        if votes and votes[0].isdigit() and tier and tier[0] in ("S", "A", "B", "C", "D", "F") and pm:
+            sig.update(gg_tier=tier[0], gg_tier_pct=int(round(float(pm.group(1).replace(",", ".")))), gg_tier_votes=int(votes[0]))
+    i = _view_all(t)
+    if i is not None:  # classifica dei ruoli: "ST | 87.9 | Advanced Forward | ++ | #70 Ranked"
         role, val = t[i + 1:i + 2], _num(t[i + 2]) if i + 2 < len(t) else None
         rank = next((int(m.group(1)) for x in t[i + 3:i + 8] if (m := re.fullmatch(r"#(\d+) Ranked", x))), None)
         if role and val is not None:
@@ -190,8 +210,11 @@ def extras_futgg(t: list[str]) -> dict:
                 d["chem_style_top"] = t[j]
                 break
     roles = []
-    if "View All" in t:  # "ST | 87.9 | (invisibile) | Advanced Forward | ++ | #70 Ranked", una riga per ruolo
-        i = t.index("View All") + 1
+    va = _view_all(t)
+    if va is None and "View All" in t:  # etichetta presente ma con un formato diverso dal solito: si prova l'ultima
+        va = len(t) - 1 - t[::-1].index("View All")
+    if va is not None:  # "ST | 87.9 | (invisibile) | Advanced Forward | ++ | #70 Ranked", una riga per ruolo
+        i = va + 1
         end = t.index("Attributes", i) if "Attributes" in t[i:] else min(len(t), i + 80)
         grp: list[str] = []
         for x in t[i:end]:
@@ -281,8 +304,9 @@ def parse_futbin(html: str) -> dict:
         plus = "plus" in " ".join(a.get("class", [])).lower() or bool(re.search(r"(^|[_/])plus[_.]", src, re.I))
         if name and a.get("class") and "active" in a.get("class"):
             plays.append(name + ("+" if plus else ""))
+    warnings: list[str] = []
     price_el = soup.select_one(".price-box.platform-ps-only .lowest-price-1") or soup.select_one(".lowest-price-1")
-    price = _price(price_el.get_text(strip=True) if price_el else None)
+    price = _price_or_zero(price_el.get_text(strip=True) if price_el else None, warnings)
     page_url = _page_url(soup)
     ld_name = next((x.get("name", "") for sc in soup.select('script[type="application/ld+json"]')
                     for x in _ld_items(sc) if x.get("@type") == "Product"), "")
@@ -317,8 +341,8 @@ def parse_futbin(html: str) -> dict:
         stats = {k: v for k, v in stats.items() if k.startswith("gk_") or k in ("reactions", "acceleration", "sprint_speed")}
     return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
             "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
-            "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")),
-            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url, **extras_futbin(soup, t)}
+            "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type"), warnings),
+            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url, "warnings": warnings, **extras_futbin(soup, t)}
 
 
 def parse_futgg(html: str) -> dict:
@@ -348,7 +372,8 @@ def parse_futgg(html: str) -> dict:
             plus = path is not None and bool(path.get("d")) and not path["d"].startswith(DIAMOND)
             titles.append(d["title"] + ("+" if plus else ""))
     t = _tokens(soup)
-    price = _price(t[t.index("Current price") - 1] if "Current price" in t else None)
+    warnings: list[str] = []
+    price = _price_or_zero(t[t.index("Current price") - 1] if "Current price" in t else None, warnings)
     try:
         s0 = next(i for i, x in enumerate(t) if x == "Attributes" and t[i + 1] == "Chemistry Style")
         s1 = next(i for i in range(s0, len(t)) if t[i] in ("Basic", "GK Basic"))
@@ -356,17 +381,22 @@ def parse_futgg(html: str) -> dict:
         raise PageError("non trovo le statistiche")
     return {"site": "futgg", "name": name, "version": version, "position": position, "price": price,
             "skill_moves": _int(_after(t, "Skill Moves"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
-            "body_type": _body_type(_after(t, "Body Type")), "playstyles": titles, "stats": _stats(t, s0, s1),
-            "signals": signals_futgg(t), "url": page_url, **extras_futgg(t)}
+            "body_type": _body_type(_after(t, "Body Type"), warnings), "playstyles": titles, "stats": _stats(t, s0, s1),
+            "signals": signals_futgg(t), "url": page_url, "warnings": warnings, **extras_futgg(t)}
 
 
 def parse_short_price(tok: str | None) -> int | None:
-    """'6.8M' -> 6800000, '783K' -> 783000, '750' -> 750; 'EXTINCT'/assente -> None."""
-    m = re.fullmatch(r"([\d.,]+)\s*([KkMm]?)", (tok or "").strip())
+    """'6.8M' / '6,8M' -> 6800000, '783K' -> 783000, '750' -> 750, '1.234.567' -> 1234567; 'EXTINCT'/assente -> None."""
+    m = re.fullmatch(r"(\d[\d.,]*)\s*([KkMm]?)", (tok or "").strip())
     if not m:
         return None
-    n = float(m.group(1).replace(",", ""))
-    return int(round(n * {"": 1, "k": 1_000, "m": 1_000_000}[m.group(2).lower()]))
+    num, suffix = m.group(1), m.group(2).lower()
+    try:
+        if suffix:  # con K/M il separatore e' decimale ("6,8M" = "6.8M"), come in importer.parse_price
+            return int(round(float(num.replace(",", ".")) * {"k": 1_000, "m": 1_000_000}[suffix]))
+        return int(re.sub(r"[.,]", "", num))  # senza suffisso sono migliaia: "1.234.567"
+    except (ValueError, OverflowError):
+        return None
 
 
 def is_list_page(html: str) -> bool:
