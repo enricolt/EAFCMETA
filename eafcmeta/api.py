@@ -73,7 +73,7 @@ def _eval(card_id: int, scored: dict) -> dict:
                        "final_score": round(final, 2)},
             "pro_missing": card["pro_score"] is None, "pro_notes": card["pro_notes"],
             "verdict": v["verdict"], "value_gap": v["value_gap"], "verdict_reason": v["reason"],
-            "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"],
+            "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"], "rules_delta": ex.get("rules_delta", 0.0),
                           "unknown_playstyles": ex["unknown_playstyles"]},
             "market_size": len(market), "meta_level": analysis.meta_level(final, cfg)[0],
             "meta_label": analysis.meta_level(final, cfg)[1],
@@ -124,7 +124,8 @@ def get_card(card_id: int, conn: sqlite3.Connection = Conn):
     return {**_public(e), "card": _raw(scored[card_id][0]), "price_history": db.history(conn, card_id),
             "opinions": db.opinions_by_card(conn, card_id).get(card_id, []),
             "analysis": analysis.describe(e["_card"], e["_ex"], e["_final"], e["_v"], e["market_size"], cfg,
-                                          db.opinions_by_card(conn, card_id).get(card_id, []))}
+                                          db.opinions_by_card(conn, card_id).get(card_id, []),
+                                          criteria_notes=_criteria_notes(conn, e["_ex"]["role"], cfg))}
 
 
 @router.get("/cards/{card_id}/eval")
@@ -200,6 +201,7 @@ def template():
 class CalibrationIn(BaseModel):
     thresholds: bool = True
     weights: bool = False
+    rules: bool = False
 
 
 @router.get("/calibration")
@@ -210,7 +212,7 @@ def get_calibration(conn: sqlite3.Connection = Conn):
 @router.post("/calibration/apply")
 def apply_calibration(body: CalibrationIn, conn: sqlite3.Connection = Conn):
     try:
-        return calibration.apply(conn, scoring.load_config(), body.thresholds, body.weights)
+        return calibration.apply(conn, scoring.load_config(), body.thresholds, body.weights, body.rules)
     except ValueError as e:
         raise HTTPException(422, str(e))
 
@@ -232,6 +234,7 @@ def meta():
 
 
 app.include_router(router)
+from .api_rules import router as _rules_router, criteria_notes as _criteria_notes; app.include_router(_rules_router)  # noqa: E402
 
 
 @app.get("/", include_in_schema=False)

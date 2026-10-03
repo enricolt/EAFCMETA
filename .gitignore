@@ -11,3 +11,4 @@ local.json
 diagnosi.txt
 build/
 dist/
+rules.local.json

@@ -65,6 +65,8 @@ def validate_config(cfg: dict) -> None:
         raise ValueError("patch.json: meta deve rispettare playable < meta < top <= 100")
     if not 0 < cfg["soft_cap_start"] < 100:
         raise ValueError("patch.json: soft_cap_start deve essere tra 0 e 100")
+    from . import rules  # regole dichiarative (rules.json + stato + ritocchi): errore chiaro se rotte
+    rules.validate_config(cfg)
 
 
 def role_of(position: str, cfg: dict) -> str:
@@ -116,8 +118,12 @@ def soft_cap(x: float, cfg: dict) -> float:
 def explain(card: dict, cfg: dict) -> dict:
     sm = stats_meta(card, cfg)
     bonus, unknown = bonus_points(card, cfg)
-    return {"role": role_of(card["position"], cfg), "stats_meta": round(sm, 2), "bonus": round(bonus, 2),
-            "base": soft_cap(sm + bonus, cfg), "unknown_playstyles": unknown}
+    from . import rules
+    role = role_of(card["position"], cfg)
+    rd = rules.evaluate(card, {"role": role, "unknown_playstyles": unknown}, cfg)  # solo regole attive, con tetto
+    return {"role": role, "stats_meta": round(sm, 2), "bonus": round(bonus, 2),
+            "base": soft_cap(sm + bonus + rd["score_delta"], cfg), "unknown_playstyles": unknown,
+            "rules": rd, "rules_delta": rd["score_delta"]}
 
 
 def base_score(card: dict, cfg: dict) -> float:
