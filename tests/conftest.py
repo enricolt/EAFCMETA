@@ -1,7 +1,17 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from eafcmeta import api
+from eafcmeta import api, scoring
+
+
+@pytest.fixture(autouse=True)
+def isolated_local_config(tmp_path, monkeypatch):
+    """Calibrazione e stato delle regole (local.json, rules.local.json) in una cartella temporanea: i test non devono
+    mai leggere o scrivere i file veri dell'utente né influenzarsi a vicenda."""
+    monkeypatch.setenv("EAFCMETA_LOCAL_CONFIG", str(tmp_path / "local.json"))
+    scoring.load_config.cache_clear()
+    yield
+    scoring.load_config.cache_clear()
 
 
 @pytest.fixture
