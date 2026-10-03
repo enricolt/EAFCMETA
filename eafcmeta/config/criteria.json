@@ -1,0 +1,39 @@
+{
+ "_nota": "Vocabolario condiviso dei criteri con cui i pro giudicano una carta. Lo usano l'estrazione dai pareri (ricerca) e il motore di regole. Le parole chiave sono in minuscolo, italiano e inglese.",
+ "criteria": {
+  "pace":       {"it": "scatto e velocità",       "stats": ["acceleration", "sprint_speed"],
+                 "keywords": ["scatto", "velocità", "veloce", "rapido", "rapida", "lento", "lenta", "pace", "accelerazione", "sprint", "rapid"]},
+  "finishing":  {"it": "finalizzazione e tiro",   "stats": ["finishing", "shot_power", "positioning", "composure"],
+                 "keywords": ["finalizzazione", "tiro", "gol", "finisce", "finishing", "tira", "conclusione", "shot"]},
+  "dribbling":  {"it": "dribbling e agilità",     "stats": ["agility", "dribbling", "ball_control", "balance"],
+                 "keywords": ["dribbling", "agilità", "agile", "finte", "controllo palla", "skill", "dribbla", "tecnica"]},
+  "passing":    {"it": "passaggi e visione",      "stats": ["short_passing", "long_passing", "vision", "crossing"],
+                 "keywords": ["passaggi", "passaggio", "visione", "cross", "assist", "passing", "lancio", "lanci"]},
+  "defending":  {"it": "difesa",                  "stats": ["defensive_awareness", "standing_tackle", "interceptions", "sliding_tackle"],
+                 "keywords": ["difesa", "difende", "contrasto", "contrasti", "intercetti", "difensivo", "defending", "tackle", "recupera"]},
+  "physical":   {"it": "fisico e forza",          "stats": ["strength", "aggression", "jumping"],
+                 "keywords": ["fisico", "forza", "strength", "muscoli", "robusto", "robusta", "fragile", "duello", "duelli", "spalla"]},
+  "stamina":    {"it": "resistenza",              "stats": ["stamina"],
+                 "keywords": ["resistenza", "stamina", "corre tutta la partita", "si stanca", "fiato"]},
+  "height":     {"it": "altezza e corporatura",   "stats": [],
+                 "keywords": ["alto", "alta", "altezza", "basso", "bassa", "statura", "gigante", "piccolo", "piccola", "cm"]},
+  "body_type":  {"it": "body type",               "stats": [],
+                 "keywords": ["body type", "corporatura", "lean", "stocky", "unique", "custom"]},
+  "animations": {"it": "animazioni e sensazione di gioco", "stats": ["reactions"],
+                 "keywords": ["animazioni", "animazione", "reattivo", "reattiva", "reattività", "responsive", "sensazione", "feeling", "si sente", "fluida", "legnosa", "hitbox"]},
+  "weak_foot":  {"it": "piede debole",            "stats": [],
+                 "keywords": ["piede debole", "weak foot", "entrambi i piedi", "sinistro", "destro"]},
+  "skill_moves":{"it": "skill moves",             "stats": [],
+                 "keywords": ["skill moves", "stelle di skill", "5 stelle", "finte complete"]},
+  "playstyle":  {"it": "PlayStyle",               "stats": [],
+                 "keywords": ["playstyle", "finesse shot", "rapid+", "anticipate", "tiki taka", "technical", "press proven", "first touch"]},
+  "goalkeeping":{"it": "parate",                  "stats": ["gk_reflexes", "gk_diving", "gk_handling", "gk_positioning", "gk_kicking"],
+                 "keywords": ["parate", "para", "riflessi", "tuffo", "portiere", "presa", "uscite"]},
+  "price":      {"it": "prezzo e convenienza",    "stats": [],
+                 "keywords": ["prezzo", "costa", "caro", "cara", "economico", "economica", "value", "conviene", "regalo", "vale"]}
+ },
+ "polarity": {
+  "positive": ["ottimo", "ottima", "top", "eccellente", "forte", "buono", "buona", "meta", "consigliato", "consigliata", "spacca", "perfetto", "perfetta", "devastante", "must", "pazzesco", "pazzesca", "elite"],
+  "negative": ["lento", "lenta", "debole", "scarso", "scarsa", "pessimo", "pessima", "evita", "evitare", "male", "non vale", "fragile", "troppo", "mediocre", "inutile", "sopravvalutato", "sopravvalutata", "rovinata"]
+ }
+}
