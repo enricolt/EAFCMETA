@@ -486,7 +486,8 @@
   "min_cards_for_curve": 8,
   "min_distinct_prices": 4,
   "min_gap": 1.5,
-  "k_sigma": 0.7
+  "k_sigma": 0.7,
+  "price_range_factor": 2
  },
  "meta": {
   "top": 90,

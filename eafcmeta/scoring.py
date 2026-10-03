@@ -206,8 +206,12 @@ def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: di
     curve = fit_curve(market)
     if curve is None or curve[1] <= 0:
         return {**unreliable, "reason": "Nel mercato inserito prezzo e score non sono correlati: confronto non affidabile."}
+    lo, hi = min(p for p, _ in market) / v["price_range_factor"], max(p for p, _ in market) * v["price_range_factor"]
+    if not lo <= price <= hi:  # niente estrapolazione: la curva vale solo vicino ai prezzi osservati
+        return {**unreliable, "reason": f"Prezzo {price:,} fuori dall'intervallo dei prezzi del mercato inserito "
+                                        f"({lo:,.0f}-{hi:,.0f}): confronto non affidabile."}
     a, b, sigma = curve
-    expected = a + b * math.log(price)
+    expected = min(100.0, max(0.0, a + b * math.log(price)))
     gap = score - expected
     thr = max(v["min_gap"], v["k_sigma"] * sigma)
     label = "MUST_DO" if gap >= thr else "AVOID" if gap <= -thr else "NEUTRAL"
