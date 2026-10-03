@@ -35,6 +35,10 @@
   "max_consecutive_errors": 5,
   "words_per_line": 14
  },
+ "catalog": {
+  "_nota": "Passo opzionale: aggiorna il catalogo di tutte le carte (modo 'new', vedi config/catalog.json). SPENTO di default: l'aggiornamento del catalogo e' solo A COMANDO.",
+  "enabled": false
+ },
  "futgg": {
   "enabled": true,
   "_nota": "URL degli elenchi NON verificati sul sito vero (dal cloud la rete è bloccata): controllali sul tuo PC e correggili in auto.local.json.",

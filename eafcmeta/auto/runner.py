@@ -86,8 +86,25 @@ def make_yt(cfg: dict, runner=None, sleep=None) -> YtDlp:
                  languages=y["languages"], words_per_line=y["words_per_line"], max_chars=rc.limit("max_text_chars"), **kw)
 
 
+def catalog_step(c: dict, update=None, log=print) -> None:
+    """Passo opzionale (auto.json -> catalog.enabled, spento di default): aggiornamento del catalogo in modo 'new'."""
+    from ..catalog import updater
+    r = (update or updater.run_update)(mode="new")
+    s = r.get("summary", {})
+    if r["status"] == "saltata":
+        c["errori"].append("catalogo: un altro aggiornamento era già in corso")
+        return
+    c["carte_nuove"] += s.get("nuove", 0)
+    c["prezzi_aggiornati"] += s.get("prezzi", 0)
+    c["catalogo"] = {"status": r["status"], **{k: s.get(k) for k in ("nuove", "aggiornate", "prezzi", "valutate")}}
+    c["errori"] += [f"catalogo: {e}"[:250] for e in s.get("errori", [])[:5]]
+    if s.get("fermato"):
+        c["fermato"]["catalogo"] = str(s["fermato"])
+    log(f"[catalogo] {r['status']}: {s.get('nuove', 0)} nuove, {s.get('prezzi', 0)} prezzi")
+
+
 def run_once(conn_factory=db.connect, cfg: dict | None = None, yt: YtDlp | None = None, fut_fetch=None, robots=None,
-             now: datetime | None = None, log=print) -> dict:
+             now: datetime | None = None, log=print, catalog_update=None) -> dict:
     """Esegue tutto e ritorna {'id', 'status', 'summary'}. status: ok | parziale | errore | saltata (già in corso)."""
     cfg = cfg or config.load()
     now = now or datetime.now(timezone.utc)
@@ -117,6 +134,7 @@ def run_once(conn_factory=db.connect, cfg: dict | None = None, yt: YtDlp | None 
                 log(f"[{name}] ERRORE: {e}")
 
         step("futgg", cfg["futgg"]["enabled"], lambda: futgg.update(conn, cfg, c, fut_fetch, robots, log))
+        step("catalogo", cfg.get("catalog", {}).get("enabled", False), lambda: catalog_step(c, catalog_update, log))
         state = {}
         if cfg["youtube"]["enabled"]:
             state["yt"] = yt or make_yt(cfg)

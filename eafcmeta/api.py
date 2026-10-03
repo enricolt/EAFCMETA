@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import analysis, calibration, collect, db, importer, opinion_model, opinions_import, scoring
+from .catalog import config as catcfg, evaluation
 from .models import CardIn, ImportIn, OpinionIn, PagesIn, ProIn
 
 
@@ -53,39 +54,17 @@ def _scored(conn) -> dict:
     ops = db.opinions_by_card(conn)
     for r in conn.execute("SELECT * FROM cards"):
         c = db.row_to_card(r)
-        if c["id"] in ops:  # con pareri dei creator, il punteggio "pro" è la loro media
-            agg = opinion_model.aggregate(ops[c["id"]], cfg)
-            c["pro_score"], c["pro_share"], c["pro_agg"] = agg["pro"], agg["share"], agg
-        try:
-            ex = scoring.explain(c, cfg)
-        except ValueError:
-            continue  # carta non più valida con la config corrente: ignorata
-        out[c["id"]] = (c, ex, scoring.final_score(ex["base"], c["pro_score"], cfg, c.get("pro_share")))
+        sc = evaluation.score_card(c, ops.get(c["id"]), cfg)  # stessi passi della cache delle valutazioni (catalog/evaluation.py)
+        if sc is not None:  # None: carta non più valida con la config corrente, ignorata
+            out[c["id"]] = sc
     return out
 
 
-class _Markets:
-    """Mercato per posizione, costruito UNA volta per richiesta. Il Theil-Sen e' O(m^2): rifarlo per ogni carta su /cards
-    costava ~17 s con 500 carte. Mercato piccolo (<= verdict.exact_market_max altre carte): curva per carta senza la carta
-    stessa (esatta, costa poco). Mercato grande: una curva condivisa per posizione (la carta pesa 1/m), calcolata una volta."""
+class _Markets(evaluation.Markets):
+    """Mercato per posizione, costruito UNA volta per richiesta (logica condivisa con la cache: catalog/evaluation.py)."""
 
     def __init__(self, scored: dict, cfg: dict):
-        self.limit = cfg["verdict"]["exact_market_max"]
-        self.pts: dict[str, list[tuple[int, float, float]]] = {}
-        for i, (c, _, f) in scored.items():
-            self.pts.setdefault(c["position"], []).append((i, c["price"], f))
-        self._shared: dict[str, tuple[list, tuple | None]] = {}
-
-    def for_card(self, card_id: int, position: str):
-        """(mercato [(prezzo, score)] per il verdetto, curva gia' calcolata o scoring._FIT, n. di altre carte)."""
-        pts = self.pts[position]
-        if len(pts) - 1 <= self.limit:
-            return [(p, f) for i, p, f in pts if i != card_id], scoring._FIT, len(pts) - 1
-        if position not in self._shared:
-            mk = [(p, f) for _, p, f in pts]
-            self._shared[position] = (mk, scoring.fit_curve([(p, f) for p, f in mk if p > 0]))
-        mk, curve = self._shared[position]
-        return mk, curve, len(pts) - 1
+        super().__init__(((i, c["position"], c["price"], f) for i, (c, _, f) in scored.items()), cfg, catcfg.load()["curve_max_points"])
 
 
 def _eval(card_id: int, scored: dict, markets: "_Markets | None" = None) -> dict:
@@ -94,9 +73,7 @@ def _eval(card_id: int, scored: dict, markets: "_Markets | None" = None) -> dict
     markets = markets or _Markets(scored, cfg)
     market, curve, n_others = markets.for_card(card_id, card["position"])
     v = scoring.verdict(final, card["price"], market, cfg, curve)
-    weights = cfg["role_weights"][ex["role"]]
-    top = sorted(weights, key=lambda k: (-weights[k], -card["stats"][k]))[:4]
-    return {"id": card_id, "name": card["name"], "top_stats": [{"k": k, "v": card["stats"][k]} for k in top],
+    return {"id": card_id, "name": card["name"], "top_stats": evaluation.top_stats(card, ex["role"], cfg),
             "bonus_playstyles": [p for p in card["playstyles"] if p.endswith("+")][:3], "version": card["version"], "position": card["position"],
             "is_sbc": card["is_sbc"], "cost_credits": card["price"],
             "scores": {"base_score": round(ex["base"], 2), "pro_sentiment_score": card["pro_score"],
@@ -136,6 +113,8 @@ def add_card(card: CardIn, conn: sqlite3.Connection = Conn):
     for attempt in range(2):  # due richieste insieme sulla stessa carta nuova: la seconda perde la corsa, si riprova (ora aggiorna)
         try:
             cid, status = db.upsert_card(conn, card)
+            if card.in_collection:
+                conn.execute("INSERT OR IGNORE INTO collection (card_id, added_at) VALUES (?, ?)", (cid, db.now_iso()))
             conn.commit()
             return {"id": cid, "status": status}
         except sqlite3.IntegrityError:
@@ -276,6 +255,7 @@ def meta():
 
 from .api_research import build_router as _research_router; app.include_router(_research_router(require_token, get_conn))
 from .api_auto import build_router as _auto_router; app.include_router(_auto_router(require_token, get_conn))
+from .api_catalog import build_router as _catalog_router; app.include_router(_catalog_router(require_token, get_conn))
 app.include_router(router)
 from .api_rules import router as _rules_router, criteria_notes as _criteria_notes; app.include_router(_rules_router)  # noqa: E402
 

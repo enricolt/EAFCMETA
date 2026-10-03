@@ -63,6 +63,7 @@ RULES = {
     ("youtube", "retry_no_transcript_days"): (int, 0, 60), ("youtube", "discovery_retry_days"): (int, 0, 365),
     ("youtube", "search_results"): (int, 1, 50), ("youtube", "max_consecutive_errors"): (int, 1, 100),
     ("youtube", "words_per_line"): (int, 3, 60),
+    ("catalog", "enabled"): (bool, None, None),
     ("futgg", "enabled"): (bool, None, None), ("futgg", "pages"): (int, 1, 20),
     ("futgg", "delay_seconds"): (float, 0, 120), ("futgg", "check_robots"): (bool, None, None),
 }

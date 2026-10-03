@@ -13,3 +13,4 @@ build/
 dist/
 rules.local.json
 auto.local.json
+catalog.local.json
