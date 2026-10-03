@@ -1,66 +1,64 @@
 # HANDOFF — EA FC Meta
 
-Documento di passaggio per chi continua il lavoro **in locale** (stato al 2 ottobre 2026, patch config 1.5).
+Documento di passaggio per chi continua il lavoro **in locale** (stato al 3 ottobre 2026, config `patch.json` 1.6).
 Chi legge: una persona o una sessione di Claude Code che non ha visto la conversazione. Qui c'è tutto quello che serve.
 
-- **Repository:** `enricolt/EAFCMETA` — branch di lavoro `claude/nifty-babbage-h8l35m` (non esiste ancora `main`, nessuna PR).
+- **Repository:** `enricolt/EAFCMETA` — branch di lavoro `claude/nifty-babbage-h8l35m` (non esiste `main`, nessuna PR).
 - **Lingua:** l'utente scrive e legge in **italiano**. Testi dell'app, messaggi, commit e documenti in italiano.
-- **Uso:** app personale per l'utente e qualche amico. Non è un prodotto pubblico. L'utente ha **pochi token**: lavorare per
-  passi piccoli e verificabili, non rifare cose già fatte.
-- **Pronomi:** non assumere il genere dell'utente; usare formule neutre.
+- **Uso:** app personale per l'utente e qualche amico. L'utente ha **pochi token**: passi piccoli e verificabili.
+- **Pronomi:** non assumere il genere dell'utente; formule neutre.
 
 ---
 
-## 1. Cosa vuole l'utente (requisiti, nelle sue parole riassunte)
+## 1. Cosa vuole l'utente
 
-1. Un'app **autonoma** (finestra desktop, non nel browser) che valuta le carte di EA FC e dice se una carta
-   **è meta** e **su quali basi va presa o no**, con una parte descrittiva.
-2. **L'analisi la fa l'app**, con le **regole scritte nell'engine**, secondo **parametri che decidiamo capendo il meta
-   dai pro**. L'app deve **generare i giudizi autonomamente**, non limitarsi a mostrare testo inserito a mano.
-3. Quando i pro **non sono d'accordo**, spiegare perché: «secondo Team Gullit sì, secondo Exeed e Nassada no», con i motivi.
-4. Dati da **FUTBIN e FUT.GG** per iniziare (prezzi indicativi, non in tempo reale).
-5. Poi i **pareri dei pro più famosi da X, TikTok e Instagram**, con una **ricerca automatica**.
-6. Grafica moderna e curata (fatta: carte in stile FUT, tema chiaro/scuro).
-
-**Priorità attuale dell'utente:** i punti 2 e 5 — *motore di regole che genera i giudizi da solo* e *ricerca automatica*.
-Sono descritti nelle sezioni 6 e 7. Tutto il resto è già funzionante.
+1. Un'app **autonoma** (finestra desktop, non nel browser) che valuta le carte di EA FC e dice se una carta **è meta** e
+   **su quali basi va presa o no**, con una parte descrittiva.
+2. **Il giudizio lo genera l'app**, con regole nell'engine i cui parametri derivano da ciò che dicono i pro.
+3. Quando i pro **non concordano**, spiegare perché («secondo X sì, secondo Y no») con i motivi.
+4. **Nessun inserimento a mano**: raccolta dei pareri e delle carte **totalmente automatica** (scelte dell'utente: sottotitoli YouTube non
+   ufficiali ammessi; **niente X, niente modello linguistico a pagamento**; salvataggio automatico sopra una soglia di sicurezza;
+   TikTok e Instagram esclusi perché non c'è una via automatica lecita).
+5. Dati da FUT.GG e FUTBIN (prezzi indicativi). FUTBIN **blocca** l'utente: lì solo pagine salvate dal browser.
+6. Grafica moderna e curata (fatta).
 
 ---
 
 ## 2. Stato: cosa funziona e cosa no
 
-### Funziona ed è verificato (oltre 260 test, `pytest`; UI controllata con Playwright su telefono/desktop, chiaro/scuro)
-- Punteggio per carta: stats per ruolo + bonus (PlayStyle per tier e ruolo, body type, 5★) → soft cap → fusione 70/30 col "pro".
-- Verdetto sul prezzo: curva robusta (Theil-Sen) score–ln(prezzo) per posizione, soglia adattiva. Servono ≥ 8 carte con ≥ 4 prezzi diversi.
-- Analisi scritta per carta (`analysis.py`): etichetta meta, perché sì / perché no, consiglio.
-- Pareri dei creator (sì/dipende/no, voto, motivo, link) e **spiegazione delle discordanze**.
-- Import: CSV/TSV/JSON incollati, **pagine salvate** di FUT.GG e FUTBIN (carte singole e **liste**), aggiornamento prezzi.
-- Lettura verificata su **pagine reali salvate dall'utente** (non sul sito live): FUT.GG (carta di movimento, portiere, lista),
-  FUTBIN (carta di movimento, portiere, lista).
-- Segnali dei siti (GG Rating, tier community, FUTBIN Rating) e «parere» automatico "FUT.GG (community)".
-- Calibrazione 🎯 dai pareri dei creator (soglie e pesi), con applica/ripristina.
-- Launcher `start.py` con aggiornamento da GitHub a ogni avvio; finestra a 3 livelli (pywebview / app mode Edge-Chrome / browser); `EAFCMETA.pyw` per Windows; `--diagnosi`.
+### Funziona ed è verificato (424 test con `python -m pytest -q`; `tests/ui_smoke.py` 76 controlli con Playwright, senza errori JS)
+- **Punteggio:** stats per ruolo + bonus (PlayStyle per tier e ruolo, body type, 5★) → regole dichiarative (delta con tetto) → soft cap →
+  fusione con i pareri (quota crescente col numero di creator, vedi §5). Portieri inclusi.
+- **Verdetto sul prezzo:** curva robusta (Theil-Sen) per posizione, soglia adattiva, ignorato fuori dal range di mercato; veloce (500 carte in 0,17 s).
+- **Analisi scritta** per carta, **pareri dei creator** con spiegazione delle discordanze, peso di ogni parere visibile.
+- **Motore di regole** (`rules.json`, `rules.py`): 13 regole manuali, apprendimento dai criteri citati dai pro (proposte da approvare), API e UI.
+- **Calibrazione** dai pareri (soglie, pesi per ruolo, regole) con limiti anti-deriva e anti-overfitting; applica/ripristina.
+- **Import:** CSV/TSV/JSON, pagine salvate di FUT.GG/FUTBIN (carte e liste), aggiornamento prezzi, **pareri da foglio di calcolo**.
+- **Letture dei siti** verificate su pagine reali salvate (FUT.GG e FUTBIN: movimento, portiere, lista): stats, prezzo, PlayStyle(+), altezza, peso,
+  AcceleRATE, ruoli con rating, segnali (GG Rating, tier community, FUTBIN Rating).
+- **Ricerca pareri** (`eafcmeta/research/`): testo incollato → proposte (carta, sì/no, voto, motivo, criteri) con revisione; YouTube (metadati), X (spento).
+- **Estrazione offline** riscritta (segmentazione senza punteggiatura, attribuzione alla carta giusta, negazioni, confidenza conservativa).
+  Valutata su un corpus **sintetico** di 169 trascrizioni: precisione 1.000 a confidenza ≥ 0,8 (solo 14 casi) e 0,99 a ≥ 0,6; richiamo basso (8% a ≥ 0,8).
+- **Raccolta automatica** (`eafcmeta/auto/`): scheduler, scoperta canali, video con trascrizioni (yt-dlp), salvataggio sopra soglia, undo, API e UI.
+- **UI** rifatta: sidebar, carte FUT per rarità, confronto, drawer di dettaglio, import a 4 schede, Calibra, Regole, Ricerca pareri, Automatico, temi.
+- **Launcher** `start.py`: aggiornamento da GitHub, finestra a 3 livelli (pywebview → Edge/Chrome in app mode → browser), `--diagnosi`.
 
-### NON verificato — controllare per primo
-- **Finestra dell'app sul PC dell'utente (Windows):** con pywebview l'app si apriva nel browser. Ora `eafcmeta/desktop.py` ha
-  una catena a 3 livelli (pywebview, finestra app mode di Edge/Chrome con `--app` e profilo dedicato, browser) e stampa il
-  motivo di ogni livello che fallisce. Coperto da test su Linux con livelli/percorsi finti; **mai eseguito su Windows reale**:
-  non sappiamo quale livello parte né se Edge riusa l'istanza (gestito con un battito pagina-server, `/__alive`, ma non provato).
-  Chiedere all'utente l'output di `python start.py --diagnosi` e le righe `[app]` / `app.log`.
-- **Build `.exe` (PyInstaller)** `build_windows.py` + `eafcmeta.spec` + workflow `.github/workflows/build-windows.yml`:
-  **mai eseguiti**. Possibili import nascosti mancanti; nell'.exe pywebview non è incluso.
-- **`eafcmeta/fetch.py`** (scarico automatico da FUT.GG): scritto e testato **solo con un sito finto**. Mai provato contro il sito vero
-  (dal cloud la rete è bloccata). Non sappiamo se FUT.GG accetta richieste da Python (Cloudflare).
-- **FUTBIN blocca l'utente** («continua a bloccarsi»). Le pagine FUTBIN arrivano solo se l'utente le salva dal browser.
-- **Pagina portiere FUTBIN**: letta, ma il blocco "FUTBIN Rating" non c'è (nessun segnale FUTBIN per i portieri).
-- **Soglie "meta" (90/84/76) e pesi per ruolo**: sono valori **miei di partenza, non calibrati**. Esempio: una carta da 12.000 crediti
-  (Chloe Kelly Gold 86) esce "Meta di vertice" senza pareri. Servono i pareri dei pro per tararli (vedi calibrazione).
-- Nessun dato reale di pareri dei pro è ancora inserito: la calibrazione è pronta ma ha **0 carte** su 12 necessarie.
+### NON verificato — controllare per primo (nessuna rete dal cloud, nessun Windows)
+- **yt-dlp contro YouTube vero:** la forma del suo JSON (`channel_follower_count`, `automatic_captions`, capitoli) è scritta a memoria e testata solo con finti.
+- **FUT.GG vero:** `fetch.py` e il crawl dell'automazione non hanno mai parlato col sito; l'URL elenco di default e il parametro `page` sono ipotesi.
+- **Qualità dell'estrazione su trascrizioni vere:** il corpus l'ha scritto lo stesso agente che ha scritto l'estrattore. Prima di fidarsi del
+  salvataggio automatico, **misurare su una decina di trascrizioni reali etichettate a mano** e regolare `min_confidence` (oggi 0,6).
+- **Finestra nativa sul PC dell'utente:** nessun livello della catena è mai stato visto su Windows. Usare `python start.py --diagnosi`.
+- **FUTBIN:** l'utente è bloccato; le pagine FUTBIN arrivano solo se le salva dal browser. La pagina portiere FUTBIN non ha il blocco del rating.
+- **Lista dei pro** (`config/pros.json`, 42 voci da tornei 2026 e ricerche): handle e follower quasi tutti da verificare; per nessun pro dei tornei risulta
+  che dia opinioni sulle carte (i creator come Hollywood285, ilSantu, Flokox sono più adatti).
+- **Soglie meta e pesi** sono valori di partenza: l'app li calibra solo con pareri veri (servono ≥ 12 carte con parere di un creator).
+- `.exe` Windows (PyInstaller + workflow GitHub): scritto, non provato; yt-dlp non è incluso.
 
 ### Non fatto
-- **Ricerca automatica dei pareri dei pro** (X, TikTok, Instagram, YouTube): non esiste niente. Vedi sezione 7.
-- **Motore di regole dichiarativo**: oggi molte regole dell'analisi sono costanti scritte nel codice. Vedi sezione 6.
-- Nessuna PR. Il pacchetto `.exe` è solo predisposto (non provato, vedi sopra); si avvia con `python start.py`.
+- Nessuna PR, nessun CI sui test. Nessuna lettura di TikTok/Instagram/X (scelta dell'utente / vincoli dei servizi).
+- Voci mancanti nel backend segnalate dalla UI: titolo leggibile delle regole, etichette dei criteri esposte dall'API, peso massimo dei pareri
+  e soglie di `learn` nell'API, avanzamento reale di "Esegui ora" (oggi solo in corso sì/no), `automatic` e `confidence` dentro `analysis.opinions.groups`.
 
 ---
 
@@ -75,13 +73,14 @@ python start.py --window app|pywebview|browser   # forza un livello (--browser =
 python start.py --diagnosi              # rapporto da copiare/incollare (Python, git, pywebview, browser, porta, commit)
 python build_windows.py                 # .exe con PyInstaller (Windows, NON provato)
 python start.py --lan                   # accesso in rete locale con chiave in .token
-pytest -q                               # tutta la suite
+python -m pytest -q                     # tutta la suite (424 test)
+python -m eafcmeta.auto run|status|undo # raccolta automatica a mano / stato / annulla i pareri automatici (NON provata dal vivo)
 python -m eafcmeta.importer data/esempio.csv        # 30 carte FITTIZIE di prova
 python -m eafcmeta.collect cartella_con_pagine/     # importa pagine HTML salvate
 python -m eafcmeta.fetch "https://www.fut.gg/players/?nation_id=[54]" --max 30   # NON TESTATO sul sito vero
 ```
 Variabili d'ambiente: `EAFCMETA_DB` (file SQLite, default `eafcmeta.db` nella cartella), `EAFCMETA_TOKEN` (chiave API; la imposta `--lan`),
-`EAFCMETA_LOCAL_CONFIG` (percorso di `local.json`, usato nei test).
+`EAFCMETA_LOCAL_CONFIG` (percorso di `local.json` e dei file personali accanto, usato nei test), `EAFCMETA_AUTO=0` (spegne lo scheduler, impostato nei test).
 
 Per guardare la UI da script: Playwright con Chromium già presente (`/opt/pw-browsers` nel cloud; in locale `pip install playwright`
 e `playwright install chromium`). Le prove visive fatte finora usavano un server temporaneo con `EAFCMETA_DB=/tmp/x.db`.
@@ -90,129 +89,54 @@ e `playwright install chromium`). Le prove visive fatte finora usavano un server
 
 ## 4. Architettura e mappa dei file
 
-Monolite Python: **FastAPI + SQLite**, un solo file HTML statico come frontend, nessun build step.
+Monolite Python: **FastAPI + SQLite**; frontend statico a moduli ES (nessun build step), servito da `/static`.
 
-| File | Ruolo |
-|---|---|
-| `start.py` | Launcher: `git fetch/pull --ff-only` (solo se non ci sono modifiche locali), installa le dipendenze, apre finestra o browser. |
-| `EAFCMETA.pyw` | Doppio clic su Windows senza console; log in `app.log`. |
-| `eafcmeta/api.py` | Rotte REST sotto `/api/v1`, auth opzionale via `X-Token`, calcolo e assemblaggio della valutazione (`_scored`, `_eval`). |
-| `eafcmeta/scoring.py` | Punteggio, curva e verdetto, **caricamento e validazione della config** (`patch.json` + `local.json`). |
-| `eafcmeta/analysis.py` | **Analisi scritta** (`describe`), riepilogo pareri (`summarize_opinions`), segnali dei siti, etichetta meta. |
-| `eafcmeta/calibration.py` | Calibrazione da pareri: accordo, soglie e pesi suggeriti, apply/reset. |
-| `eafcmeta/sources.py` | **Lettura pagine FUT.GG/FUTBIN** (carta e lista), segnali dei siti, normalizzazione versioni. |
-| `eafcmeta/collect.py` | Importa lotti di pagine; applica le liste (prezzi) *dopo* le carte; crea il parere "FUT.GG (community)". |
-| `eafcmeta/fetch.py` | Scarico automatico gentile da FUT.GG (non testato dal vivo). |
-| `eafcmeta/auto/`, `eafcmeta/api_auto.py` | **Raccolta automatica** (FUT.GG, canali YouTube, video, pareri sicuri): vedi §7b. |
-| `eafcmeta/importer.py` | Import CSV/TSV/JSON e aggiornamento prezzi. |
-| `eafcmeta/db.py` | SQLite: tabelle `cards`, `price_history`, `opinions`; upsert con riconoscimento della stessa carta. |
-| `eafcmeta/models.py` | Modelli Pydantic con tutte le validazioni (`CardIn`, `OpinionIn`, …). |
-| `eafcmeta/desktop.py` | Catena di finestre: pywebview, app mode Edge/Chrome (`find_app_browsers`, `app_command`, battito `/__alive` inserito da `HeartbeatApp` senza toccare `api.py`), browser. Server chiuso alla chiusura della finestra. |
-| `build_windows.py`, `eafcmeta.spec`, `.github/workflows/build-windows.yml` | Build `.exe` con PyInstaller (non provato). |
-| `eafcmeta/config/patch.json` | **Tutti i parametri del motore** (pesi, bonus, soglie, PlayStyle, meta, calibrazione). Validato all'avvio. |
-| `eafcmeta/config/local.json` | Calibrazione personale (creata dall'app, **ignorata da git**), sopra `patch.json`. |
-| `eafcmeta/static/index.html` | Intera UI (CSS+JS inline): griglia di carte FUT, dettaglio, form, import, calibrazione. |
-| `tests/` | `test_scoring`, `test_api`, `test_importer`, `test_collect`, `test_analysis`, `test_calibration`, `test_start`. |
+| Parte | File | Ruolo |
+|---|---|---|
+| Avvio | `start.py`, `EAFCMETA.pyw`, `eafcmeta/desktop.py`, `build_windows.py` | Launcher, finestra a 3 livelli, build `.exe`. |
+| API | `api.py`, `api_rules.py`, `api_research.py`, `api_auto.py` | Rotte REST sotto `/api/v1`, auth opzionale `X-Token`. |
+| Motore | `scoring.py`, `rules.py`, `opinion_model.py`, `analysis.py`, `calibration.py` | Punteggio, regole, peso dei pareri, testo, calibrazione. |
+| Dati siti | `sources.py`, `collect.py`, `fetch.py`, `importer.py`, `opinions_import.py` | Lettura pagine FUT.GG/FUTBIN, import, crawl gentile. |
+| Ricerca | `research/` (pipeline, sources, resolver, extract, criteria, store, text, llm) | Testo → proposte di parere; criteri. |
+| Automatico | `auto/` (runner, scheduler, ytdlp, transcript, discovery, videos, opinions, futgg, schema, config) | Ciclo giornaliero di raccolta. |
+| Dati | `db.py`, `models.py` | SQLite (cards, price_history, opinions, proposals, criteria, channels, processed_items, auto_runs), validazioni Pydantic. |
+| Config | `config/patch.json`, `rules.json`, `criteria.json`, `research.json`, `pros.json`, `auto.json` | Tutti i parametri. Personali (ignorati da git): `local.json`, `rules.local.json`, `auto.local.json`. |
+| UI | `static/index.html`, `css/`, `js/` (main, router, sections, state, api, ui, card, charts, detail, form, labels, `views/*`) | Interfaccia. |
+| Test | `tests/` | 424 test; `ui_smoke.py` e `research_eval.py` non girano in pytest di default. |
 
-### Dati (SQLite)
-- `cards(id, name, version, position, price, is_sbc, data JSON, pro_score, pro_notes)`; `data` = stats, playstyles, body_type, weak_foot, skill_moves, **signals**.
-  Chiave naturale: nome + versione + posizione (senza distinzione di maiuscole). Una carta letta da due siti si **fonde** (vedi `db.find_card`: nome
-  contenuto nell'altro, stessa versione e posizione, candidato unico).
-- `price_history(card_id, price, ts)`. `opinions(card_id, creator NOCASE, stance yes|maybe|no, score, reason, url, ts)`, unica per (carta, creator).
-- Il punteggio "pro" di una carta è la **media dei suoi pareri** (voto, oppure sì 85 / dipende 70 / no 50); senza pareri vale il vecchio `pro_score` manuale.
-
----
+### Dati
+- `cards`: chiave naturale nome + versione + posizione. Una carta letta da due siti si **fonde** (`db.find_card`: nome contenuto nell'altro e stats ≥ 90% entro ±2,
+  oppure stesso club/nazione). `data` JSON: stats, PlayStyle, body type, stelle, `signals`, altezza, peso, AcceleRATE, club, lega, nazione, ruoli.
+- `opinions(card_id, creator, stance, score, reason, url, ts, auto, confidence)`: un parere per creator e carta. `auto=1` = raccolto dall'automazione (rimovibile in blocco;
+  un parere manuale non viene mai sovrascritto).
 
 ## 5. Come funziona il motore oggi
 
-1. **Score base** = media pesata delle stats del ruolo (`role_weights`) + bonus (PlayStyle+ per tier S/A/B e ruolo, body type, 5★ piede debole / skill; tetto `max_bonus` 12),
-   poi *soft cap* sopra 90 (tanh verso 100).
-2. **Score finale** = 70% base + 30% pro (se non ci sono pareri vale solo il base; l'API segnala `pro_missing`).
-3. **Verdetto sul prezzo**: confronto con la curva delle carte della stessa posizione (Theil-Sen), soglia = `max(min_gap, k·σ residui)`.
-   Fuori da [min/2, max·2] dei prezzi del mercato: NEUTRAL (niente estrapolazione); atteso limitato a [0, 100]. La curva si calcola una volta per
-   posizione e per richiesta (mercato ≤ 60 carte: senza la carta stessa; oltre: curva condivisa).
-4. **Etichetta meta** (`analysis.meta_level`): soglie su `base` (score senza pareri, la stessa grandezza che la calibrazione usa) — `top` 90, `meta` 84, `playable` 76.
-5. **Testo** (`analysis.describe`): punti di forza/debolezza per ruolo, scatto/velocità, PlayStyle utili o fuori ruolo, body type, skill/piede debole, prezzo, pareri.
-6. **Calibrazione** (`calibration.py`): con ≥ 12 carte con parere di un creator (esclusa la community automatica), confronta il nostro `base` col voto medio dei pro
-   (approvata se ≥ 80), propone soglia "meta" che massimizza l'accuratezza *bilanciata* (servono ≥ 4 carte approvate e ≥ 4 no; spostamento ≤ ±3 punti da patch.json) e pesi per
-   ruolo = `peso_patch·(1 + shrink·corr)` con `shrink = 0.5·n/(n+20)`, sempre da `patch.json` (nessuna deriva) e entro ±30%.
+1. **Score base** = media pesata delle stats del ruolo + bonus (tetto 12) + `delta` delle regole **attive** (tetto per regola e totale) → *soft cap* sopra 90.
+2. **Parere dei creator** (`opinion_model.py`): valore = voto, o sì 85 / dipende 70 / no 50; peso = peso del creator × freschezza (metà dopo 60 giorni, minimo 30%)
+   × affidabilità (community FUT.GG 0,3 e **zero sotto 30 voti**). Parere = media pesata. **Quota** sullo score finale = 0,30 · n/(n+2), con n = somma dei pesi
+   (un creator ≈ 10%, tre ≈ 18%, otto ≈ 24%). Senza pareri vale solo il base. Il voto deve essere coerente con la scelta (sì ≥ 70, no ≤ 60).
+3. **Verdetto sul prezzo:** score finale contro la curva delle carte della stessa posizione; neutro con pochi dati o prezzo fuori range.
+4. **Etichetta meta** (Meta di vertice / Meta / Giocabile / Sotto il meta): soglie su `meta` (90/84/76) applicate allo score **base**, scelta fatta perché la
+   calibrazione confronta il base con i pro (altrimenti sarebbe circolare). Il verdetto di convenienza usa invece lo score finale. **Da riconsiderare** se l'utente
+   preferisce che l'etichetta tenga conto dei pareri.
+5. **Analisi** (`analysis.describe` + `rules.py`): punti di forza e deboli, scatto, PlayStyle utili/fuori ruolo, body type, stelle, prezzo, pareri con discordanze,
+   discordanze sui criteri, "cosa ha contato", consiglio finale (matrice in `rules.json`).
+6. **Apprendimento** (`rules.learn`): dai criteri citati nei pareri (tabella `criteria`), propone regole se ≥ 5 menzioni da ≥ 2 creator e consenso ≥ 0,6; mai attive senza approvazione.
+7. **Calibrazione:** con ≥ 12 carte con parere di un creator (escluso il voto automatico della community) propone soglie (accuratezza bilanciata, ≥ 4 carte per classe, ±3 punti),
+   pesi (±30% da `patch.json`) e delta delle regole; applica e ripristina; riparte sempre dai valori originali (nessuna deriva).
 
-### Dove le regole sono ancora scritte nel codice (da portare nell'engine, vedi §6)
-In `analysis.py`: forza se stat ≥ 88; debolezza se stat < 70 con peso ≥ 2; scatto+velocità media ≥ 88 «da vertice», < 72 «basso» (ST/W/FB/WB/CF), < 66 per i CB;
-bonus testuali per body type Lean/Unique/Custom; skill ≥ 5 / ≤ 2 e piede debole ≥ 5 / ≤ 2 per i ruoli offensivi; `_advice` (matrice livello × verdetto);
-`MOVERS`, `ROLE_IT`, `NAMES`. Nessuna di queste è in `patch.json`, quindi **la calibrazione non le può toccare**.
+## 6. Motore di regole — stato (era il "Lavoro A")
 
----
+**Fatto:** regole dichiarative, valutatore unico, apprendimento, calibrazione, API e UI (vedi §2, §5). **Resta:** titolo leggibile per le regole nell'API; regole su condizioni
+nuove (ruolo alternativo, AcceleRATE, altezza/peso ora disponibili sulle carte); dopo i primi pareri veri, rivedere i template di `rules.json` per i criteri `height`, `body_type`,
+`animations`, `price`; normalizzare i nomi di club e lega tra i due siti (scrivono "Liga F" e "Liga F Moeve").
 
-## 6. LAVORO A — Motore di regole che genera i giudizi da solo (priorità)
+## 7. Ricerca e raccolta — stato (era il "Lavoro B")
 
-**Obiettivo:** il giudizio («è meta? perché? prendila o no») deve uscire da **regole dichiarative nell'engine**, i cui parametri derivano da ciò che dicono i pro.
-Niente testo scritto a mano per carta.
-
-### Design proposto
-1. **Regole dichiarative** in un file (es. `eafcmeta/config/rules.json`, validato come `patch.json`). Ogni regola:
-   ```json
-   {"id": "st-pace-elite", "roles": ["ST","CF"], "when": {"avg": ["acceleration","sprint_speed"], "gte": 90},
-    "effect": {"score": 2.0, "tag": "pace"}, "pro_text": "Scatto e velocità da vertice…", "con_text": null,
-    "source": "learned|manual", "evidence": {"mentions": 7, "creators": ["Team Gullit","Exeed"]}}
-   ```
-   Tipi di condizione da supportare: soglia su una stat o media di stat, PlayStyle (+) presente, body type, stelle skill/piede debole, altezza/peso (non ancora letti dalle pagine),
-   ruolo alternativo, prezzo. Effetti: variazione di score (limitata), tag di spiegazione, testo pro/contro.
-2. **Un solo valutatore** (`rules.evaluate(card, cfg) -> {score_delta, reasons_pro, reasons_con, tags}`) che sostituisce le costanti di `analysis.describe`
-   e dà un contributo allo score in `scoring` (con tetto, come `max_bonus`).
-3. **I parametri vengono dai pro.** Estrarre dai *motivi* dei pareri (campo `reason`, e in futuro trascrizioni) dei **criteri strutturati**:
-   `{ruolo, criterio (pace, body type, animazioni, PlayStyle X, …), polarità (+/−), peso}`. Aggregare per ruolo e creator → proporre/aggiornare regole
-   con `evidence`. La calibrazione esistente va estesa a queste regole (soglie e delta), con le stesse protezioni (minimo di dati, cambi limitati, applica/ripristina).
-4. **Discordanze** (già fatte per i pareri): estendere a livello di criterio («Team Gullit premia lo scatto, Exeed lo ritiene meno importante per via di…»).
-5. **Revisione umana:** le regole *learned* entrano in stato `proposta` e diventano attive solo se l'utente le approva (UI semplice: lista, evidenza, accetta/rifiuta).
-
-### Compiti concreti (in ordine)
-1. Estrarre le costanti di §5 da `analysis.py` in `rules.json` (stesso comportamento, test invariati) + `rules.py` con valutatore e validazione all'avvio.
-2. Far entrare `score_delta` nel calcolo (con tetto) e mostrarlo nel dettaglio («cosa ha contato»).
-3. Tabella `criteria` (o campo in `opinions`) e modulo di estrazione dei criteri dai motivi. Prima versione **a parole chiave** (offline, deterministica);
-   poi, se l'utente fornisce una chiave API, versione con modello linguistico con output strutturato.
-4. Estendere `calibration.py` alle regole; aggiornare la finestra "Calibra".
-5. Leggere altezza, peso, AcceleRATE e chimica dalle pagine (ci sono in entrambe le pagine, oggi ignorati): sono criteri che i pro citano spesso.
-
-### Criteri di accettazione
-- Cambiare un valore in `rules.json` cambia il giudizio senza toccare il codice; config non valida → errore chiaro all'avvio.
-- Dato un insieme di pareri sintetici, l'estrazione produce le regole attese (test deterministici); nessuna regola *learned* è attiva senza approvazione.
-- Con meno dati del minimo, nessun cambio automatico (come oggi per la calibrazione).
-- I test esistenti passano; ogni regola nuova ha almeno un test positivo e uno negativo.
-
----
-
-## 7. LAVORO B — Ricerca automatica (dati e pareri)
-
-### Vincoli reali (importante, non aggirare)
-- **Rete bloccata dal cloud** di Claude Code (403 dal proxy su fut.gg, futbin.com, futdb.app). In locale invece si può provare.
-- **FUTBIN** blocca l'utente. **FUT.GG** non è mai stato provato da Python. Entrambi violano i ToS se letti in automatico: l'utente ha scelto
-  consapevolmente di procedere per uso personale. Mantenere **basso ritmo, robots.txt, tetto di richieste, nessuna elusione** di blocchi.
-- **X / TikTok / Instagram:** non esistono API libere per leggere i post altrui. X ha API ufficiali a pagamento (e soglie); TikTok e Instagram non offrono
-  un accesso pratico ai contenuti di terzi; lo scraping viola i loro termini e viene bloccato. **Non costruire scraper di questi social.**
-- I pareri nei video sono nell'audio: servono **trascrizioni** e poi un **modello linguistico** per estrarre «carta, sì/no, motivo».
-
-### Strada consigliata (a fasi)
-1. **Fonte più praticabile: YouTube** (i creator citati — Team Gullit, Exeed, Nassada — fanno video; **da verificare** i canali reali). YouTube Data API v3 (chiave gratuita con quota)
-   per cercare i video per canale e carta; trascrizioni dalle sottotitoli disponibili. Controllare i termini d'uso delle trascrizioni.
-2. **Pipeline a stadi**, ognuno testabile: `scoperta → testo (trascrizione/post) → estrazione (LLM, JSON strutturato) → risoluzione della carta
-   (nome/versione ↔ `cards`) → proposta → revisione dell'utente → salvataggio in `opinions`**.
-   - Tabella `proposals` (pareri proposti, con link, data, estratto di testo, confidenza); **niente va in `opinions` senza conferma**.
-   - Deduplica per (url, carta, creator); conservare sempre la fonte.
-   - Testo esterno = dati non fidati: l'estrazione non deve eseguire istruzioni contenute nei testi (prompt injection); validare lo schema JSON in uscita.
-3. **Ripiego manuale veloce** (anche prima del resto): campo «incolla post/trascrizione» → estrazione → proposta. Copre X, TikTok e Instagram **senza violare nulla**
-   (il testo lo copia l'utente) e costa solo la chiamata al modello.
-4. **Dati dei siti:** provare `fetch.py` in locale. Se FUT.GG risponde 403, un'idea **non provata** è usare la finestra dell'app (pywebview, motore Edge) per
-   caricare le pagine come un browser vero ed estrarre l'HTML; da valutare con cautela e solo a basso ritmo.
-5. Chiavi in **variabili d'ambiente** (`ANTHROPIC_API_KEY`, `YOUTUBE_API_KEY`), mai nel repository. Modulo con interfaccia comune
-   (`Source.search(card) -> [Item]`, `extract(text, known_cards) -> [OpinionProposal]`) per poter aggiungere fonti.
-
-### Criteri di accettazione
-- `python -m eafcmeta.research --card "Nome" ` (o da UI) produce **proposte** con fonte e motivo; l'utente le approva e diventano pareri.
-- Test con trascrizioni/testi di esempio (fixture) per estrazione e risoluzione carta; nessuna chiamata di rete nei test.
-- Ogni fase fallisce in modo chiaro (blocco, chiave mancante, quota) senza salvare dati parziali o sbagliati.
-
----
+**Fatto:** pipeline a stadi con revisione (`research/`) e raccolta automatica (§7b). **Vincoli da non aggirare:** X ha API a pagamento (spenta per scelta); TikTok e Instagram non hanno API
+utilizzabili da un privato; le trascrizioni YouTube arrivano solo da yt-dlp (non ufficiale, zona grigia dei termini, basso ritmo). **Resta:** provarla in locale (vedi §11),
+misurare la qualità su trascrizioni vere, eventuale modello linguistico se l'utente cambia idea (`LLMExtractor` esiste e resta spento), ampliare `pros.json` con canali verificati.
 
 ## 7b. Raccolta automatica (fatta — `eafcmeta/auto/`, `eafcmeta/api_auto.py`)
 
@@ -281,16 +205,17 @@ Se cambiano i siti, chiedere all'utente di risalvare una pagina e adeguare `sour
 
 ## 10. Decisioni aperte (da chiedere all'utente, non assumere)
 
-1. **Modello linguistico per estrarre i pareri:** vuole usare una chiave API (costo a parte dai crediti di Claude Code)? Senza, resta solo l'estrazione a parole chiave.
-2. **Quali creator e quali canali** considerare «pro» (oltre a Team Gullit, Exeed, Nassada) e con che peso.
-3. **YouTube come fonte principale** al posto di X/TikTok/Instagram: accettabile?
-4. Se aprire una **PR verso `main`** (oggi non c'è `main`) o continuare sul branch di lavoro.
-5. Pacchetto **`.exe`** per Windows (PyInstaller) quando la finestra nativa funziona.
+1. L'etichetta **Meta** deve usare lo score base (oggi) o quello finale con i pareri?
+2. **Peso di ogni creator:** oggi uguale per tutti (`opinion_weighting.creator_weights` in `patch.json`); dare più fiducia a chi l'utente ritiene più affidabile?
+3. **Modello linguistico** (chiave API a pagamento) per estrarre i pareri meglio, o restare sulle parole chiave? **X** a pagamento con tetto di spesa?
+4. **PR verso `main`** (non esiste) o continuare sul branch di lavoro.
+5. **Pacchetto `.exe`** per Windows quando la finestra funziona.
 
 ## 11. Primi passi consigliati a chi parte ora
 
-1. Clonare, `pip install -r requirements-dev.txt`, `pytest -q` (devono passare 58 test), `python start.py` e **guardare cosa succede** (finestra o browser, righe `[app]`).
-2. Importare le 30 carte di esempio e inserire qualche parere di prova per vedere analisi, discordanze e calibrazione.
-3. Chiedere all'utente 3–4 pagine salvate vere (carta di movimento, portiere, lista) per FUT.GG e FUTBIN se i siti sono cambiati.
-4. Iniziare dal **Lavoro A, compito 1** (estrarre le regole in `rules.json` senza cambiare i risultati): è sicuro, testabile e sblocca tutto il resto.
-5. Poi il **ripiego manuale «incolla testo → proposte»** del Lavoro B (nessun vincolo di rete) e, in parallelo, provare `fetch.py` in locale.
+1. Clonare, `pip install -r requirements-dev.txt`, `python -m pytest -q` (424 test), `python start.py --diagnosi`, poi `python start.py` e guardare cosa succede (finestra o browser).
+2. Caricare carte vere: salvare dal browser 5–10 pagine FUT.GG/FUTBIN e usare **Importa → Pagine salvate**; oppure provare `python -m eafcmeta.fetch` (mai provato dal vivo).
+3. Provare l'automazione **dal vivo, a mano e con pochi dati:** `python -m eafcmeta.auto run` con `max_channels` e `videos_per_channel` bassi in `auto.local.json`; controllare le righe di
+   `auto_runs`, i canali scoperti (accettati solo se nome e iscritti combaciano) e i pareri salvati. Correggere la forma dei dati di yt-dlp se non coincide.
+4. Misurare l'estrazione su ~10 trascrizioni reali etichettate a mano (usare `tests/research_eval.py` come modello) e decidere la soglia `min_confidence`.
+5. Quando ci sono ≥ 12 carte con pareri: **Calibra**, rivedere le proposte delle regole apprese e approvarle una per una.
