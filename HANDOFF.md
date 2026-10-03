@@ -128,7 +128,7 @@ Monolite Python: **FastAPI + SQLite**, un solo file HTML statico come frontend, 
    poi *soft cap* sopra 90 (tanh verso 100).
 2. **Score finale** = 70% base + 30% pro (se non ci sono pareri vale solo il base; l'API segnala `pro_missing`).
 3. **Verdetto sul prezzo**: confronto con la curva delle carte della stessa posizione (Theil-Sen), soglia = `max(min_gap, k·σ residui)`.
-4. **Etichetta meta** (`analysis.meta_level`): soglie su `final` — `top` 90, `meta` 84, `playable` 76.
+4. **Etichetta meta** (`analysis.meta_level`): soglie su `base` (score senza pareri, la stessa grandezza che la calibrazione usa) — `top` 90, `meta` 84, `playable` 76.
 5. **Testo** (`analysis.describe`): punti di forza/debolezza per ruolo, scatto/velocità, PlayStyle utili o fuori ruolo, body type, skill/piede debole, prezzo, pareri.
 6. **Calibrazione** (`calibration.py`): con ≥ 12 carte con parere di un creator (esclusa la community automatica), confronta il nostro `base` col voto medio dei pro
    (approvata se ≥ 80), propone soglia "meta" che massimizza l'accordo e pesi per ruolo = `peso·(1 + shrink·corr)` con `shrink = 0.5·n/(n+20)`, minimo 0.2.

@@ -506,7 +506,10 @@
  "calibration": {
   "pro_meta_at": 80,
   "min_cards": 12,
-  "min_cards_role": 8
+  "min_cards_role": 8,
+  "min_class_cards": 4,
+  "max_weight_drift": 0.3,
+  "max_threshold_shift": 3
  },
  "opinion_weighting": {
   "default_creator_weight": 1.0,

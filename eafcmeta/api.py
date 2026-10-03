@@ -76,8 +76,8 @@ def _eval(card_id: int, scored: dict) -> dict:
             "verdict": v["verdict"], "value_gap": v["value_gap"], "verdict_reason": v["reason"],
             "breakdown": {"role": ex["role"], "stats_meta": ex["stats_meta"], "bonus": ex["bonus"], "rules_delta": ex.get("rules_delta", 0.0),
                           "unknown_playstyles": ex["unknown_playstyles"]},
-            "market_size": len(market), "meta_level": analysis.meta_level(final, cfg)[0],
-            "meta_label": analysis.meta_level(final, cfg)[1],
+            "market_size": len(market), "meta_level": analysis.meta_level(ex["base"], cfg)[0],
+            "meta_label": analysis.meta_level(ex["base"], cfg)[1],
             "_v": v, "_ex": ex, "_final": final, "_card": card}
 
 
@@ -237,7 +237,7 @@ def meta():
             "body_types": list(cfg["body_type_bonus"]), "stat_keys": cfg["stat_keys"],
             "role_weights": {pos: cfg["role_weights"][role] for pos, role in cfg["position_to_role"].items()},
             "playstyles": list(cfg["playstyles"]), "creators": cfg["creators"],
-            "stat_names": analysis.NAMES, "calibrated": scoring.local_config_path().exists()}
+            "stat_names": analysis.NAMES, "calibrated": scoring.local_active()}
 
 
 from .api_research import build_router as _research_router; app.include_router(_research_router(require_token, get_conn))

@@ -2,6 +2,14 @@
 
 Nulla cambia da solo: l'app mostra i numeri e propone; la calibrazione si applica (e si annulla) su richiesta e finisce
 in `config/local.json`, sopra `patch.json`. Con pochi dati non propone niente (soglie minime in `calibration`).
+
+Grandezza calibrata: le soglie "top/meta/playable" si calibrano sullo score BASE (statistiche + bonus + regole) e
+l'etichetta "meta" (`analysis.meta_level`) si applica allo stesso score base. Lo score finale include i pareri dei creator,
+cioe' proprio il bersaglio della calibrazione: usarlo sarebbe circolare.
+
+Niente deriva: pesi e soglie si calcolano SEMPRE a partire da `patch.json` (non dai valori gia' calibrati), quindi applicare
+due volte la stessa calibrazione da' lo stesso risultato; in piu' lo scostamento da patch.json e' limitato
+(pesi +-`max_weight_drift`, soglia meta +-`max_threshold_shift` punti).
 """
 from __future__ import annotations
 
@@ -10,7 +18,13 @@ import math
 
 from . import db, rules, scoring
 
-DEFAULTS = {"pro_meta_at": 80, "min_cards": 12, "min_cards_role": 8}
+DEFAULTS = {"pro_meta_at": 80, "min_cards": 12, "min_cards_role": 8, "min_class_cards": 4,
+            "max_weight_drift": 0.3, "max_threshold_shift": 3.0}
+
+
+def _patch() -> dict:
+    """Valori di partenza non calibrati (patch.json): la calibrazione riparte sempre da qui."""
+    return json.loads(scoring.CONFIG_PATH.read_text(encoding="utf-8"))
 
 
 def _pearson(xs: list[float], ys: list[float]) -> float | None:
@@ -45,7 +59,25 @@ def _confusion(rows: list[dict], threshold: float, pro_at: float) -> dict:
     fp = sum(r["base"] >= threshold and r["pro"] < pro_at for r in rows)
     fn = sum(r["base"] < threshold and r["pro"] >= pro_at for r in rows)
     tn = len(rows) - tp - fp - fn
-    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "accuracy": round((tp + tn) / len(rows), 3)}
+    tpr = tp / (tp + fn) if tp + fn else 0.0
+    tnr = tn / (tn + fp) if tn + fp else 0.0
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn, "accuracy": round((tp + tn) / len(rows), 3),
+            "balanced_accuracy": round((tpr + tnr) / 2, 3)}
+
+
+def build_thresholds(cfg: dict, ref: dict, new_meta: float, max_shift: float = 3.0) -> dict | None:
+    """Soglie coerenti attorno a `new_meta`: meta spostata al massimo di `max_shift` rispetto a `ref` (patch.json), top e
+    playable con gli stessi scarti di `ref`. Garantisce playable < meta < top <= 100, altrimenti None."""
+    meta = round(min(ref["meta"] + max_shift, max(ref["meta"] - max_shift, new_meta)), 1)
+    top = min(100.0, round(meta + (ref["top"] - ref["meta"]), 1))
+    playable = round(meta - (ref["meta"] - ref["playable"]), 1)
+    if top <= meta:  # vicino a 100: si abbassa meta invece di far coincidere le soglie
+        meta = round(top - 1, 1)
+    if playable >= meta:
+        playable = round(meta - 1, 1)
+    if not 0 < playable < meta < top <= 100:
+        return None
+    return {"top": top, "meta": meta, "playable": playable}
 
 
 def _mean(xs: list[float]) -> float:
@@ -104,26 +136,39 @@ def report(conn, cfg: dict) -> dict:
     cal = {**DEFAULTS, **cfg.get("calibration", {})}
     rows = collect(conn, cfg)
     n = len(rows)
-    out = {"n": n, "needed": cal["min_cards"], "ready": n >= cal["min_cards"], "active": scoring.local_config_path().exists(),
+    out = {"n": n, "needed": cal["min_cards"], "ready": n >= cal["min_cards"], "active": scoring.local_active(),
            "pro_meta_at": cal["pro_meta_at"], "thresholds": cfg["meta"]}
     if not out["ready"]:
         out["message"] = (f"Servono almeno {cal['min_cards']} carte con il parere di almeno un creator per calibrare "
                           f"(ora {n}). Più creator e più carte inserisci, più la calibrazione è affidabile.")
         out["rules"] = {"changes": []}
         return out
-    m = cfg["meta"]
+    m, ref = cfg["meta"], _patch()["meta"]
     out["correlation"] = _pearson([r["base"] for r in rows], [r["pro"] for r in rows])
     out["current"] = _confusion(rows, m["meta"], cal["pro_meta_at"])
-    # soglia "meta" che meglio separa le carte che i pro approvano da quelle che non approvano
-    cand = sorted({r["base"] for r in rows})
-    mids = [(a + b) / 2 for a, b in zip(cand, cand[1:])] or [m["meta"]]
-    best = max(mids, key=lambda t: (_confusion(rows, t, cal["pro_meta_at"])["accuracy"], -abs(t - m["meta"])))
-    new_meta = round(best, 1)
-    top = min(100.0, round(new_meta + (m["top"] - m["meta"]), 1))
-    playable = max(1.0, round(new_meta - (m["meta"] - m["playable"]), 1))
-    out["suggested"] = {"thresholds": {"top": top, "meta": new_meta, "playable": playable},
-                        "after": _confusion(rows, new_meta, cal["pro_meta_at"]), "weights": {}}
+    out["suggested"] = {"thresholds": None, "weights": {}, "on": "base"}
+    # soglia "meta" che meglio separa le carte approvate da quelle no, con accuratezza BILANCIATA (le classi sono quasi
+    # sempre sbilanciate) e solo se ci sono abbastanza carte in entrambe le classi
+    pos = sum(r["pro"] >= cal["pro_meta_at"] for r in rows)
+    neg = n - pos
+    if min(pos, neg) < cal["min_class_cards"]:
+        out["suggested"]["thresholds_message"] = (
+            f"Per proporre le soglie servono almeno {cal['min_class_cards']} carte approvate e {cal['min_class_cards']} "
+            f"non approvate dai creator (ora {pos} e {neg}).")
+    else:
+        lo, hi = ref["meta"] - cal["max_threshold_shift"], ref["meta"] + cal["max_threshold_shift"]
+        cand = sorted({r["base"] for r in rows})
+        mids = [(a + b) / 2 for a, b in zip(cand, cand[1:])]
+        tries = {round(min(hi, max(lo, t)), 1) for t in mids} | {float(ref["meta"])}
+        best = max(sorted(tries), key=lambda t: (_confusion(rows, t, cal["pro_meta_at"])["balanced_accuracy"], -abs(t - ref["meta"])))
+        th = build_thresholds(cfg, ref, best, cal["max_threshold_shift"])
+        if th is None:
+            out["suggested"]["thresholds_message"] = "Le soglie calcolate non sarebbero coerenti: non propongo modifiche."
+        else:
+            out["suggested"].update(thresholds=th, after=_confusion(rows, th["meta"], cal["pro_meta_at"]))
     # pesi per ruolo: correlazione di ogni stat col giudizio dei pro, attenuata dal numero di carte (poco dato = poco cambio)
+    base_w = _patch()["role_weights"]
+    drift = cal["max_weight_drift"]
     for role, w in cfg["role_weights"].items():
         sub = [r for r in rows if r["role"] == role]
         if len(sub) < cal["min_cards_role"]:
@@ -134,7 +179,8 @@ def report(conn, cfg: dict) -> dict:
             c = _pearson([r["card"]["stats"][stat] for r in sub], [r["pro"] for r in sub])
             if c is None:
                 continue
-            new = round(max(0.2, old * (1 + shrink * c)), 2)
+            ref_w = base_w.get(role, {}).get(stat, old)  # si parte da patch.json, mai dai pesi gia' calibrati
+            new = round(min(ref_w * (1 + drift), max(ref_w * (1 - drift), ref_w * (1 + shrink * c))), 2)
             changes.append({"stat": stat, "old": old, "new": new, "corr": round(c, 2)})
         if changes:
             out["suggested"]["weights"][role] = {"n": len(sub), "changes": sorted(changes, key=lambda x: -abs(x["corr"]))}
@@ -148,13 +194,13 @@ def apply(conn, cfg: dict, thresholds: bool, weights: bool, rules_too: bool = Fa
         raise ValueError(rep["message"])
     path = scoring.local_config_path()
     local = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-    if thresholds:
+    if thresholds and rep["suggested"]["thresholds"]:
         local["meta"] = rep["suggested"]["thresholds"]
     if weights:
         rw = local.setdefault("role_weights", {})
         for role, info in rep["suggested"]["weights"].items():
             new = {c["stat"]: c["new"] for c in info["changes"]}
-            rw[role] = {**cfg["role_weights"][role], **new}  # le stat senza dati restano com'erano
+            rw[role] = {**_patch()["role_weights"][role], **new}  # le stat senza dati tornano a patch.json
     if rules_too:
         ov = local.setdefault("rules", {}).setdefault("overrides", {})
         for ch in rep["rules"]["changes"]:

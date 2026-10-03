@@ -81,7 +81,7 @@ def site_signals(card: dict) -> list[str]:
 def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int, cfg: dict,
              opinions: list[dict] | None = None, criteria_notes: list[dict] | None = None) -> dict:
     role = ex["role"]
-    level, label = meta_level(final, cfg)
+    level, label = meta_level(ex["base"], cfg)  # stessa grandezza su cui si calibrano le soglie (vedi calibration.py)
     pros, cons = [], []
 
     # tutte le regole del giudizio (forza/debolezza, scatto, PlayStyle, body type, skill, piede debole, regole apprese
@@ -101,7 +101,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     else:
         pros.append(f"Prezzo in linea con il valore: {verdict['reason']}")
 
-    ops = summarize_opinions(opinions or [], meta_level(ex["base"], cfg)[0])  # il confronto è con le sole statistiche
+    ops = summarize_opinions(opinions or [], level)  # il confronto è con le sole statistiche
     if opinions:
         pro_avg = card.get("pro_score")
         if pro_avg is not None:
@@ -119,7 +119,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     advice = rules.advice(level, v, verdict["value_gap"] is None, cfg)
     if ops["status"] == "disagree":
         advice = "Opinioni divise tra i creator. " + advice
-    shown = f"{final:.0f}"
+    shown = f"{ex['base']:.0f}"  # coerente con l'etichetta, calcolata sullo score base
     headline = f"{label} — score {shown} come {ROLE_IT[role]}" + (
         {"top": ": tra le migliori del suo ruolo.", "meta": ": competitiva ai livelli alti.",
          "playable": ": usabile ma non decisiva.", "below": ": sotto il livello che serve ai livelli alti."}[level])
