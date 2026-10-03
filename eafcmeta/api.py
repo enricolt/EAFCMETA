@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import analysis, calibration, collect, db, importer, opinion_model, opinions_import, scoring
@@ -279,3 +280,7 @@ from .api_rules import router as _rules_router, criteria_notes as _criteria_note
 @app.get("/", include_in_schema=False)
 def index():
     return FileResponse(Path(__file__).parent / "static" / "index.html")
+
+
+# CSS/JS dell'interfaccia (la rotta "/" sopra resta quella che serve index.html)
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
