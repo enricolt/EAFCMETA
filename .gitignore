@@ -6,3 +6,7 @@ __pycache__/
 app.log
 .webview_failed
 local.json
+.app_profile/
+diagnosi.txt
+build/
+dist/

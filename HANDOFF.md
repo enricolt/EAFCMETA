@@ -39,11 +39,16 @@ Sono descritti nelle sezioni 6 e 7. Tutto il resto è già funzionante.
   FUTBIN (carta di movimento, portiere, lista).
 - Segnali dei siti (GG Rating, tier community, FUTBIN Rating) e «parere» automatico "FUT.GG (community)".
 - Calibrazione 🎯 dai pareri dei creator (soglie e pesi), con applica/ripristina.
-- Launcher `start.py` con aggiornamento da GitHub a ogni avvio; finestra nativa con pywebview; `EAFCMETA.pyw` per Windows.
+- Launcher `start.py` con aggiornamento da GitHub a ogni avvio; finestra a 3 livelli (pywebview / app mode Edge-Chrome / browser); `EAFCMETA.pyw` per Windows; `--diagnosi`.
 
 ### NON verificato — controllare per primo
-- **Finestra nativa (pywebview) sul PC dell'utente:** l'utente ha detto che si apriva nel browser. `start.py` ora stampa il
-  motivo se pywebview non parte (righe `[app]`), ma **non è mai stato visto l'esito reale su Windows**.
+- **Finestra dell'app sul PC dell'utente (Windows):** con pywebview l'app si apriva nel browser. Ora `eafcmeta/desktop.py` ha
+  una catena a 3 livelli (pywebview, finestra app mode di Edge/Chrome con `--app` e profilo dedicato, browser) e stampa il
+  motivo di ogni livello che fallisce. Coperto da test su Linux con livelli/percorsi finti; **mai eseguito su Windows reale**:
+  non sappiamo quale livello parte né se Edge riusa l'istanza (gestito con un battito pagina-server, `/__alive`, ma non provato).
+  Chiedere all'utente l'output di `python start.py --diagnosi` e le righe `[app]` / `app.log`.
+- **Build `.exe` (PyInstaller)** `build_windows.py` + `eafcmeta.spec` + workflow `.github/workflows/build-windows.yml`:
+  **mai eseguiti**. Possibili import nascosti mancanti; nell'.exe pywebview non è incluso.
 - **`eafcmeta/fetch.py`** (scarico automatico da FUT.GG): scritto e testato **solo con un sito finto**. Mai provato contro il sito vero
   (dal cloud la rete è bloccata). Non sappiamo se FUT.GG accetta richieste da Python (Cloudflare).
 - **FUTBIN blocca l'utente** («continua a bloccarsi»). Le pagine FUTBIN arrivano solo se l'utente le salva dal browser.
@@ -55,7 +60,7 @@ Sono descritti nelle sezioni 6 e 7. Tutto il resto è già funzionante.
 ### Non fatto
 - **Ricerca automatica dei pareri dei pro** (X, TikTok, Instagram, YouTube): non esiste niente. Vedi sezione 7.
 - **Motore di regole dichiarativo**: oggi molte regole dell'analisi sono costanti scritte nel codice. Vedi sezione 6.
-- Nessuna PR, nessun CI. Nessun pacchetto `.exe` (si avvia con `python start.py`).
+- Nessuna PR. Il pacchetto `.exe` è solo predisposto (non provato, vedi sopra); si avvia con `python start.py`.
 
 ---
 
@@ -66,9 +71,11 @@ git clone -b claude/nifty-babbage-h8l35m https://github.com/enricolt/EAFCMETA
 cd EAFCMETA
 pip install -r requirements-dev.txt     # include fastapi, uvicorn, bs4, lxml, pytest, httpx
 python start.py                         # controlla gli aggiornamenti, apre la finestra (o il browser)
-python start.py --browser               # forza il browser
+python start.py --window app|pywebview|browser   # forza un livello (--browser = browser)
+python start.py --diagnosi              # rapporto da copiare/incollare (Python, git, pywebview, browser, porta, commit)
+python build_windows.py                 # .exe con PyInstaller (Windows, NON provato)
 python start.py --lan                   # accesso in rete locale con chiave in .token
-pytest -q                               # 58 test
+pytest -q                               # tutta la suite
 python -m eafcmeta.importer data/esempio.csv        # 30 carte FITTIZIE di prova
 python -m eafcmeta.collect cartella_con_pagine/     # importa pagine HTML salvate
 python -m eafcmeta.fetch "https://www.fut.gg/players/?nation_id=[54]" --max 30   # NON TESTATO sul sito vero
@@ -99,7 +106,8 @@ Monolite Python: **FastAPI + SQLite**, un solo file HTML statico come frontend, 
 | `eafcmeta/importer.py` | Import CSV/TSV/JSON e aggiornamento prezzi. |
 | `eafcmeta/db.py` | SQLite: tabelle `cards`, `price_history`, `opinions`; upsert con riconoscimento della stessa carta. |
 | `eafcmeta/models.py` | Modelli Pydantic con tutte le validazioni (`CardIn`, `OpinionIn`, …). |
-| `eafcmeta/desktop.py` | Finestra nativa pywebview con ripiego sul browser. |
+| `eafcmeta/desktop.py` | Catena di finestre: pywebview, app mode Edge/Chrome (`find_app_browsers`, `app_command`, battito `/__alive` inserito da `HeartbeatApp` senza toccare `api.py`), browser. Server chiuso alla chiusura della finestra. |
+| `build_windows.py`, `eafcmeta.spec`, `.github/workflows/build-windows.yml` | Build `.exe` con PyInstaller (non provato). |
 | `eafcmeta/config/patch.json` | **Tutti i parametri del motore** (pesi, bonus, soglie, PlayStyle, meta, calibrazione). Validato all'avvio. |
 | `eafcmeta/config/local.json` | Calibrazione personale (creata dall'app, **ignorata da git**), sopra `patch.json`. |
 | `eafcmeta/static/index.html` | Intera UI (CSS+JS inline): griglia di carte FUT, dettaglio, form, import, calibrazione. |
