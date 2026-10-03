@@ -1,0 +1,1698 @@
+{
+ "_nota": "Elenco di partenza di pro e creator di EA FC, compilato il 2026-10-03 da ricerche web (risultati di ricerca; molti dati NON verificati su pagine reali). I canali mancanti li scopre il processo automatico. Handle e follower: solo quelli emersi con fonte.",
+ "_fonti_tornei": "FC Pro World Championship 2026 (Parigi, 22-26 luglio): 1 RVPLegend, 2 levyfinn, 3 Bonanno, 4 Nassada. FC Pro Open 2026: 1 Vejrgang, 2 Emre Yilmaz. eChampions League 2026 (Budapest): 1 Vejrgang, 2 HHezerS.",
+ "pros": [
+  {
+   "name": "Alihan",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Bulgaria",
+   "team": "RBLZ Gaming",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@RBLZ_Alihan",
+     "followers": "1.942",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://x.com/RBLZ_Alihan?lang=en"
+    },
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {
+     "handle": "@rblz_alihan",
+     "followers": "1.165",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://www.instagram.com/rblz_alihan/"
+    }
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "top 8: QF persa 4-5 vs RvPLegend",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    },
+    {
+     "event": "VBL Grand Final by WOW",
+     "year": 2026,
+     "placement": "2o (perde 7-9 ai supplementari vs Nassada)",
+     "source_url": "https://www.bundesliga.com/en/bundesliga/news/2026-german-efootball-singles-champion-dahman-wow-fc26-36983"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "semifinalista (QF 6-4 su Nassada, SF persa 1-6 vs HHezerS)",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned",
+    "https://www.bundesliga.com/en/bundesliga/news/2026-german-efootball-singles-champion-dahman-wow-fc26-36983",
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+   ],
+   "notes": "Nato 11/08/2008 (snippet).",
+   "youtube_handle": "",
+   "real_name": "RBLZ_Alihanlion"
+  },
+  {
+   "name": "Bonanno",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Argentina",
+   "team": "Manchester City Esports",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {
+     "handle": "@MatiasBonanno9",
+     "source_url": "https://www.youtube.com/@MatiasBonanno9"
+    },
+    "twitch": {
+     "handle": "matiasbonanno99",
+     "source_url": "https://streamscharts.com/channels/matiasbonanno99"
+    },
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "3o (batte Nassada ai rigori dopo 6-6; 1o in league stage con 18 pt; QF vs HHezerS 12-6; SF persa 2-6 vs levyfinn); 75.000 USD",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2024,
+     "placement": "3o",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/matias-bonanno-on-fc-pro-world-championship-dream"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/matias-bonanno-on-fc-pro-world-championship-dream"
+   ],
+   "notes": "Nato 12/11/2002 (snippet). Twitch Partner secondo snippet. Follower non visti.",
+   "youtube_handle": "@MatiasBonanno9"
+  },
+  {
+   "name": "Emre Yilmaz",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Paesi Bassi",
+   "team": "Liquid FC (Team Liquid)",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@EmreYilmazz80",
+     "source_url": "https://x.com/EmreYilmazz80"
+    },
+    "youtube": {
+     "handle": "@emreyilmaz80",
+     "source_url": "https://www.youtube.com/@emreyilmaz80"
+    },
+    "twitch": {
+     "handle": "emreyilmaz80",
+     "followers": "6K",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://www.twitch.tv/emreyilmaz80"
+    },
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "2o (perde 1-4 vs Vejrgang; QF vs HHezerS 8-7)",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2025,
+     "placement": "1o (2o titolo; batte Vejrgang)",
+     "source_url": "https://www.uefa.com/uefachampionsleague/news/0299-1de1971fb98b-605d0cac7f2e-1000--echampions-league-2025-finals-review-emre-yilmaz-earns-h"
+    }
+   ],
+   "sources": [
+    "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/",
+    "https://www.uefa.com/uefachampionsleague/news/0299-1de1971fb98b-605d0cac7f2e-1000--echampions-league-2025-finals-review-emre-yilmaz-earns-h"
+   ],
+   "notes": "CORREZIONE: NON risulta vincitore eChampions League 2026 (vinse Vejrgang); Emre ha vinto l'edizione 2025. Risultato nel Mondiale 2026 non verificato.",
+   "youtube_handle": "@emreyilmaz80"
+  },
+  {
+   "name": "HHezerS",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "Hellas Verona / Team Vitality (snippet)",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@HHezerS7",
+     "source_url": "https://x.com/HHezerS7"
+    },
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "2o (perde finale 2-3 vs Vejrgang; SF 6-1 su Alihanlion)",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "top 8: QF persa 6-12 vs Bonanno",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    },
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "QF persa 7-8 vs Emre Yilmaz",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary",
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "levyfinn",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Germania",
+   "team": "RBLZ Gaming (RB Leipzig)",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "2o (perde 5-6 in finale; 150.000 USD)",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato al Mondiale",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    },
+    {
+     "event": "Campionato tedesco individuale (VBL)",
+     "year": 2025,
+     "placement": "campione (secondo snippet rbleipzig)",
+     "source_url": "https://rbleipzig.com/de/news/fc-26-pro-world-championship-rblz-levyfinn"
+    }
+   ],
+   "sources": [
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins",
+    "https://rbleipzig.com/de/news/fc-26-pro-world-championship-rblz-levyfinn"
+   ],
+   "notes": "Snippet RB Leipzig: finalista eChampions League 'due anni prima' (anno esatto non verificato).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "ManuBachoore",
+   "kind": "persona",
+   "category": [
+    "creator_int",
+    "pro"
+   ],
+   "country": "Paesi Bassi",
+   "team": "Team Liquid",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@ManuelBachoore",
+     "source_url": "https://x.com/ManuelBachoore"
+    },
+    "youtube": {
+     "handle": "@ManuelBachoore",
+     "source_url": "https://www.youtube.com/c/ManuelBachoore"
+    },
+    "twitch": {
+     "handle": "ManuelBachoore_",
+     "followers": "31,7K",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://www.twitch.tv/manuelbachoore_"
+    },
+    "tiktok": {
+     "handle": "@manuelbachoore"
+    },
+    "instagram": {
+     "handle": "manuelbachoore"
+    }
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2025,
+     "placement": "1o (5-3 su Brice); primo bi-campione del mondo; 250.000 USD",
+     "source_url": "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "non nei top 8; 7o nel league stage (4-1-1, 13 pt)",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship/League_Stage"
+    },
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "QF persa 6-5 ai supplementari vs Vejrgang (5-7o)",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/",
+    "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship/League_Stage",
+    "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/",
+    "https://www.redbull.com/int-en/ea-fc-pro-world-championship-who-to-watch-need-to-know"
+   ],
+   "notes": "Handle IG/TikTok citati da un riassunto di ricerca, non da pagina letta. | Due volte campione del mondo. Pro, non verificato come creatore di opinioni.",
+   "youtube_handle": "@ManuelBachoore"
+  },
+  {
+   "name": "Nassada",
+   "kind": "persona",
+   "category": [
+    "creator_it",
+    "pro"
+   ],
+   "country": "Germania (origini marocchine)",
+   "team": "SC Freiburg fino al titolo; poi RBLZ Gaming (rbleipzig.com: 'joined RBLZ Gaming from SC Freiburg as reigning German champion')",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@nassada_",
+     "source_url": "https://x.com/nassada_"
+    },
+    "youtube": {},
+    "twitch": {
+     "handle": "nassada_",
+     "followers": "9.229 (streamscharts) / 24,5K (altro snippet): dati discordanti",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://streamscharts.com/channels/nassada_"
+    },
+    "tiktok": {},
+    "instagram": {
+     "handle": "@nassada_",
+     "followers": "18,4K",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://www.instagram.com/nassada_/"
+    }
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "4o: league stage 15 pt; QF vs Vejrgang 11-5; SF persa 8-10 vs RvPLegend; finale 3o posto persa ai rigori (4-4, 6-6) vs Bonanno",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    },
+    {
+     "event": "VBL Grand Final by WOW (campionato tedesco eFootball)",
+     "year": 2026,
+     "placement": "1o, campione tedesco (finale 9-7 dopo supplementare vs Alihan)",
+     "source_url": "https://www.bundesliga.com/en/bundesliga/news/2026-german-efootball-singles-champion-dahman-wow-fc26-36983"
+    },
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "debutto; finalista di Londra (seed #59); raggiunto turno a eliminazione (snippet scfreiburg: 'ottavi'); piazzamento esatto non verificato",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "quarti: perde 4-6 vs Alihanlion",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned",
+    "https://www.bundesliga.com/en/bundesliga/news/2026-german-efootball-singles-champion-dahman-wow-fc26-36983",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review",
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+   ],
+   "notes": "19 anni al titolo (regiotrends), 20 in altro snippet. Finale VBL ad Amburgo. Pagine scfreiburg/bundesliga non apribili (proxy), dati da snippet di ricerca. | NON TROVATO. La ricerca 'Nassada FC 26' non ha restituito alcun creator; il riassunto automatico che parlava di 'Nassada FC' al torneo era privo di fonti e non attendibile. Varianti da provare: Nasada, Nassada_, Nasseda. | Nome reale: Nassim Dahman (confermato dall'utente e dai risultati).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "RvPLegend",
+   "kind": "persona",
+   "category": [
+    "creator_int",
+    "pro"
+   ],
+   "country": "Romania",
+   "team": "",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship (Parigi/EWC)",
+     "year": 2026,
+     "placement": "1o (batte levyfinn 6-5; in semifinale-ko: Umut 6-3, GugaFerraz 7-3, Alihan 5-4, Nassada 10-8); premio 250.000 USD",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato al Mondiale",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    }
+   ],
+   "sources": [
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins",
+    "https://www.ea.com/news/fc-26-pro-world-champion"
+   ],
+   "notes": "Primo rumeno campione del mondo. Nome reale, squadra e profili non emersi. | Campione FC Pro World Championship 2026 (EWC Parigi, 22-26 luglio, finale vs LevyFinn). Canali social non verificati.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Vejrgang",
+   "kind": "persona",
+   "category": [
+    "creator_int",
+    "pro"
+   ],
+   "country": "Danimarca",
+   "team": "Team Falcons / Como 1907 (Como Gaming Club)",
+   "importance": "alta",
+   "confidence": "alta",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@FLC_Vejrgang",
+     "followers": "82K",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://x.com/FLC_Vejrgang?lang=en"
+    },
+    "youtube": {
+     "handle": "AndersVejrgangofficial"
+    },
+    "twitch": {
+     "handle": "anders_vejrgang",
+     "followers": "647.787",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://streamscharts.com/channels/anders_vejrgang"
+    },
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "1o (4-1 su Emre Yilmaz; SF 6-5 su Levi de Weerd; QF 6-5 ai supplementari su ManuBachoore); 100.000 USD",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "1o (finale 3-2 vs HHezerS; SF 6-5 vs Samugamer; QF 6-5 vs nicolas99fc)",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    },
+    {
+     "event": "eSerie A Goleador (Como Gaming Club)",
+     "year": 2026,
+     "placement": "campione; finale vs Torino 9-5 (Napoli)",
+     "source_url": "https://www.legaseriea.it/news/il-como-gaming-club-vince-la-eserie-a-goleador-2026"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "top 8: eliminato nei quarti da Nassada (5-11)",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    },
+    {
+     "event": "FC Pro Open",
+     "year": 2025,
+     "placement": "difeso titolo nel 2026, quindi vincitore anche 2025 (snippet 'defends FC Pro Open title')",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    }
+   ],
+   "sources": [
+    "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/",
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary",
+    "https://www.legaseriea.it/news/il-como-gaming-club-vince-la-eserie-a-goleador-2026",
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned",
+    "https://www.redbull.com/int-en/ea-fc-pro-world-championship-who-to-watch-need-to-know"
+   ],
+   "notes": "Numero 1 del ranking FC Pro (snippet luglio 2026). Sponsor Red Bull (snippet). | Solo pro; contenuti non verificati.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Brice",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Francia",
+   "team": "Team Vitality",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2025,
+     "placement": "2o (perde 3-5 vs ManuBachoore)",
+     "source_url": "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "31o",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Danipitbull",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "SSCN eSports (snippet)",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {
+     "handle": "danipitbull",
+     "followers": "115.234",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://streamscharts.com/channels/danipitbull"
+    },
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "semifinalista (3o-4o)",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/Open"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "qualificato; piazzamento non verificato",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship"
+    }
+   ],
+   "sources": [
+    "https://liquipedia.net/easportsfc/FC_Pro_26/Open",
+    "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship"
+   ],
+   "notes": "Nato 24/02/1998 (snippet).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Er_Caccia98",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "Exeed (snippet)",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@Er_Caccia98",
+     "followers": "3.782",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://x.com/Er_Caccia98"
+    },
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {
+     "followers": "3.234",
+     "as_of": "risultato di ricerca (data della ricerca 2026-10-03; data del dato non indicata dalla fonte)",
+     "source_url": "https://www.tiktok.com/discover/er-caccia?lang=en"
+    },
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "eliminato nel Gruppo B (6o, 6 pt)",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/Open/Group_Stage"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato (5 vittorie su 5 nel girone)",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    },
+    {
+     "event": "UEFA eChampions League",
+     "year": "anno non verificato",
+     "placement": "finalista (snippet)",
+     "source_url": "https://liquipedia.net/easportsfc/Er_Caccia98"
+    }
+   ],
+   "sources": [
+    "https://liquipedia.net/easportsfc/FC_Pro_26/Open/Group_Stage",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins",
+    "https://liquipedia.net/easportsfc/Er_Caccia98"
+   ],
+   "notes": "Nato 24/04/1998. Piu di 140K USD di premi (snippet).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Levi de Weerd",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Paesi Bassi",
+   "team": "",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "semifinalista (perde 5-6 vs Vejrgang)",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "17o-24o (R1 persa 6-7 vs DFernandes)",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2025,
+     "placement": "3o",
+     "source_url": "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/"
+    }
+   ],
+   "sources": [
+    "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://soccergaming.com/manubachoore-crowned-fc-pro-25-world-champion/"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "nicolas99fc",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "",
+   "team": "Real Sociedad",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "finalista di Londra (seed #2)",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review"
+    },
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "quarti: perde 5-6 vs Vejrgang",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "top 8 (esito nei quarti non verificato)",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+    }
+   ],
+   "sources": [
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-open-26-finals-review",
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary",
+    "https://soccergaming.com/fc-pro-26-world-championship-history-made-as-new-champion-crowned"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Obrun2002",
+   "kind": "persona",
+   "category": [
+    "creator_it",
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "Exeed",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {
+     "handle": "@obrun2002",
+     "source_url": "https://x.com/obrun2002"
+    },
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "13o-16o: 5o nel Gruppo B (3-3-4, 12 pt), invito FC Pro 27 Global Qualifier",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/Open/Group_Stage"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato al Mondiale",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "non nei top 8; piazzamento non verificato",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship"
+    },
+    {
+     "event": "FC Pro 25 Open",
+     "year": 2025,
+     "placement": "2o",
+     "source_url": "https://www.esportsearnings.com/players/85112-obrun2002-francesco-tagliafierro/results-by-team"
+    },
+    {
+     "event": "FC Pro 24 Open",
+     "year": 2024,
+     "placement": "5o-8o",
+     "source_url": "https://www.esportsearnings.com/players/85112-obrun2002-francesco-tagliafierro/results-by-team"
+    }
+   ],
+   "sources": [
+    "https://liquipedia.net/easportsfc/FC_Pro_26/Open/Group_Stage",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins",
+    "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship",
+    "https://www.esportsearnings.com/players/85112-obrun2002-francesco-tagliafierro/results-by-team",
+    "https://liquipedia.net/easportsfc/Obrun2002",
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/player-profile-obrun2002"
+   ],
+   "notes": "Pagina EA player-profile-obrun2002 esiste ma non apribile (proxy).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Samugamer",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "Sassuolo eSports",
+   "importance": "media",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "semifinalista (QF 9-3 su MarwanMC9; SF persa 5-6 vs Vejrgang)",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    },
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "qualificato (Italia); piazzamento non verificato",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary",
+    "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship"
+   ],
+   "notes": "18 anni (snippet); 2o anno consecutivo nella Final 8 eCL.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "AJ3",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "UK (snippet)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "sbc_verdicts"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "oltre 1M nel 2017 (snippet), dato attuale non verificato",
+     "as_of": "2017"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/int-en/best-fc-27-creators"
+   ],
+   "notes": "Squad Builder Showdown, SBC.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Angry Ginge",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "UK",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {}
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/int-en/best-fc-27-creators",
+    "https://en.wikipedia.org/wiki/Angryginge"
+   ],
+   "notes": "Pack opening, career mode, intrattenimento; poco rilevante per pareri sulle carte.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Bateson87",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "1.6M+ (snippet)",
+     "as_of": "non indicata"
+    },
+    "twitch": {
+     "subscribers": "1M follower (snippet)",
+     "as_of": "non indicata"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/int-en/best-fc-27-creators"
+   ],
+   "notes": "Pack opening e UT; poco orientato a verdetti sulle carte.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "CapitanBarbanera",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (non verificato)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {},
+   "results": [],
+   "sources": [
+    "https://streamscharts.com/channels?lang=it&game=ea-sports-fc-26"
+   ],
+   "notes": "Citato tra i top 5 italiani FC26 per ore guardate. Nulla di verificato oltre al nome.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "cricoccia3",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (non verificato)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {},
+   "results": [],
+   "sources": [
+    "https://streamscharts.com/channels?lang=it&game=ea-sports-fc-26"
+   ],
+   "notes": "3o per ore guardate IT FC26 (Streams Charts, 7 giorni). Nessuna piattaforma verificata.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "DjMaRiiO",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "Spagna (non verificato)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "player_reviews"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "https://www.youtube.com/@DjMaRiiO",
+     "source_url": "https://www.youtube.com/@DjMaRiiO"
+    },
+    "kick": {
+     "handle_or_url": "https://kick.com/djmariio/videos",
+     "source_url": "https://kick.com/djmariio/videos"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.youtube.com/watch?v=T1vfeXhXyv8",
+    "https://www.youtube.com/watch?v=58zy1a5Sqa4"
+   ],
+   "notes": "Video FC 26 su promo e opinioni (titoli letti nei risultati).",
+   "youtube_handle": "@DjMaRiiO"
+  },
+  {
+   "name": "Exeed",
+   "kind": "organizzazione",
+   "category": [
+    "creator_int",
+    "creator_it"
+   ],
+   "country": "Italia",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "alta",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {},
+   "results": [],
+   "sources": [
+    "https://exeed.gg/",
+    "https://liquipedia.net/easportsfc/Exeed",
+    "https://calciomercato.com/news/esports-exeed-piazza-il-colpo-preso-prinsipe-asso-di-fc-24-70344"
+   ],
+   "notes": "Org italiana attiva dal 2018 (snippet exeed.gg). Sito: exeed.gg. Social non verificati. Roster EWC 2026 FC 26: Obrun2002 e Caccia (snippet). | Nessuna fonte trovata.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "FIFA TRADE CHANNEL",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "Brasile (da descrizione)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": ">100K (snippet)",
+     "as_of": "non indicata",
+     "source_url": "https://t.me/s/FIFATRADECHANN1?before=13163"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://t.me/s/FIFATRADECHANN1?before=13163"
+   ],
+   "notes": "Fonte e un canale Telegram del canale stesso (autodescrizione, trading).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Flokox",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (Torino)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "alta",
+   "covers": [
+    "gameplay"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "@FlokoxVOD (VOD dello stream)",
+     "source_url": "https://www.youtube.com/@FlokoxVOD"
+    },
+    "twitch": {
+     "handle_or_url": "twitch.tv/flokox",
+     "subscribers": "267948 follower",
+     "as_of": "snapshot twitchmetrics/streamscharts, data non indicata",
+     "source_url": "https://www.twitchmetrics.net/c/404813066-flokox"
+    },
+    "tiktok": {
+     "handle_or_url": "@flokox_",
+     "source_url": "https://www.tiktok.com/@flokox_"
+    },
+    "instagram": {
+     "handle_or_url": "@flokox_",
+     "source_url": "https://www.instagram.com/flokox_/"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://streamscharts.com/channels/flokox",
+    "https://escharts.com/players/flokox"
+   ],
+   "notes": "#1 canali italiani FC26 su Twitch per follower secondo twitchmetrics (snippet); 1o per ore guardate (Streams Charts, 7 giorni). Che faccia recensioni carte NON verificato: contenuto principale = stream gameplay.",
+   "youtube_handle": "@FlokoxVOD",
+   "real_name": "Mattia Smania"
+  },
+  {
+   "name": "GamerBrother",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "Germania (inferito dalla fonte tedesca)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "player_reviews"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "1.14M (snippet)",
+     "as_of": "non indicata",
+     "source_url": "https://mein-mmo.de/en/one-of-the-biggest-twitch-streamers-presents-his-team-for-ea-fc-26-says-a-freshly-crowned-world-footballer-also-impresses-on-console,1528647/"
+    },
+    "twitch": {
+     "subscribers": "681K follower (snippet)",
+     "as_of": "non indicata",
+     "source_url": "stessa fonte"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://mein-mmo.de/en/one-of-the-biggest-twitch-streamers-presents-his-team-for-ea-fc-26-says-a-freshly-crowned-world-footballer-also-impresses-on-console,1528647/"
+   ],
+   "notes": "Articolo sul suo team FC 26. Pagina non letta direttamente.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "GugaFerraz",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Brasile",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "9o-16o (R2 persa 3-7 vs RvPLegend), 6o nel league stage",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    }
+   ],
+   "sources": [
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "HOLLYWOOD285",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia",
+   "team": "Coach eNazionale italiana (snippet)",
+   "importance": "bassa",
+   "confidence": "alta",
+   "covers": [
+    "gameplay",
+    "meta_guides",
+    "player_reviews"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "youtube.com/user/H0LLYW00D285 (anche youtube.com/@HOLLYWOOD285)",
+     "source_url": "https://www.youtube.com/@HOLLYWOOD285/videos"
+    },
+    "x": {
+     "handle_or_url": "@HOLLYWOOD285",
+     "source_url": "https://x.com/HOLLYWOOD285"
+    },
+    "twitch": {
+     "handle_or_url": "twitch.tv/hollywood285",
+     "subscribers": "362225 follower (twitchmetrics, gen 2026)",
+     "as_of": "2026-01",
+     "source_url": "https://www.twitchmetrics.net/channels/follower?game=EA+Sports+FC+26&lang=it"
+    },
+    "tiktok": {
+     "handle_or_url": "@hollywood285",
+     "subscribers": "182.5K follower (snippet ricerca, data non indicata)",
+     "source_url": "https://www.tiktok.com/@hollywood285"
+    },
+    "instagram": {
+     "handle_or_url": "@hollywood285",
+     "subscribers": "69K (snippet, data non indicata)",
+     "source_url": "https://www.instagram.com/hollywood285/"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.tiktok.com/@hollywood285/video/7341343007817452833",
+    "https://www.tiktok.com/@hollywood285",
+    "https://x.com/HOLLYWOOD285",
+    "https://www.twitch.tv/hollywood285?lang=it"
+   ],
+   "notes": "E' il 'Nello Hollywood' citato dall'utente. Video TikTok con tag #playerreview (FC24). 2o per ore guardate IT FC26 su Streams Charts (7 giorni, data non indicata). Codici tattici UT. Pagine lette solo come risultati di ricerca (WebFetch bloccato).",
+   "youtube_handle": "@HOLLYWOOD285",
+   "real_name": "Nello Nigro"
+  },
+  {
+   "name": "ilMasseo",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (non verificato)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "@ilMasseo",
+     "source_url": "https://www.youtube.com/@ilMasseo"
+    },
+    "twitch": {
+     "subscribers": "1831963 follower",
+     "as_of": "2026-01",
+     "source_url": "https://www.twitchmetrics.net/channels/follower?game=EA+Sports+FC+26&lang=it"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.youtube.com/@ilMasseo"
+   ],
+   "notes": "Probabile generalista; rilevanza per recensioni carte non verificata. Handle Twitch non letto.",
+   "youtube_handle": "@ilMasseo"
+  },
+  {
+   "name": "ilSantu",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (non verificato esplicitamente)",
+   "team": "FUT Universe (legame dedotto dal nome canale Twitch)",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "player_reviews",
+    "sbc_verdicts"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "@FUTUniverse (canale FUT Universe; collegamento a ilSantu non verificato)",
+     "source_url": "https://www.youtube.com/@FUTUniverse"
+    },
+    "x": {
+     "handle_or_url": "@FUTUniversecom (account del sito, non personale)",
+     "source_url": "https://x.com/FUTUniversecom"
+    },
+    "twitch": {
+     "handle_or_url": "twitch.tv/ilsantu_futuniverse",
+     "subscribers": "46399 follower",
+     "as_of": "snapshot twitchmetrics, data non indicata",
+     "source_url": "https://www.twitchmetrics.net/c/184735438-ilsantu_futuniverse"
+    },
+    "tiktok": {
+     "handle_or_url": "@futuniverse (account del brand, legame non verificato)",
+     "source_url": "https://www.tiktok.com/@futuniverse"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.twitch.tv/ilsantu_futuniverse?lang=it"
+   ],
+   "notes": "#11 italiano FC26 su Twitch (snippet). FUT Universe offre news, consigli, mercato, recensioni e SBC (snippet): contenuto attribuito al brand, non confermato per ilSantu personalmente.",
+   "youtube_handle": "@FUTUniverse"
+  },
+  {
+   "name": "MarwanMC9",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "eChampions League",
+     "year": 2026,
+     "placement": "quarti: perde 3-9 vs Samugamer",
+     "source_url": "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/echampions-league-2026-concludes-with-intense-finals-in-hungary"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Mike LaBelle",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "312K (snippet)",
+     "as_of": "non indicata",
+     "source_url": "https://www.redbull.com/ca-en/mike-labelle-ea-fc-tips"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/ca-en/mike-labelle-ea-fc-tips",
+    "https://en.wikipedia.org/wiki/Mike_LaBelle"
+   ],
+   "notes": "Ex pro, tutorial e consigli FUT.",
+   "youtube_handle": ""
+  },
+  {
+   "name": "NepentheZ",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "meta_guides",
+    "player_reviews"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "2M (snippet, pagina non letta)",
+     "as_of": "non indicata"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/int-en/best-fc-27-creators"
+   ],
+   "notes": "Red Bull: analisi quotidiana dei contenuti FC. Citato anche come partner EA FC in una ricerca francese (non letta).",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Prinsipe",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia",
+   "team": "Exeed (ingaggio annunciato da Calciomercato, ai tempi di FC 24; stato attuale non verificato)",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {},
+   "results": [],
+   "sources": [
+    "https://calciomercato.com/news/esports-exeed-piazza-il-colpo-preso-prinsipe-asso-di-fc-24-70344"
+   ],
+   "notes": "Nessun social verificato.",
+   "youtube_handle": "",
+   "real_name": "Daniele Paolucci"
+  },
+  {
+   "name": "RedLac",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "https://www.youtube.com/@AC_RedLac",
+     "subscribers": "242K (snippet)",
+     "as_of": "non indicata",
+     "source_url": "https://www.redbull.com/us-en/fc-26-tips-redlac-rblz"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.youtube.com/@AC_RedLac",
+    "https://www.redbull.com/us-en/fc-26-tips-redlac-rblz"
+   ],
+   "notes": "Pro player, team RBLZ. URL canale comparso nei risultati ma pagina non aperta (YouTube bloccato).",
+   "youtube_handle": "@AC_RedLac"
+  },
+  {
+   "name": "RiberaRibell",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia",
+   "team": "Exeed (Content Creator e Team Manager, snippet)",
+   "importance": "bassa",
+   "confidence": "alta",
+   "covers": [
+    "gameplay",
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "youtube.com/channel/UCis5WWYX0t6y-_Z6ZHqC-qw",
+     "source_url": "https://www.youtube.com/channel/UCis5WWYX0t6y-_Z6ZHqC-qw"
+    },
+    "x": {
+     "handle_or_url": "@RiberaRibell",
+     "source_url": "https://x.com/riberaribell"
+    },
+    "twitch": {
+     "handle_or_url": "twitch.tv/riberaribell",
+     "source_url": "https://twitchtracker.com/riberaribell"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.youtube.com/watch?v=hzjVcsN_FyY",
+    "https://www.youtube.com/watch?v=6tN00WJ_uS0"
+   ],
+   "notes": "Si': il 'Ribera' dell'utente coincide con RiberaRibell di Exeed (ex pro, caster eSerieA e nazionale). Tra i top 5 italiani FC26 per ore guardate (Streams Charts). Recensioni carte non verificate.",
+   "youtube_handle": "",
+   "real_name": "Matteo Ribera"
+  },
+  {
+   "name": "SmalkXVII",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "4o nel league stage (5-0-1, 15 pt); esito knockout non verificato (non nei top 8 indicati)",
+     "source_url": "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship/League_Stage"
+    }
+   ],
+   "sources": [
+    "https://liquipedia.net/easportsfc/FC_Pro_26/World_Championship/League_Stage"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "Team Gullit",
+   "kind": "organizzazione",
+   "category": [
+    "creator_int",
+    "creator_it"
+   ],
+   "country": "Paesi Bassi (non italiana)",
+   "team": "Team Liquid (snippet)",
+   "importance": "bassa",
+   "confidence": "alta",
+   "covers": [
+    "gameplay",
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "handle_or_url": "@TeamGullit",
+     "source_url": "https://www.youtube.com/@TeamGullit"
+    },
+    "x": {
+     "handle_or_url": "@TheTeamGullit",
+     "source_url": "https://x.com/theteamgullit"
+    },
+    "tiktok": {
+     "handle_or_url": "@teamgullit",
+     "source_url": "https://www.tiktok.com/@teamgullit"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.insideworldfootball.com/2025/11/13/team-gullit-co-founder-ruud-discusses-career-move-esports",
+    "https://acc.teamgullit.com/news/team-liquid-acquires-ea-fc-organization-team-gullit"
+   ],
+   "notes": "Org olandese, co-fondata da Ruud Gullit; campione FIFA 23 ed EA FC 25. Contenuti in inglese: tutorial, formazioni, obiettivi. | Il titolo indica che Team Liquid ha acquisito Team Gullit (pagina non letta, data ignota).",
+   "youtube_handle": "@TeamGullit"
+  },
+  {
+   "name": "Tekkz",
+   "kind": "persona",
+   "category": [
+    "creator_int"
+   ],
+   "country": "Inghilterra (da snippet Red Bull)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [
+    "gameplay",
+    "meta_guides"
+   ],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "youtube": {
+     "subscribers": "3.3M (snippet di ricerca, pagina non letta)",
+     "as_of": "non indicata",
+     "source_url": "non verificato (risultato di ricerca)"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.redbull.com/int-en/best-fc-27-creators",
+    "https://www.ea.com/news/fc-26-pro-world-champion"
+   ],
+   "notes": "Elencato da Red Bull tra i migliori creator FC 27 e tra i partecipanti al FC Pro World Championship 2026 (snippet). Handle non verificato.",
+   "youtube_handle": "",
+   "real_name": "J_Tekkz"
+  },
+  {
+   "name": "Umut",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Germania",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "media",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro World Championship",
+     "year": 2026,
+     "placement": "17o-24o (R1 persa 3-6 vs RvPLegend)",
+     "source_url": "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review"
+    },
+    {
+     "event": "FC Pro 26 Open",
+     "year": 2026,
+     "placement": "top 8 (QF persa 3-5 vs Levi de Weerd)",
+     "source_url": "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+    }
+   ],
+   "sources": [
+    "https://www.ea.com/games/ea-sports-fc/fc-pro/news/fc-pro-world-championship-26-review",
+    "https://www.insideworldfootball.com/2026/01/27/vejrgang-defends-fc-pro-open-title/"
+   ],
+   "notes": "",
+   "youtube_handle": "",
+   "real_name": "Gultekin"
+  },
+  {
+   "name": "Virgil",
+   "kind": "persona",
+   "category": [
+    "pro"
+   ],
+   "country": "Italia",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "x": {},
+    "youtube": {},
+    "twitch": {},
+    "tiktok": {},
+    "instagram": {}
+   },
+   "results": [
+    {
+     "event": "FC Pro 26 Play-Ins",
+     "year": 2026,
+     "placement": "qualificato al Mondiale",
+     "source_url": "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+    }
+   ],
+   "sources": [
+    "https://soccergaming.com/fc-pro-26-world-championship-lineup-confirmed-after-play-ins"
+   ],
+   "notes": "",
+   "youtube_handle": ""
+  },
+  {
+   "name": "ZanoXVII",
+   "kind": "persona",
+   "category": [
+    "creator_it"
+   ],
+   "country": "Italia (non verificato)",
+   "team": "",
+   "importance": "bassa",
+   "confidence": "bassa",
+   "covers": [],
+   "gives_card_opinions": "non verificato",
+   "platforms": {
+    "twitch": {
+     "handle_or_url": "twitch.tv/zanoxvii",
+     "subscribers": "1912931 follower",
+     "as_of": "2026-01",
+     "source_url": "https://www.twitchmetrics.net/channels/follower?game=EA+Sports+FC+26&lang=it"
+    }
+   },
+   "results": [],
+   "sources": [
+    "https://www.twitch.tv/zanoxvii"
+   ],
+   "notes": "Compare nella lista italiana FC26 per follower ma probabilmente streamer generalista: rilevanza per recensioni carte non verificata.",
+   "youtube_handle": ""
+  }
+ ]
+}
