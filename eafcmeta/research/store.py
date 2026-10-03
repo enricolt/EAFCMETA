@@ -147,7 +147,9 @@ def accept(conn, pid: int, stance=_UNSET, score=_UNSET, reason=_UNSET, card_id=_
         op = OpinionIn(creator=p["creator"], stance=vals["stance"], score=vals["score"], reason=vals["reason"],
                        url=p["url"])
     except ValidationError as e:
-        raise ValueError("; ".join(f"{'.'.join(map(str, x['loc']))}: {x['msg']}" for x in e.errors())) from None
+        # stessa validazione di OpinionIn (coerenza voto/scelta, limiti): messaggio chiaro, niente testo tecnico
+        raise ValueError("; ".join((f"{'.'.join(map(str, x['loc']))}: " if x["loc"] else "") + x["msg"].removeprefix("Value error, ")
+                                   for x in e.errors())) from None
     if conn.execute("SELECT 1 FROM cards WHERE id=?", (vals["card_id"],)).fetchone() is None:
         raise ProposalNotFound("carta non trovata")
     if vals["card_id"] != p["card_id"]:  # correzione della carta: l'eventuale proposta "gemella" (ambiguità) lascia il posto

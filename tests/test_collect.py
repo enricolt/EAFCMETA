@@ -11,12 +11,12 @@ GG_STATS = ("Attributes|Chemistry Style|Pace|87|Acceleration|83|Sprint Speed|90|
             "Slide Tackle|68|Physical|83|Jumping|89|Stamina|91|Strength|81|Aggression|74|Basic|C")
 
 
-def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4", plus=(), name="Kika Nazareth", rating=86, rarity="Destined for Glory"):
+def gg_page(price="800,000", ps=("Chip Shot", "Tiki Taka"), skills="4", plus=(), name="Kika Nazareth", rating=86, rarity="Destined for Glory", stats=GG_STATS):
     ld = [{"@type": "BreadcrumbList", "itemListElement": [{"name": "Players"}, {"name": name},
                                                             {"name": f"{rarity} {rating} OVR"}]},
           {"@type": "WebPage", "description": f"{name} {rarity} {rating} OVR CM (FC Barcelona) on EA FC 27."}]
     scripts = "".join(f'<script type="application/ld+json">{json.dumps(x)}</script>' for x in ld)
-    body = "|".join(["Players", "Skill Moves", skills, "Weak Foot", "4", "Body Type", "Lean Short", GG_STATS,
+    body = "|".join(["Players", "Skill Moves", skills, "Weak Foot", "4", "Body Type", "Lean Short", stats,
                      price, "Current price", "· Updated"])
     shape = lambda p: "M12.8,104.9L68.1,21" if p in plus else "M128,12.808L243.192,128,12.8,128Z"
     icons = "".join(f'<div title="{p}"><svg height="42"><path d="{shape(p)}"/></svg></div>' for p in ps)
@@ -62,8 +62,9 @@ def test_futbin():
 def test_unrecognized_and_broken_pages():
     with pytest.raises(sources.PageError):
         sources.parse_page("<html><body>ciao</body></html>")
-    with pytest.raises(sources.PageError):
-        sources.parse_page(gg_page(price="n/d"))
+    # prezzo illeggibile su una pagina carta: la carta NON si scarta (revisione E), prezzo 0 e avviso
+    d = sources.parse_page(gg_page(price="n/d"))
+    assert d["price"] == 0 and any("prezzo non trovato" in w for w in d["warnings"])
 
 
 def test_import_pages_flow(client):
@@ -102,8 +103,15 @@ def test_rare_and_gold_versions_unify():
     assert sources.parse_page(gg_page())["version"] == "Destined for Glory 86"
 
 
+def gg_stats_like_futbin():
+    """Le stats di FUTBIN scritte con le etichette di FUT.GG: sulla stessa carta i due siti mostrano gli stessi numeri."""
+    return (FB_STATS.replace("Player Stats|", "Attributes|Chemistry Style|").replace("Att. Position", "Att. Pos.")
+            .replace("FK Acc.", "Fk Acc.").replace("Def. Aware|", "Def. Aware.|").replace("Total Chem. style added:", "Basic|C"))
+
+
 def test_same_card_from_both_sites_is_not_duplicated(client):
-    pages = [{"name": "gg.html", "html": gg_page(name="Chloe Kelly", rarity="Rare", rating=86, price="11,750")},
+    # la fusione per nome parziale ("Kelly" = "Chloe Kelly") richiede stats quasi uguali: qui le due pagine hanno gli stessi numeri
+    pages = [{"name": "gg.html", "html": gg_page(name="Chloe Kelly", rarity="Rare", rating=86, price="11,750", stats=gg_stats_like_futbin())},
              {"name": "fb.html", "html": fb_page(name="Kelly", rating="86", price="12,000")}]
     r = client.post("/api/v1/import/pages", json={"pages": pages, "dry_run": False}).json()
     assert (r["new"], r["updated"]) == (1, 1)
@@ -145,22 +153,22 @@ def test_list_updates_known_prices_and_reports_unknown(client):
 
 def test_crawl_with_fake_site(client, tmp_path):
     from eafcmeta import db, fetch
-    pages = {"https://x/list": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CM", "4.9M")]),
+    pages = {"https://www.fut.gg/list": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CM", "4.9M")]),
              "https://www.fut.gg/players/1-pelé/27-1/": gg_page(name="Pelé", rating=95, rarity="Base Icon"),
              "https://www.fut.gg/players/2-zico/27-2/": gg_page(name="Zico", rating=91, rarity="Base Icon")}
     conn = db.connect()
-    r = fetch.crawl(conn, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, log=lambda *_: None)
+    r = fetch.crawl(conn, ["https://www.fut.gg/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, log=lambda *_: None)
     assert (r["new"], r["stopped"]) == (2, None)
     assert conn.execute("select count(*) from cards").fetchone()[0] == 2
     # limite --max e blocco anti-bot
     conn2 = db.connect(str(tmp_path / "b.db"))
-    r = fetch.crawl(conn2, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, max_cards=1, log=lambda *_: None)
+    r = fetch.crawl(conn2, ["https://www.fut.gg/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, max_cards=1, log=lambda *_: None)
     assert r["new"] == 1
 
     def blocked(u):
         raise fetch.Blocked("HTTP 403")
 
-    r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://x/list"], fetch=blocked, delay=0, check_robots=False)
+    r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://www.fut.gg/list"], fetch=blocked, delay=0, check_robots=False)
     assert r["stopped"] == "HTTP 403" and r["new"] == 0
 
 

@@ -92,3 +92,20 @@ def test_goalkeeper_scoring():
     assert scoring.bonus_points(c, CFG)[0] > scoring.bonus_points(card(position="GK", stats=GK, playstyles=["Rapid+"]), CFG)[0]
     with pytest.raises(ValueError):
         scoring.stats_meta(card(position="GK"), CFG)  # servono le stats da portiere
+
+
+def test_verdict_refuses_to_extrapolate_far_outside_the_market():
+    """Revisione C: fuori da [min/2, max*2] dei prezzi del mercato niente MUST_DO/AVOID, ma NEUTRAL con motivo."""
+    for price in (1_000, 10_000_000):
+        v = scoring.verdict(99, price, MARKET, CFG)
+        assert v["verdict"] == "NEUTRAL" and v["value_gap"] is None and "fuori" in v["reason"]
+    assert scoring.verdict(90, 2_600_000, MARKET, CFG)["value_gap"] is not None  # dentro max*2: ok
+    assert scoring.verdict(90, 3_000, MARKET, CFG)["value_gap"] is not None  # dentro min/2: ok
+
+
+def test_verdict_expected_is_clamped_to_0_100():
+    steep = [(1000 * 2 ** i, 40 + 12 * i) for i in range(8)]  # curva ripida: a 2*max l'atteso grezzo e' ~ 136
+    v = scoring.verdict(100, 1000 * 2 ** 7 * 2, steep, CFG)
+    assert v["value_gap"] == 0.0 and "100.0 atteso" in v["reason"]
+    low = [(1000 * 2 ** i, 4 + 12 * i) for i in range(8)]  # a min/2 l'atteso grezzo e' ~ -8
+    assert scoring.verdict(5, 500, low, CFG)["value_gap"] == 5.0  # atteso limitato a 0

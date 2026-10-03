@@ -486,7 +486,9 @@
   "min_cards_for_curve": 8,
   "min_distinct_prices": 4,
   "min_gap": 1.5,
-  "k_sigma": 0.7
+  "k_sigma": 0.7,
+  "price_range_factor": 2,
+  "exact_market_max": 60
  },
  "meta": {
   "top": 90,
@@ -503,10 +505,18 @@
   "Exeed",
   "Nassada"
  ],
+ "merge": {
+  "min_common_stats": 5,
+  "stat_tolerance": 2,
+  "min_stat_share": 0.9
+ },
  "calibration": {
   "pro_meta_at": 80,
   "min_cards": 12,
-  "min_cards_role": 8
+  "min_cards_role": 8,
+  "min_class_cards": 4,
+  "max_weight_drift": 0.3,
+  "max_threshold_shift": 3
  },
  "opinion_weighting": {
   "default_creator_weight": 1.0,

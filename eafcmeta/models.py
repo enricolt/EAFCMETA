@@ -1,3 +1,4 @@
+import math
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -6,6 +7,7 @@ from . import scoring
 
 
 ACCELERATES = ("Explosive", "Controlled", "Lengthy")
+NUMERIC_SIGNALS = ("gg_rating", "gg_rank", "gg_tier_pct", "gg_tier_votes", "futbin_rating", "futbin_rank")
 
 
 class RoleRating(BaseModel):
@@ -72,12 +74,24 @@ class CardIn(BaseModel):
                    "futbin_rating", "futbin_role", "futbin_rank"}
         if set(v) - allowed or any(isinstance(x, str) and len(x) > 40 for x in v.values()):
             raise ValueError("segnali non validi")
-        return v
+        out = dict(v)
+        for k in NUMERIC_SIGNALS:  # voti e classifiche devono essere numeri (anche scritti come testo: "87.9")
+            if k in out and not isinstance(out[k], (int, float)):
+                try:
+                    out[k] = float(str(out[k]).replace(",", "."))
+                except ValueError:
+                    raise ValueError(f"segnale {k} non numerico: {out[k]!r}") from None
+            if k in out and not math.isfinite(out[k]):
+                raise ValueError(f"segnale {k} non valido")
+        return out
 
     @field_validator("name", "version")
     @classmethod
-    def _strip(cls, v):
-        return v.strip()
+    def _strip(cls, v, info):
+        v = v.strip()
+        if info.field_name == "name" and not v:  # "   " passa min_length ma dopo lo strip e' vuoto
+            raise ValueError("il nome non può essere vuoto")
+        return v
 
     @field_validator("position")
     @classmethod
@@ -133,14 +147,32 @@ class ImportIn(BaseModel):
     dry_run: bool = True
 
 
+MAX_PAGES = 12  # pagine per richiesta
+MAX_PAGE_BYTES = 3_000_000  # 3 MB ciascuna
+
+
 class PageIn(BaseModel):
     name: str = Field(max_length=200)
-    html: str = Field(max_length=4_000_000)
+    html: str
+
+    @field_validator("html")
+    @classmethod
+    def _size(cls, v):
+        if len(v) > MAX_PAGE_BYTES:
+            raise ValueError(f"pagina troppo grande (massimo {MAX_PAGE_BYTES // 1_000_000} MB): salva solo la pagina del giocatore")
+        return v
 
 
 class PagesIn(BaseModel):
-    pages: list[PageIn] = Field(max_length=40)
+    pages: list[PageIn]
     dry_run: bool = True
+
+    @field_validator("pages")
+    @classmethod
+    def _count(cls, v):
+        if len(v) > MAX_PAGES:
+            raise ValueError(f"troppe pagine in una richiesta (massimo {MAX_PAGES}): importale a gruppi")
+        return v
 
 
 class OpinionIn(BaseModel):
@@ -153,8 +185,11 @@ class OpinionIn(BaseModel):
 
     @field_validator("creator", "reason", "url")
     @classmethod
-    def _strip(cls, v):
-        return v.strip()
+    def _strip(cls, v, info):
+        v = v.strip()
+        if info.field_name == "creator" and not v:
+            raise ValueError("il nome del creator non può essere vuoto")
+        return v
 
     @field_validator("url")
     @classmethod

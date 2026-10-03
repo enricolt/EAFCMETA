@@ -62,8 +62,8 @@ def _find(conn, name: str, version: str, position: str):
 def import_opinions(conn, text: str, dry_run: bool = False) -> dict:
     try:
         raw = _rows(text)
-    except (ValueError, json.JSONDecodeError, csv.Error) as e:
-        return {"saved": False, "count": 0, "errors": [{"row": 0, "error": str(e)}]}
+    except (ValueError, TypeError, RecursionError, OverflowError, json.JSONDecodeError, csv.Error) as e:
+        return {"saved": False, "count": 0, "errors": [{"row": 0, "error": f"testo non valido ({type(e).__name__}): {e}"[:300]}]}
     if len(raw) > MAX_ROWS:
         return {"saved": False, "count": 0, "errors": [{"row": 0, "error": f"troppe righe (max {MAX_ROWS})"}]}
     plan, errors = [], []
@@ -85,7 +85,7 @@ def import_opinions(conn, text: str, dry_run: bool = False) -> dict:
             if len(found) > 1:
                 raise ValueError(f"«{name}» è ambigua ({len(found)} carte): indica anche versione o ruolo")
             plan.append((found[0]["id"], op))
-        except (ValueError, ValidationError) as e:
+        except (ValueError, TypeError, OverflowError, ValidationError) as e:
             msg = "; ".join(x["msg"].removeprefix("Value error, ") for x in e.errors()) if isinstance(e, ValidationError) else str(e)
             errors.append({"row": i, "error": msg})
     if not errors and not dry_run:

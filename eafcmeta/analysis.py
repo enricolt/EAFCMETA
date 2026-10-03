@@ -64,16 +64,25 @@ def summarize_opinions(opinions: list[dict], level: str) -> dict:
     return {"status": status, "summary": summary, "groups": groups, "hint": hint}
 
 
+def _num(x) -> float | None:
+    """Numero finito oppure None: dati vecchi o sporchi (testo) non devono mai far fallire la pagina."""
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and abs(v) != float("inf") else None
+
+
 def site_signals(card: dict) -> list[str]:
     sig, out = card.get("signals") or {}, []
-    if "gg_rating" in sig:
-        r = f"FUT.GG: GG Rating {sig['gg_rating']:g} come {sig.get('gg_role', '?')}"
-        r += f" (n°{sig['gg_rank']} nel ruolo)" if "gg_rank" in sig else ""
+    if _num(sig.get("gg_rating")) is not None:
+        r = f"FUT.GG: GG Rating {_num(sig['gg_rating']):g} come {sig.get('gg_role', '?')}"
+        r += f" (n°{_num(sig['gg_rank']):g} nel ruolo)" if _num(sig.get("gg_rank")) is not None else ""
         r += f" — rende meglio come {sig['gg_role']} che come {card['position']}" if sig.get("gg_role") not in (None, card["position"]) else ""
         out.append(r + ".")
-    if "futbin_rating" in sig:
-        r = f"FUTBIN: Rating {sig['futbin_rating']:g} come {sig.get('futbin_role', '?')}"
-        r += f" (n°{sig['futbin_rank']} nel ruolo)" if "futbin_rank" in sig else ""
+    if _num(sig.get("futbin_rating")) is not None:
+        r = f"FUTBIN: Rating {_num(sig['futbin_rating']):g} come {sig.get('futbin_role', '?')}"
+        r += f" (n°{_num(sig['futbin_rank']):g} nel ruolo)" if _num(sig.get("futbin_rank")) is not None else ""
         out.append(r + ".")
     return out
 
@@ -81,7 +90,7 @@ def site_signals(card: dict) -> list[str]:
 def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int, cfg: dict,
              opinions: list[dict] | None = None, criteria_notes: list[dict] | None = None) -> dict:
     role = ex["role"]
-    level, label = meta_level(final, cfg)
+    level, label = meta_level(ex["base"], cfg)  # stessa grandezza su cui si calibrano le soglie (vedi calibration.py)
     pros, cons = [], []
 
     # tutte le regole del giudizio (forza/debolezza, scatto, PlayStyle, body type, skill, piede debole, regole apprese
@@ -101,7 +110,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     else:
         pros.append(f"Prezzo in linea con il valore: {verdict['reason']}")
 
-    ops = summarize_opinions(opinions or [], meta_level(ex["base"], cfg)[0])  # il confronto è con le sole statistiche
+    ops = summarize_opinions(opinions or [], level)  # il confronto è con le sole statistiche
     if opinions:
         pro_avg = card.get("pro_score")
         if pro_avg is not None:
@@ -119,7 +128,7 @@ def describe(card: dict, ex: dict, final: float, verdict: dict, market_size: int
     advice = rules.advice(level, v, verdict["value_gap"] is None, cfg)
     if ops["status"] == "disagree":
         advice = "Opinioni divise tra i creator. " + advice
-    shown = f"{final:.0f}"
+    shown = f"{ex['base']:.0f}"  # coerente con l'etichetta, calcolata sullo score base
     headline = f"{label} — score {shown} come {ROLE_IT[role]}" + (
         {"top": ": tra le migliori del suo ruolo.", "meta": ": competitiva ai livelli alti.",
          "playable": ": usabile ma non decisiva.", "below": ": sotto il livello che serve ai livelli alti."}[level])

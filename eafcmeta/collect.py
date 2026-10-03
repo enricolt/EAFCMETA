@@ -49,7 +49,7 @@ def apply_list(conn, entries: list[dict], dry_run: bool) -> dict:
 def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> dict:
     """pages: [(nome_file, html)]. Ogni pagina è indipendente: le valide si salvano, le altre sono segnalate."""
     new = updated = 0
-    errors, cards, lists, pending = [], [], [], []
+    errors, cards, lists, pending, warnings = [], [], [], [], []
     for name, html in pages:
         try:
             if sources.is_list_page(html):
@@ -67,6 +67,13 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
     found = []
     try:
         for name, d, card in cards:
+            for w in d.get("warnings", []):
+                warnings.append({"file": name, "warning": w})
+            if card.price == 0 and any("prezzo non trovato" in w for w in d.get("warnings", [])):
+                row = db.find_card(conn, card)  # prezzo sconosciuto: non cancella quello gia' noto
+                if row is not None and row["price"]:
+                    card.price = row["price"]
+                    warnings.append({"file": name, "warning": "prezzo non trovato: tenuto il prezzo precedente."})
             cid, status = db.upsert_card(conn, card)
             op = community_opinion(card.signals, d.get("url", "")) if d["site"] == "futgg" else None
             if op:
@@ -82,7 +89,8 @@ def import_pages(conn, pages: list[tuple[str, str]], dry_run: bool = False) -> d
         conn.rollback()
         raise
     saved = not dry_run and bool(found or any(l["prices_updated"] for l in lists))
-    return {"new": new, "updated": updated, "errors": errors, "cards": found, "lists": lists, "saved": saved}
+    return {"new": new, "updated": updated, "errors": errors, "warnings": warnings, "cards": found, "lists": lists,
+            "saved": saved}
 
 
 def read_paths(paths: list[str]) -> list[tuple[str, str]]:
@@ -103,4 +111,6 @@ if __name__ == "__main__":
               f"{len(l['unknown'])} non ancora nell'app, {l['unsupported']} non supportati (portieri)")
     for e in r["errors"]:
         print(f"  ERRORE   {e['file']}: {e['error']}")
+    for w in r["warnings"]:
+        print(f"  AVVISO   {w['file']}: {w['warning']}")
     print(f"{r['new']} nuove, {r['updated']} aggiornate, {len(r['errors'])} non lette")

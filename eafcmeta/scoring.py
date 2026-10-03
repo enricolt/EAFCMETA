@@ -24,19 +24,39 @@ def _merge(base: dict, over: dict) -> dict:
     return out
 
 
+_LOCAL = {"active": False}  # la calibrazione locale è davvero applicata? (aggiornato da load_config)
+
+
 @functools.lru_cache(maxsize=1)
 def load_config(path: Path = CONFIG_PATH) -> dict:
     cfg = json.loads(Path(path).read_text(encoding="utf-8"))
     validate_config(cfg)
+    if Path(path) != CONFIG_PATH:
+        return cfg
+    _LOCAL["active"] = False
     local = local_config_path()
-    if Path(path) == CONFIG_PATH and local.exists():
+    if local.exists():
         try:
-            merged = _merge(cfg, json.loads(local.read_text(encoding="utf-8")))
+            over = json.loads(local.read_text(encoding="utf-8"))
+            if not isinstance(over, dict):
+                raise ValueError("il file deve contenere un oggetto JSON")
+            merged = _merge(cfg, over)
             validate_config(merged)
+            _LOCAL["active"] = True
             return merged
-        except (ValueError, KeyError, json.JSONDecodeError) as e:
-            print(f"[config] calibrazione locale ignorata ({e})", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001 - file locale rotto o di tipo sbagliato: si usa patch.json e si avvisa
+            print(f"[config] calibrazione locale ignorata ({type(e).__name__}: {e})", file=sys.stderr)
     return cfg
+
+
+def local_active() -> bool:
+    """True solo se local.json esiste ED è stato letto e applicato (non se è rotto e quindi ignorato)."""
+    load_config()
+    return _LOCAL["active"]
+
+
+def _numeric(x) -> bool:
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
 
 
 def validate_config(cfg: dict) -> None:
@@ -45,6 +65,16 @@ def validate_config(cfg: dict) -> None:
                 "body_type_bonus", "verdict", "stat_keys", "max_bonus", "soft_cap_start", "meta", "stance_scores", "opinion_weighting"):
         if key not in cfg:
             raise ValueError(f"patch.json: manca '{key}'")
+    for sec in ("verdict", "playstyle_bonus", "stance_scores", "body_type_bonus", "meta", "score_weights"):
+        if not isinstance(cfg[sec], dict) or not all(_numeric(v) for v in cfg[sec].values()):
+            raise ValueError(f"patch.json: '{sec}' deve contenere solo numeri")
+    if not (_numeric(cfg["max_bonus"]) and _numeric(cfg["soft_cap_start"])):
+        raise ValueError("patch.json: max_bonus e soft_cap_start devono essere numeri")
+    if any(v < 0 for sec in ("verdict", "playstyle_bonus", "score_weights") for v in cfg[sec].values()):
+        raise ValueError("patch.json: verdict, playstyle_bonus e score_weights non possono avere valori negativi")
+    for role, w in cfg["role_weights"].items():
+        if not isinstance(w, dict) or not all(_numeric(v) and v >= 0 for v in w.values()):
+            raise ValueError(f"patch.json: i pesi di {role} devono essere numeri non negativi")
     sw = cfg["score_weights"]
     if abs(sw["stats"] + sw["pro"] - 1) > 1e-9:
         raise ValueError("patch.json: score_weights.stats + pro deve fare 1")
@@ -164,8 +194,12 @@ def fit_curve(points: list[tuple[float, float]]) -> tuple[float, float, float] |
     return a, b, sigma
 
 
-def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict) -> dict:
-    """Confronta lo score con quello atteso al prezzo (curva robusta del mercato nella stessa posizione)."""
+_FIT = object()  # "calcola tu la curva"
+
+
+def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: dict, curve=_FIT) -> dict:
+    """Confronta lo score con quello atteso al prezzo (curva robusta del mercato nella stessa posizione).
+    `curve` = risultato gia' calcolato di fit_curve(market) (o None): serve a non rifare il Theil-Sen O(m^2) per ogni carta."""
     v = cfg["verdict"]
     market = [(p, s) for p, s in market if p > 0]
     unreliable = {"verdict": "NEUTRAL", "value_gap": None,
@@ -173,11 +207,16 @@ def verdict(score: float, price: int, market: list[tuple[float, float]], cfg: di
                             f"per un confronto affidabile (ora: {len(market)})."}
     if price <= 0 or len(market) < v["min_cards_for_curve"] or len({p for p, _ in market}) < v["min_distinct_prices"]:
         return unreliable
-    curve = fit_curve(market)
+    if curve is _FIT:
+        curve = fit_curve(market)
     if curve is None or curve[1] <= 0:
         return {**unreliable, "reason": "Nel mercato inserito prezzo e score non sono correlati: confronto non affidabile."}
+    lo, hi = min(p for p, _ in market) / v["price_range_factor"], max(p for p, _ in market) * v["price_range_factor"]
+    if not lo <= price <= hi:  # niente estrapolazione: la curva vale solo vicino ai prezzi osservati
+        return {**unreliable, "reason": f"Prezzo {price:,} fuori dall'intervallo dei prezzi del mercato inserito "
+                                        f"({lo:,.0f}-{hi:,.0f}): confronto non affidabile."}
     a, b, sigma = curve
-    expected = a + b * math.log(price)
+    expected = min(100.0, max(0.0, a + b * math.log(price)))
     gap = score - expected
     thr = max(v["min_gap"], v["k_sigma"] * sigma)
     label = "MUST_DO" if gap >= thr else "AVOID" if gap <= -thr else "NEUTRAL"
