@@ -81,7 +81,7 @@ def _eval(card_id: int, scored: dict) -> dict:
 
 
 def _raw(card: dict) -> dict:
-    return {k: card[k] for k in ("stats", "playstyles", "body_type", "weak_foot", "skill_moves")}
+    return {k: card[k] for k in ("stats", "playstyles", "body_type", "weak_foot", "skill_moves", *db.EXTRA_KEYS, "roles")}
 
 
 def _public(e: dict) -> dict:

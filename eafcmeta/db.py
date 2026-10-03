@@ -48,11 +48,27 @@ def connect(path: str | None = None) -> sqlite3.Connection:
     return conn
 
 
+# Dati opzionali letti dai siti, dentro il JSON "data" (nessuna colonna in più). Carte vecchie: valgono None / [].
+EXTRA_KEYS = ("height_cm", "weight_kg", "accelerate", "foot", "club", "league", "nation", "age", "chem_style_top")
+
+
+def _merge_extra(old: dict, card) -> dict:
+    """Unisce i dati opzionali: il nuovo vince solo se presente; i ruoli si sostituiscono per sito (FUT.GG / FUTBIN)."""
+    out = {k: v if (v := getattr(card, k, None)) is not None else old.get(k) for k in EXTRA_KEYS}
+    new_roles = [r.model_dump(exclude_none=True) for r in getattr(card, "roles", [])]
+    if new_roles:
+        sites = {r.get("site") for r in new_roles}
+        out["roles"] = [r for r in old.get("roles", []) if r.get("site") not in sites] + new_roles
+    else:
+        out["roles"] = old.get("roles", [])
+    return {k: v for k, v in out.items() if v not in (None, [])}
+
+
 def row_to_card(r: sqlite3.Row) -> dict:
     d = json.loads(r["data"])
     return {"id": r["id"], "name": r["name"], "version": r["version"], "position": r["position"],
             "price": r["price"], "is_sbc": bool(r["is_sbc"]), "pro_score": r["pro_score"],
-            "pro_notes": r["pro_notes"], **d}
+            "pro_notes": r["pro_notes"], **{k: None for k in EXTRA_KEYS}, "roles": [], **d}
 
 
 def _now() -> str:
@@ -87,7 +103,8 @@ def upsert_card(conn, card) -> tuple[int, str]:
     old = json.loads(conn.execute("SELECT data FROM cards WHERE id=?", (row["id"],)).fetchone()["data"]) if row else {}
     data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
                        "weak_foot": card.weak_foot, "skill_moves": card.skill_moves,
-                       "signals": {**old.get("signals", {}), **card.signals}})  # i segnali dei due siti si sommano
+                       "signals": {**old.get("signals", {}), **card.signals},  # i segnali dei due siti si sommano
+                       **_merge_extra(old, card)})
     if row is None:
         cur = conn.execute("INSERT INTO cards (name, version, position, price, is_sbc, data) VALUES (?,?,?,?,?,?)",
                            (card.name, card.version, card.position, card.price, int(card.is_sbc), data))
@@ -106,7 +123,8 @@ def update_card(conn, card_id: int, card) -> None:
     old = conn.execute("SELECT price, data FROM cards WHERE id = ?", (card_id,)).fetchone()
     signals = card.signals or (json.loads(old["data"]).get("signals", {}) if old else {})
     data = json.dumps({"stats": card.stats, "playstyles": card.playstyles, "body_type": card.body_type,
-                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves, "signals": signals})
+                       "weak_foot": card.weak_foot, "skill_moves": card.skill_moves, "signals": signals,
+                       **_merge_extra(json.loads(old["data"]) if old else {}, card)})  # la modifica non cancella i dati dei siti
     conn.execute("UPDATE cards SET name=?, version=?, position=?, price=?, is_sbc=?, data=? WHERE id=?",
                  (card.name, card.version, card.position, card.price, int(card.is_sbc), data, card_id))
     if old and old["price"] != card.price:

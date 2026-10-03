@@ -5,6 +5,18 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from . import scoring
 
 
+ACCELERATES = ("Explosive", "Controlled", "Lengthy")
+
+
+class RoleRating(BaseModel):
+    """Voto di un ruolo (es. FUTBIN Rating o GG Rating per posizione) letto dai siti."""
+    role: str = Field(min_length=1, max_length=8)
+    rating: float = Field(ge=0, le=100)
+    name: str = Field("", max_length=40)
+    site: Literal["futgg", "futbin"] | None = None
+    rank: int | None = Field(None, ge=1, le=10_000_000)
+
+
 class CardIn(BaseModel):
     name: str = Field(min_length=1, max_length=64)
     version: str = Field("", max_length=64)
@@ -17,6 +29,41 @@ class CardIn(BaseModel):
     weak_foot: int = Field(3, ge=1, le=5)
     skill_moves: int = Field(3, ge=1, le=5)
     signals: dict[str, float | int | str] = Field(default_factory=dict, max_length=12)
+    # dati opzionali letti dai siti (nel JSON "data"); assenti = sconosciuti, non cancellano quelli già salvati
+    height_cm: int | None = Field(None, ge=100, le=230)
+    weight_kg: int | None = Field(None, ge=30, le=160)
+    accelerate: str | None = None
+    foot: str | None = None
+    club: str | None = Field(None, max_length=64)
+    league: str | None = Field(None, max_length=64)
+    nation: str | None = Field(None, max_length=64)
+    age: int | None = Field(None, ge=10, le=70)
+    chem_style_top: str | None = Field(None, max_length=24)
+    roles: list[RoleRating] = Field(default_factory=list, max_length=24)
+
+    @field_validator("accelerate")
+    @classmethod
+    def _accelerate(cls, v):
+        if v is None:
+            return v
+        known = {a.lower(): a for a in ACCELERATES}
+        if v.strip().lower() not in known:
+            raise ValueError(f"AcceleRATE sconosciuto: {v} (validi: {', '.join(ACCELERATES)})")
+        return known[v.strip().lower()]
+
+    @field_validator("foot")
+    @classmethod
+    def _foot(cls, v):
+        if v is None:
+            return v
+        if v.strip().lower() not in ("right", "left"):
+            raise ValueError("piede preferito: Right o Left")
+        return v.strip().capitalize()
+
+    @field_validator("club", "league", "nation", "chem_style_top")
+    @classmethod
+    def _strip_opt(cls, v):
+        return (v.strip() or None) if v is not None else v
 
     @field_validator("signals")
     @classmethod

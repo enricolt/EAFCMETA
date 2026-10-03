@@ -28,6 +28,9 @@ STAT_LABELS = {
     "gkpositioning": "gk_positioning", "gkreflexes": "gk_reflexes"}
 
 
+EXTRA_KEYS = ("height_cm", "weight_kg", "accelerate", "foot", "club", "league", "nation", "age", "chem_style_top")
+
+
 class PageError(ValueError):
     pass
 
@@ -130,6 +133,118 @@ def signals_futbin(t: list[str]) -> dict:
     return sig
 
 
+# --- dati anagrafici e di ruolo (altezza, peso, AcceleRATE, piede, club, ...) ---------------------------------------
+INFO_LABELS = {"Name", "Club", "League", "Nation", "Rarity", "Squad", "Position", "Height", "Weight", "Foot", "Skill Moves",
+               "Weak Foot", "AcceleRATE", "Body Type", "Real Face", "Age", "Player ID", "Item ID", "Added On", "Skills",
+               "B.Type", "Birthdate"}
+
+
+def _clean_extras(d: dict) -> dict:
+    """Tiene solo valori plausibili (stessi limiti di CardIn): un dato strano si scarta, non fa fallire la pagina."""
+    ranges = {"height_cm": (100, 230), "weight_kg": (30, 160), "age": (10, 70)}
+    out = {}
+    for k, v in d.items():
+        if v in (None, "", []):
+            continue
+        if k in ranges and not ranges[k][0] <= v <= ranges[k][1]:
+            continue
+        if k == "accelerate":
+            v = next((a for a in ("Explosive", "Controlled", "Lengthy") if a.lower() == str(v).strip().lower()), None)
+        if k == "foot":
+            v = v.capitalize() if str(v).strip().lower() in ("right", "left") else None
+        if v is not None:
+            out[k] = v
+    return out
+
+
+def _unit(tok: str | None, unit: str) -> int | None:
+    m = re.match(rf"(\d+)\s*{unit}\b", (tok or "").strip(), re.I)
+    return int(m.group(1)) if m else None
+
+
+def _info(t: list[str], label: str, start: int) -> str | None:
+    v = _after(t, label, start)
+    return None if v is None or v in INFO_LABELS else v
+
+
+def _role_name(parts: list[str]) -> str:
+    """['Advanced Forward', '++'] -> 'Advanced Forward++' (come lo scrive FUTBIN)."""
+    return "".join(p if re.fullmatch(r"\++", p) else (" " if i else "") + p for i, p in enumerate(parts)).strip()
+
+
+def extras_futgg(t: list[str]) -> dict:
+    """Altezza, peso, AcceleRATE, piede, club, lega, nazione, età, stile di chimica più votato, ruoli con GG Rating."""
+    try:
+        s = t.index("Player Information")
+    except ValueError:
+        s = 0
+    age = _info(t, "Age", s)
+    d = {"height_cm": _unit(_info(t, "Height", s), "cm"), "weight_kg": _unit(_info(t, "Weight", s), "kg"),
+         "accelerate": _info(t, "AcceleRATE", s), "foot": _info(t, "Foot", s), "club": _info(t, "Club", s),
+         "league": _info(t, "League", s), "nation": _info(t, "Nation", s),
+         "age": int(age) if age and age.isdigit() else None}
+    if "Community Chemistry Styles" in t:  # "Hunter | 58% | Engine | 20% ..."
+        i = t.index("Community Chemistry Styles")
+        for j in range(i + 1, min(i + 8, len(t) - 1)):
+            if re.fullmatch(r"[A-Za-z]{3,}", t[j]) and re.fullmatch(r"\d+%", t[j + 1]):
+                d["chem_style_top"] = t[j]
+                break
+    roles = []
+    if "View All" in t:  # "ST | 87.9 | (invisibile) | Advanced Forward | ++ | #70 Ranked", una riga per ruolo
+        i = t.index("View All") + 1
+        end = t.index("Attributes", i) if "Attributes" in t[i:] else min(len(t), i + 80)
+        grp: list[str] = []
+        for x in t[i:end]:
+            m = re.fullmatch(r"#(\d+) Ranked", x)
+            if not m:
+                grp.append(x)
+                continue
+            rest = [g for g in grp[2:] if re.search(r"[A-Za-z]", g) or re.fullmatch(r"\++", g)]
+            if len(grp) >= 2 and re.fullmatch(r"[A-Z]{2,3}", grp[0]) and _num(grp[1]) is not None:
+                roles.append({"role": grp[0], "rating": _num(grp[1]), "name": _role_name(rest)[:40], "site": "futgg",
+                              "rank": int(m.group(1))})
+            grp = []
+    d["roles"] = roles
+    return _clean_extras(d)
+
+
+def roles_futbin(t: list[str]) -> list[dict]:
+    """Blocco 'FUTBIN Rating': ripetuto 'valore | POS | Ruolo++ | Rank #N | Best Chem.'."""
+    if "RPP Map" not in t:
+        return []
+    out, i = [], t.index("RPP Map") + 1
+    while i + 3 < len(t):
+        m = re.fullmatch(r"Rank #(\d+)", t[i + 3])
+        if _num(t[i]) is None or not re.fullmatch(r"[A-Z]{2,3}", t[i + 1]) or not m:
+            break
+        out.append({"role": t[i + 1], "rating": _num(t[i]), "name": t[i + 2][:40], "site": "futbin", "rank": int(m.group(1))})
+        i += 4
+        if i < len(t) and t[i] == "Best Chem.":
+            i += 1
+    return out
+
+
+def extras_futbin(soup: BeautifulSoup, t: list[str]) -> dict:
+    """Come extras_futgg, per FUTBIN. Il peso non c'è sulla pagina. Club/lega/nazione dalle icone, AcceleRATE dalla barra originale."""
+    s = t.index("Skills") if "Skills" in t else 0
+    age = re.match(r"(\d+)\b", _info(t, "Age", s) or "")
+    d = {"height_cm": _unit(_info(t, "Height", s), "cm"), "foot": _info(t, "Foot", s),
+         "age": int(age.group(1)) if age else None}
+    for key, alt in (("nation", "Nation"), ("league", "League"), ("club", "Club")):
+        img = soup.select_one(f'.player-info-box img[alt="{alt}"]')
+        span = img.find_next("span") if img else None
+        d[key] = ((img.get("title") if img else "") or (span.get_text(strip=True) if span else "")).strip() or None
+    bar = soup.select_one("a.accelerate-bar[data-original]") or next(
+        (a for a in soup.select("a.accelerate-bar") if "hidden" not in (a.get("class") or [])), None)
+    d["accelerate"] = bar.get_text(strip=True) if bar else None
+    if "Top 3 community voted" in t:  # "Finisher | 40% | Artist | 14% | ..."
+        i = t.index("Top 3 community voted")
+        if i + 2 < len(t) and re.fullmatch(r"\d+%", t[i + 2]):
+            d["chem_style_top"] = t[i + 1]
+    d["roles"] = roles_futbin(t)
+    return _clean_extras(d)
+
+
 def _page_url(soup: BeautifulSoup) -> str:
     for sc in soup.select('script[type="application/ld+json"]'):
         for x in _ld_items(sc):
@@ -203,7 +318,7 @@ def parse_futbin(html: str) -> dict:
     return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
             "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
             "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type")),
-            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url}
+            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url, **extras_futbin(soup, t)}
 
 
 def parse_futgg(html: str) -> dict:
@@ -242,7 +357,7 @@ def parse_futgg(html: str) -> dict:
     return {"site": "futgg", "name": name, "version": version, "position": position, "price": price,
             "skill_moves": _int(_after(t, "Skill Moves"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
             "body_type": _body_type(_after(t, "Body Type")), "playstyles": titles, "stats": _stats(t, s0, s1),
-            "signals": signals_futgg(t), "url": page_url}
+            "signals": signals_futgg(t), "url": page_url, **extras_futgg(t)}
 
 
 def parse_short_price(tok: str | None) -> int | None:
@@ -333,4 +448,5 @@ def to_card(d: dict):
     from .models import CardIn
     return CardIn(name=d["name"], version=d["version"], position=d["position"], price=d["price"], is_sbc=False,
                   stats=d["stats"], playstyles=d["playstyles"], body_type=d["body_type"],
-                  weak_foot=d["weak_foot"], skill_moves=d["skill_moves"], signals=d.get("signals", {}))
+                  weak_foot=d["weak_foot"], skill_moves=d["skill_moves"], signals=d.get("signals", {}),
+                  **{k: d[k] for k in (*EXTRA_KEYS, "roles") if k in d})
