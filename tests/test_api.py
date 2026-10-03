@@ -60,3 +60,12 @@ def test_goalkeeper_flow(client):
     assert r.status_code == 201
     d = client.get(f"/api/v1/cards/{r.json()['id']}").json()
     assert d["breakdown"]["role"] == "GK" and {t["k"] for t in d["top_stats"]} == {"gk_reflexes", "gk_diving", "gk_positioning", "gk_handling"}
+
+
+def test_parallel_requests_do_not_crash(client):
+    """Regressione: una connessione aperta in un thread e usata in un altro dava ProgrammingError con richieste insieme."""
+    from concurrent.futures import ThreadPoolExecutor
+    ids = [client.post("/api/v1/cards", json=card(name=f"P{i}", price=1000 * (i + 1))).json()["id"] for i in range(6)]
+    with ThreadPoolExecutor(8) as ex:
+        res = list(ex.map(lambda i: client.get(f"/api/v1/cards/{i}").status_code, ids * 4))
+    assert set(res) == {200}

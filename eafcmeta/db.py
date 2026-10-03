@@ -20,7 +20,7 @@ _SCHEMA_LOCK = threading.Lock()
 
 def connect(path: str | None = None) -> sqlite3.Connection:
     path = path or db_path()
-    conn = sqlite3.connect(path, timeout=5)
+    conn = sqlite3.connect(path, timeout=5, check_same_thread=False)  # una connessione per richiesta, ma FastAPI può aprirla e usarla in thread diversi
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=5000")
