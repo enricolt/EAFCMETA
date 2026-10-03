@@ -1,7 +1,7 @@
 // Vista "Importa": carte (CSV/TSV/JSON), solo prezzi, pagine salvate di FUT.GG/FUTBIN.
 import { $, $$, esc, fmt, ic } from "../util.js";
 import { api, errText } from "../api.js";
-import { loadCards } from "../state.js";
+import { state, loadCards } from "../state.js";
 import { toast, toastErr } from "../ui.js";
 import { go } from "../router.js";
 
@@ -9,8 +9,14 @@ const HELP = {
   cards: "Incolla CSV (separatore ; , o tab) oppure JSON. Prima riga = intestazioni (name, version, position, price, … + le stat). Se la carta esiste già (nome+versione+posizione) viene aggiornata. Prezzi: 12.500, 12k, 1.2m.",
   pages: "Salva col browser (Ctrl+S → “Pagina web, solo HTML”) la pagina di un giocatore su FUT.GG o FUTBIN, poi scegli qui uno o più file. Leggo statistiche, prezzo (console), ruolo, body type, piede debole, skill e PlayStyle. Se la carta esiste già viene aggiornata. Se scegli una pagina elenco (FUT.GG o FUTBIN) aggiorno i prezzi delle carte che ho già.",
   prices: "Una riga per carta: nome;versione;prezzo (la versione si può omettere se il nome è unico). Cambia solo i prezzi.",
+  opinions: "Incolla le righe di un foglio di calcolo (copia da Excel o Google Fogli, oppure CSV). Prima riga = intestazioni. Colonne: carta, creator, scelta (sì / dipende / no), voto (facoltativo), motivo, link. La carta si trova per nome: se il nome è ambiguo aggiungi anche versione o ruolo. Un parere per creator e carta: se esiste già viene aggiornato. Se una riga ha un errore non viene salvato nulla.",
 };
-const TABS = [["cards", "Carte", "cards"], ["prices", "Solo prezzi", "coin"], ["pages", "Pagine salvate", "file"]];
+function opinionExample() {
+  const [a, b, c] = [...state.cards].slice(0, 3).map(x => x.name);
+  const n = [a || "Chloe Kelly", b || a || "Kika Nazareth", c || a || "Chloe Kelly"];
+  return `carta;creator;scelta;voto;motivo;link\n${n[0]};Team Gullit;sì;88;Scatto e finalizzazione da vertice;https://www.youtube.com/watch?v=esempio1\n${n[0]};Exeed;no;55;Costa troppo per quello che dà;\n${n[1]};Nassada;dipende;;Va bene solo con un certo modulo;https://www.youtube.com/watch?v=esempio2\n${n[2] === n[0] ? n[1] : n[2]};Team Gullit;sì;;Animazioni fluide e piede debole alto;`;
+}
+const TABS = [["cards", "Carte", "cards"], ["prices", "Solo prezzi", "coin"], ["pages", "Pagine salvate", "file"], ["opinions", "Pareri (foglio di calcolo)", "scale"]];
 
 export default function view() {
   let root, mode = "cards", files = [];
@@ -20,19 +26,21 @@ export default function view() {
     $$("[data-mode]", root).forEach(b => b.setAttribute("aria-selected", String(b.dataset.mode === m)));
     $("#impText", root).hidden = m === "pages"; $("#impFiles", root).hidden = m !== "pages"; $("#bTpl", root).hidden = m !== "cards";
     $("#impHelp", root).textContent = HELP[m];
-    $("#impText", root).placeholder = m === "cards" ? "name;version;position;price;…" : "Mbappé;TOTS;185k";
+    $("#impText", root).placeholder = m === "cards" ? "name;version;position;price;…" : m === "opinions" ? "carta;creator;scelta;voto;motivo;link" : "Mbappé;TOTS;185k";
+    $("#opEx", root).hidden = m !== "opinions"; if (m === "opinions") $("#opExT", root).textContent = opinionExample();
     $("#impRes", root).innerHTML = ""; $("#impRes", root).hidden = true;
   }
   const pill = (n, l, c) => `<span class="rpill ${c}"><b class="num">${n}</b>${l}</span>`;
   function showResult(d, dry, pages) {
     const res = $("#impRes", root), errs = d.errors || [], ls = d.lists || [], cs = d.cards || [];
-    const head = errs.length && !pages ? `Ci sono ${errs.length} errori: non è stato salvato nulla.` : dry ? "Anteprima: premi “Importa” per salvare." : "Importazione completata.";
+    const op = mode === "opinions";
+    const head = op && !errs.length && dry ? `Anteprima: ${d.count} pareri pronti. Premi “Importa” per salvarli.` : op && d.saved ? `Importati ${d.count} pareri.` : errs.length && !pages ? `${errs.length === 1 ? "C’è 1 errore" : `Ci sono ${errs.length} errori`}: non è stato salvato nulla.` : dry ? "Anteprima: premi “Importa” per salvare." : "Importazione completata.";
     const items = [
       ...ls.map(l => `<li>${ic("list", 15)}<span><b>${esc(l.file)}</b>: ${l.total} giocatori — ${l.prices_updated} prezzi aggiornati, ${l.unknown.length} non ancora nell'app (servono le loro pagine)${l.unsupported ? `, ${l.unsupported} non supportati (portieri)` : ""}.</span></li>`),
       ...cs.map(c => `<li class="${c.status}">${ic(c.status === "new" ? "plus" : "trend", 15)}<span><b>${esc(c.name)}</b> · ${esc(c.version)} (${esc(c.position)}) — ${fmt(c.price)} crediti</span><em>${c.status === "new" ? "nuova" : "aggiornata"}</em></li>`),
       ...errs.slice(0, 50).map(x => `<li class="err">${ic("alert", 15)}<span>${x.file ? `<b>${esc(x.file)}</b>: ` : x.row ? `Riga ${x.row}: ` : ""}${esc(x.error)}</span></li>`),
     ];
-    const pills = mode === "prices" ? pill(d.updated ?? 0, "prezzi da aggiornare", "") : pill(d.new ?? 0, "nuove", "ok") + pill(d.updated ?? 0, "aggiornate", "") + (errs.length ? pill(errs.length, pages ? "pagine non lette" : "errori", "bad") : "");
+    const pills = op ? pill(d.count ?? 0, dry ? "pareri pronti" : "pareri importati", errs.length ? "" : "ok") + (errs.length ? pill(errs.length, errs.length === 1 ? "riga con errore" : "righe con errori", "bad") : "") : mode === "prices" ? pill(d.updated ?? 0, "prezzi da aggiornare", "") : pill(d.new ?? 0, "nuove", "ok") + pill(d.updated ?? 0, "aggiornate", "") + (errs.length ? pill(errs.length, pages ? "pagine non lette" : "errori", "bad") : "");
     res.hidden = false;
     res.innerHTML = `<div class="res-h ${errs.length && !pages ? "bad" : "ok"}">${ic(errs.length && !pages ? "alert" : "check", 18)}<b>${head}</b></div><div class="rpills">${pills}</div>${items.length ? `<ul class="rlist">${items.join("")}</ul>` : ""}`;
   }
@@ -44,13 +52,14 @@ export default function view() {
         if (!files.length) return toast("Scegli prima uno o più file", "info");
         const ps = await Promise.all(files.map(async f => ({ name: f.name, html: await f.text() })));
         r = await api("/import/pages", { method: "POST", body: JSON.stringify({ pages: ps, dry_run: dry }) });
-      } else r = await api(mode === "cards" ? "/import" : "/prices", { method: "POST", body: JSON.stringify({ text: $("#impText", root).value, dry_run: dry }) });
+      } else r = await api(mode === "cards" ? "/import" : mode === "opinions" ? "/import/opinions" : "/prices", { method: "POST", body: JSON.stringify({ text: $("#impText", root).value, dry_run: dry }) });
       if (!r.ok) return toastErr(await errText(r));
       const d = await r.json();
       showResult(d, dry, pages);
       if (d.saved) {
         toast("Importazione completata"); await loadCards();
-        if (!(d.errors || []).length) { if (pages) { files = []; paintFiles(); } else $("#impText", root).value = ""; setTimeout(() => go("carte"), 700); }
+        if (mode === "opinions") $("#impText", root).value = "";
+        if (!(d.errors || []).length && mode !== "opinions") { if (pages) { files = []; paintFiles(); } else $("#impText", root).value = ""; setTimeout(() => go("carte"), 700); }
       }
     } finally { btns.forEach(b => b.disabled = false); }
   }
@@ -70,6 +79,7 @@ export default function view() {
         <textarea class="inp mono" id="impText" spellcheck="false" aria-label="Dati da importare" rows="11"></textarea>
         <div id="impFiles" hidden><label class="dz" id="dz" for="impFile"><span class="dz-ic">${ic("upload", 28)}</span><span class="dz-t" id="dzTxt"></span></label>
           <input type="file" id="impFile" class="sr-only" accept=".html,.htm" multiple aria-label="Pagine salvate"><ul class="flist" id="fileList"></ul></div>
+        <div id="opEx" class="opex" hidden><div class="opex-h"><b>${ic("clipboard", 16)}Esempio da copiare</b><span class="grow"></span><button class="btn sm" id="bExCopy" type="button">Copia</button><button class="btn sm" id="bExUse" type="button">Usa nel riquadro</button></div><pre id="opExT" tabindex="0" aria-label="Esempio di tabella dei pareri"></pre></div>
         <div id="impRes" class="res" hidden aria-live="polite"></div>
         <div class="row imp-act"><button class="btn" id="bTpl">${ic("download", 16)}Modello CSV</button><span class="grow"></span><button class="btn" id="bPrev">${ic("search", 16)}Anteprima</button><button class="btn pri" id="bDo">${ic("import", 16)}Importa</button></div>
       </section>
@@ -83,6 +93,8 @@ export default function view() {
       setMode("cards"); paintFiles();
       $$("[data-mode]", root).forEach(b => b.onclick = () => setMode(b.dataset.mode));
       $("#bPrev", root).onclick = () => run(true); $("#bDo", root).onclick = () => run(false);
+      $("#bExUse", root).onclick = () => { $("#impText", root).value = opinionExample(); $("#impText", root).focus(); };
+      $("#bExCopy", root).onclick = async () => { try { await navigator.clipboard.writeText(opinionExample()); toast("Esempio copiato"); } catch { $("#impText", root).value = opinionExample(); toast("Copia non consentita dal browser: l’ho messo nel riquadro", "info"); } };
       $("#bTpl", root).onclick = async () => { const r = await api("/import/template"); $("#impText", root).value = await r.text(); };
       $("#impFile", root).onchange = e => { addFiles(e.target.files); e.target.value = ""; };
       const dz = $("#dz", root);

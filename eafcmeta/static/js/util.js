@@ -80,7 +80,10 @@ const P = {
   bulb: '<path d="M9.5 18h5M10 21h4M12 3.5a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h4.2c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3.5z"/>',
   scale: '<path d="M12 4v16M7 20h10M5 8h14M5 8l-2.5 6a3.2 3.2 0 0 0 5 0L5 8zM19 8l-2.5 6a3.2 3.2 0 0 0 5 0L19 8z"/>',
   keyboard: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M7 10h.1M10.5 10h.1M14 10h.1M17 10h.1M7.5 14h9"/>',
-  pitch: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14"/><circle cx="12" cy="12" r="2.6"/>',
+  sync: '<path d="M20 11a8 8 0 0 0-14.300-4.200M4.500 3.500V8H9M4 13a8 8 0 0 0 14.300 4.200M19.500 20.500V16H15"/>',
+  play: '<path d="M8 5.500v13l11-6.500-11-6.500z"/>',
+  clipboard: '<rect x="5" y="4.500" width="14" height="16.500" rx="2.500"/><path d="M9 4.500V3.500h6v1M9 11h6M9 15h4"/>',
+  pitch:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M12 5v14"/><circle cx="12" cy="12" r="2.6"/>',
 };
 export const ic = (n, size = 20, cls = "") =>
   `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${P[n] || ""}</svg>`;

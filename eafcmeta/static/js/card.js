@@ -31,7 +31,15 @@ export function verdictBadge(c, { icon = true } = {}) {
   const k = vkey(c), v = VERD[k];
   return `<span class="badge b-${v.cls}" title="${esc(c.verdict_reason)}">${icon ? ic(v.icon, 13) : ""}${v.label}</span>`;
 }
-export const metaChip = c => (c.meta_level === "top" || c.meta_level === "meta") ? `<span class="badge b-meta" title="${esc(c.meta_label)}">${ic("star", 12)}Meta</span>` : "";
+// Etichetta meta dal punteggio BASE (meta_level / meta_label dell'API). Compatta (full=false): solo vertice e meta;
+// completa (full=true, elenco e tabella): anche "Giocabile" e "Sotto il meta".
+const META_CLS = { top: "b-meta", meta: "b-meta", playable: "b-warn", below: "b-nd" };
+export function metaChip(c, full = false) {
+  const lv = c.meta_level, top = lv === "top" || lv === "meta";
+  if (!lv || !META_CLS[lv] || (!top && !full)) return "";
+  const txt = full ? (c.meta_label || lv) : lv === "top" ? "Vertice" : "Meta";
+  return `<span class="badge ${META_CLS[lv]}" title="${esc(c.meta_label || "")} (dal punteggio base: statistiche, PlayStyle e regole)">${ic(top ? "star" : "minus", 12)}${esc(txt)}</span>`;
+}
 export const priceTag = (n, full = false) => `<span class="price num">${ic("coin", 15)}${full ? fmt(n) : short(n)}</span>`;
 
 // Solo il disegno della carta (per griglia, dettaglio, confronto).

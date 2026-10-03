@@ -102,7 +102,7 @@ function listRow(c, i) {
       <span class="lrow-n"><b>${esc(c.name)}</b><small>${esc(c.version || KIND_NAME[k])}${c.is_sbc ? " · SBC" : ""}</small></span>
       <span class="lrow-bar" aria-hidden="true"><u style="--w:${Math.min(100, s)}%"></u></span>
       <span class="lrow-p">${priceTag(c.cost_credits, true)}${c.value_gap != null ? `<em class="gap ${c.value_gap >= 0 ? "pos" : "neg"} num">${c.value_gap > 0 ? "+" : ""}${c.value_gap}</em>` : ""}</span>
-      <span class="lrow-v">${verdictBadge(c)}${metaChip(c)}</span>
+      <span class="lrow-v">${verdictBadge(c)}${metaChip(c, true)}</span>
     </button>
     <button class="cw-sel sm" data-cmp="${c.id}" aria-pressed="${sel}" aria-label="${sel ? "Togli dal confronto" : "Aggiungi al confronto"}: ${esc(c.name)}">${ic(sel ? "check" : "plus", 16)}</button></div>`;
 }
@@ -119,7 +119,7 @@ function table(a) {
       <td class="r num">${r1(c.scores.base_score)}</td><td class="r num">${c.scores.pro_sentiment_score == null ? "–" : r1(c.scores.pro_sentiment_score)}</td>
       <td class="r">${priceTag(c.cost_credits, true)}</td>
       <td class="r">${c.value_gap != null ? `<em class="gap ${c.value_gap >= 0 ? "pos" : "neg"} num">${c.value_gap > 0 ? "+" : ""}${c.value_gap}</em>` : "<span class='mut'>–</span>"}</td>
-      <td>${verdictBadge(c)}${metaChip(c)}</td></tr>`;
+      <td>${verdictBadge(c)}${metaChip(c, true)}</td></tr>`;
   }).join("");
   return `<div class="tbl-w"><table class="tbl"><thead><tr><th class="c-sel"><span class="sr-only">Confronta</span></th>${th}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }

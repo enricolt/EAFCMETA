@@ -12,6 +12,8 @@ applyTheme(getTheme());
 
 const LOGO = `<svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3l14 4.500v12.500c0 9-6 15.500-14 18C12 35.500 6 29 6 20V7.500z" fill="url(#brandG)"/><path d="M20 3l14 4.500v12.500c0 9-6 15.500-14 18V3z" fill="#fff" opacity=".12"/><path d="M12 22.500l5-5 4 4 7-8.500" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="13.500" r="2" fill="#fff"/></svg>`;
 
+const MAIN = ["carte", "confronta", "importa", "calibra"];   // nella barra in basso del telefono; le altre stanno in "Altro"
+
 function buildShell() {
   const groups = [...new Set(SECTIONS.map(s => s.group))];
   $("#nav").innerHTML = `<a class="brand" href="#/carte" aria-label="EA FC Meta, vai alle carte">${LOGO}<span class="brand-t"><b>EAFC<em>META</em></b><small>Il valore delle carte</small></span></a>
@@ -25,12 +27,12 @@ function buildShell() {
     <button class="btn pri" id="bNew">${ic("plus", 18)}<span>Nuova carta</span></button>`;
   $("#topTheme").append(themeSwitch("compact"));
 
-  const main = SECTIONS.filter(s => ["carte", "confronta", "importa", "calibra"].includes(s.id));
+  const main = SECTIONS.filter(s => MAIN.includes(s.id));
   $("#tabbar").innerHTML = main.map(s => `<a class="tab-i" href="#/${s.id}" data-nav="${s.id}">${ic(s.icon, 22)}<span>${s.label}</span>${s.id === "confronta" ? '<em class="nav-b cnt" id="tabCmp" hidden>0</em>' : ""}</a>`).join("") +
     `<button class="tab-i" id="bMore" aria-haspopup="dialog">${ic("more", 22)}<span>Altro</span></button>`;
 
   $("#dMore").innerHTML = `<div class="dlg-in"><header class="dlg-h"><div><small>Menu</small><h2>Altre sezioni</h2></div><button class="icon-btn" data-close aria-label="Chiudi">${ic("close", 18)}</button></header>
-    <div class="more-l">${SECTIONS.filter(s => s.soon).map(s => `<a class="more-i" href="#/${s.id}" data-close><span class="nav-ic">${ic(s.icon, 20)}</span><span><b>${s.label}</b><small>${esc(s.sub)}</small></span><em class="nav-b">presto</em></a>`).join("")}</div>
+    <div class="more-l">${SECTIONS.filter(s => !MAIN.includes(s.id)).map(s => `<a class="more-i" href="#/${s.id}" data-nav="${s.id}" data-close><span class="nav-ic">${ic(s.icon, 20)}</span><span><b>${s.label}</b><small>${esc(s.sub)}</small></span></a>`).join("")}</div>
     <div class="more-t"><span class="lbl">Tema</span><div id="moreTheme"></div></div></div>`;
   $("#moreTheme").append(themeSwitch("full"));
   $("#bMore").onclick = () => $("#dMore").showModal();
@@ -39,6 +41,7 @@ function buildShell() {
 
 function syncRoute(sec) {
   $$("[data-nav]").forEach(a => { if (a.dataset.nav === sec.id) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  $("#bMore")?.toggleAttribute("data-cur", !MAIN.includes(sec.id));
   $("#pgT").textContent = sec.title; $("#pgS").textContent = sec.sub;
   document.title = `${sec.title} · EA FC Meta`;
   syncTray();
