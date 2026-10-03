@@ -63,6 +63,7 @@ def _prepare(conn: sqlite3.Connection) -> None:
     except sqlite3.IntegrityError:
         pass
     from .research.store import ensure_schema; ensure_schema(conn)  # tabelle proposals/criteria (ricerca pareri)
+    from .auto.schema import ensure_schema as _auto_schema; _auto_schema(conn)  # raccolta automatica (colonne auto/confidence + tabelle)
 
 
 # Dati opzionali letti dai siti, dentro il JSON "data" (nessuna colonna in più). Carte vecchie: valgono None / [].
@@ -212,7 +213,8 @@ def opinions_by_card(conn, card_id: int | None = None) -> dict[int, list[dict]]:
         q, args = q + " WHERE card_id = ?", (card_id,)
     out: dict[int, list[dict]] = {}
     for r in conn.execute(q + " ORDER BY id", args):
-        out.setdefault(r["card_id"], []).append({k: r[k] for k in ("id", "creator", "stance", "score", "reason", "url", "ts")})
+        out.setdefault(r["card_id"], []).append({**{k: r[k] for k in ("id", "creator", "stance", "score", "reason", "url", "ts")},
+                                                 "automatic": bool(r["auto"]), "confidence": r["confidence"]})
     return out
 
 
@@ -221,5 +223,5 @@ def upsert_opinion(conn, card_id: int, o) -> None:
     conn.execute(
         "INSERT INTO opinions (card_id, creator, stance, score, reason, url, ts) VALUES (?,?,?,?,?,?,?) "
         "ON CONFLICT(card_id, creator) DO UPDATE SET stance=excluded.stance, score=excluded.score, "
-        "reason=excluded.reason, url=excluded.url, ts=excluded.ts",
+        "reason=excluded.reason, url=excluded.url, ts=excluded.ts, auto=0, confidence=NULL, src_date=''",  # un parere manuale non resta "automatico"
         (card_id, o.creator, o.stance, o.score, o.reason, o.url, _now()))

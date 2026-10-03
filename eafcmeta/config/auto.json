@@ -1,0 +1,47 @@
+{
+ "_nota": "Parametri della raccolta automatica. Le tue modifiche personali stanno in auto.local.json (ignorato da git, scritto anche da PUT /api/v1/auto/config) e vincono su questo file. Nessun segreto qui. Per spegnere tutto: enabled=false oppure variabile EAFCMETA_AUTO=0.",
+ "enabled": true,
+ "interval_hours": 24,
+ "run_on_start": true,
+ "start_delay_seconds": 30,
+ "poll_seconds": 60,
+ "limits": {
+  "max_opinions_per_run": 40,
+  "max_videos_per_run": 25,
+  "max_videos_per_channel": 5,
+  "max_new_cards": 30,
+  "max_channels_discovered_per_run": 10,
+  "max_requests_per_run": 150
+ },
+ "thresholds": {
+  "min_confidence": 0.6,
+  "min_card_confidence": 0.75,
+  "max_opinions_per_video": 8,
+  "channel_name_similarity": 0.85,
+  "min_subscribers": 5000,
+  "min_fc_videos": 2
+ },
+ "youtube": {
+  "enabled": true,
+  "languages": ["it", "en"],
+  "lookback_days": 14,
+  "request_delay_seconds": 4,
+  "timeout_seconds": 90,
+  "min_duration_seconds": 90,
+  "retry_error_hours": 12,
+  "retry_no_transcript_days": 3,
+  "discovery_retry_days": 7,
+  "search_results": 15,
+  "max_consecutive_errors": 5,
+  "words_per_line": 14
+ },
+ "futgg": {
+  "enabled": true,
+  "_nota": "URL degli elenchi NON verificati sul sito vero (dal cloud la rete è bloccata): controllali sul tuo PC e correggili in auto.local.json.",
+  "list_urls": ["https://www.fut.gg/players/"],
+  "pages": 3,
+  "page_param": "page",
+  "delay_seconds": 2.5,
+  "check_robots": true
+ }
+}

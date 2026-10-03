@@ -105,6 +105,61 @@ persone sono vuoti da compilare (nessun dato inventato); "Nassada" è da conferm
 Uso: `python -m eafcmeta.research sources | paste | youtube | x | list | accept ID | reject ID`, oppure le API
 `/api/v1/research/...` (`/docs`).
 
+## Raccolta automatica
+L'app può fare da sola, a intervalli regolari (default ogni 24 ore, anche all'avvio se l'ultima volta è più vecchia),
+tutto il giro **senza inserire a mano né carte né pareri**:
+1. **Carte e prezzi da FUT.GG**: legge alcune pagine elenco (`futgg.list_urls`, `pages`), aggiorna i prezzi delle carte note
+   e scarica le pagine dei giocatori che mancano (tetto `max_new_cards` per esecuzione). Riusa `fetch.py`: robots.txt, una
+   richiesta ogni ~2,5 s, si ferma al primo blocco (403/429).
+2. **Scoperta dei canali YouTube dei pro**: per i nomi di `eafcmeta/config/research.json` e `eafcmeta/config/pros.json`
+   senza canale indicato cerca "NOME EA FC" e accetta il canale **solo** se il titolo somiglia al nome (soglia
+   `channel_name_similarity`), ha abbastanza iscritti (`min_subscribers`) e almeno `min_fc_videos` video recenti su FC/FIFA.
+   Altrimenti salta (nessuna scelta a caso) e riprova dopo `discovery_retry_days`. I canali trovati stanno nella tabella `channels`.
+3. **Video nuovi + trascrizioni** (entro `lookback_days`): yt-dlp legge titolo, descrizione, capitoli e i sottotitoli
+   it/en **senza scaricare il video** (solo sottotitoli manuali o la trascrizione automatica nella lingua originale).
+4. **Estrazione** con le sole parole chiave (la stessa di "Ricerca dei pareri", gratis, nessun modello a pagamento).
+5. **Salvataggio automatico solo se sicuro**: carta non ambigua e riconosciuta con certezza (`min_card_confidence`),
+   confidenza >= `min_confidence` (default 0,6), motivo presente, voto coerente con sì/dipende/no. Senza trascrizione la
+   confidenza è dimezzata, quindi di fatto non salva. Il parere è marcato **automatico** (`automatic: true` nel dettaglio
+   carta, con confidenza e link al video). Ciò che non passa **non** va nei pareri: resta in `proposals` come scartato
+   ("scartata_auto: motivo"). Un parere per creator e carta: un parere **manuale** non viene mai sovrascritto; un automatico
+   si aggiorna solo con un video più recente. Se correggi a mano un parere automatico, diventa manuale.
+
+Tetti per esecuzione (in `config/auto.json`): pareri salvati, video, richieste a YouTube, carte nuove. Pausa tra le richieste
+a YouTube (`request_delay_seconds`). Un errore su un video non ferma il lotto; un blocco/limite (429, controllo anti-bot,
+troppi errori di fila) **ferma subito** quel passo, lo scrive nel registro e riprova alla prossima esecuzione.
+Ogni esecuzione è registrata in `auto_runs` con i contatori (canali scoperti, video elaborati, pareri salvati/scartati/protetti,
+carte nuove, prezzi aggiornati, errori).
+
+**Setup una tantum:** nessuno, `pip install -r requirements.txt` installa anche `yt-dlp`. Funziona dal sorgente
+(`python start.py`); nel pacchetto `.exe` yt-dlp non è incluso. Per aggiungere pro: compila `eafcmeta/config/pros.json`
+(`{"pros": [{"name": "Nome", "youtube_handle": "@nome"}]}`, canale opzionale).
+
+**Comandi** (anche per l'Utilità di pianificazione di Windows):
+
+    python -m eafcmeta.auto run [--se-dovuto]   # esegue ora (con --se-dovuto solo se è passato l'intervallo)
+    python -m eafcmeta.auto status              # ultima esecuzione, prossima, canali, conteggi
+    python -m eafcmeta.auto undo [--si]         # annulla TUTTI i pareri automatici (mai i manuali)
+
+API (`/api/v1/auto/...`, con `X-Token` se impostato): `GET status`, `POST run` (409 se già in corso), `PUT config`
+(enabled, interval_hours, min_confidence, max_opinions_per_run, max_videos_per_run, lookback_days, request_delay_seconds,
+min_subscribers), `GET opinions`, `DELETE opinions`.
+
+**Limiti onesti**
+- **Zona grigia dei termini:** le trascrizioni arrivano da yt-dlp, un metodo **non ufficiale** (l'API ufficiale di YouTube non
+  le dà). Il suo uso può violare i termini di YouTube: scelta consapevole dell'utente, uso personale, basso ritmo, nessun
+  cookie né login. YouTube può limitare l'accesso in qualsiasi momento.
+- **Fragilità:** yt-dlp si rompe quando YouTube cambia; aggiorna con `pip install -U yt-dlp`. FUT.GG può rifiutare richieste
+  da Python (Cloudflare) e gli URL degli elenchi di default vanno verificati sul tuo PC.
+- **Qualità delle parole chiave:** l'estrazione è italiana e a frasi; i sottotitoli automatici non hanno punteggiatura
+  (il testo viene diviso in righe di circa 14 parole), gli errori di trascrizione sui nomi e l'ironia sfuggono. Per questo
+  la soglia è alta e tanti pareri veri vengono scartati. Controlla ogni tanto `GET /api/v1/auto/opinions`.
+- X/Twitter: non usato (il codice esistente resta spento). TikTok e Instagram: nessuna fonte automatica.
+
+**Come spegnere tutto:** `"enabled": false` (anche da `PUT /api/v1/auto/config`; le tue modifiche stanno in
+`eafcmeta/config/auto.local.json`, ignorato dal controllo versioni), oppure la variabile d'ambiente `EAFCMETA_AUTO=0` (vince sempre,
+scheduler compreso). Per togliere ciò che è stato salvato: `python -m eafcmeta.auto undo` o `DELETE /api/v1/auto/opinions`.
+
 ## Calibrazione dal meta dei pro (🎯 Calibra)
 I parametri dell'analisi (soglie meta e pesi delle statistiche) si ricavano da ciò che ritengono meta i pro: con almeno
 12 carte che hanno il parere di un creator, “Calibra” mostra quanto il nostro punteggio è allineato (accordo e

@@ -103,6 +103,7 @@ Monolite Python: **FastAPI + SQLite**, un solo file HTML statico come frontend, 
 | `eafcmeta/sources.py` | **Lettura pagine FUT.GG/FUTBIN** (carta e lista), segnali dei siti, normalizzazione versioni. |
 | `eafcmeta/collect.py` | Importa lotti di pagine; applica le liste (prezzi) *dopo* le carte; crea il parere "FUT.GG (community)". |
 | `eafcmeta/fetch.py` | Scarico automatico gentile da FUT.GG (non testato dal vivo). |
+| `eafcmeta/auto/`, `eafcmeta/api_auto.py` | **Raccolta automatica** (FUT.GG, canali YouTube, video, pareri sicuri): vedi §7b. |
 | `eafcmeta/importer.py` | Import CSV/TSV/JSON e aggiornamento prezzi. |
 | `eafcmeta/db.py` | SQLite: tabelle `cards`, `price_history`, `opinions`; upsert con riconoscimento della stessa carta. |
 | `eafcmeta/models.py` | Modelli Pydantic con tutte le validazioni (`CardIn`, `OpinionIn`, …). |
@@ -210,6 +211,44 @@ Niente testo scritto a mano per carta.
 - `python -m eafcmeta.research --card "Nome" ` (o da UI) produce **proposte** con fonte e motivo; l'utente le approva e diventano pareri.
 - Test con trascrizioni/testi di esempio (fixture) per estrazione e risoluzione carta; nessuna chiamata di rete nei test.
 - Ogni fase fallisce in modo chiaro (blocco, chiave mancante, quota) senza salvare dati parziali o sbagliati.
+
+---
+
+## 7b. Raccolta automatica (fatta — `eafcmeta/auto/`, `eafcmeta/api_auto.py`)
+
+Richiesta dell'utente: processo **totalmente automatico**, nessun inserimento a mano di carte né pareri. Decisioni vincolanti dell'utente:
+trascrizioni YouTube con metodo **non ufficiale** (yt-dlp; zona grigia dei termini, accettata, uso personale, basso ritmo); **niente X/Twitter**
+(codice esistente lasciato spento); **niente modello a pagamento** (solo parole chiave, `research/extract.py` non toccato); salvataggio
+automatico **sopra soglia**, marcato "automatico", rimovibile in blocco; TikTok/Instagram esclusi.
+
+| File | Ruolo |
+|---|---|
+| `auto/ytdlp.py` | Provider yt-dlp (processo `python -m yt_dlp`, **runner iniettabile**): ricerca, elenco video, sottotitoli it/en senza scaricare il video; pausa tra richieste, tetto richieste, blocco (429/anti-bot) => `YtBlocked`. |
+| `auto/transcript.py` | json3/vtt -> righe di ~14 parole (le trascrizioni automatiche non hanno punteggiatura) -> sezioni per capitolo. |
+| `auto/discovery.py` | Scoperta canali (similarità nome, iscritti, video FC); tabelle `channels`, `channel_misses`. |
+| `auto/videos.py` | Elabora i video nuovi (`processed_items`), resolver + `OfflineExtractor`, decisione di sicurezza, tetti. |
+| `auto/opinions.py` | `decide`, `save_auto` (protegge i manuali), scarti in `proposals` (`rejected`, nota `scartata_auto: ...`), `undo`. |
+| `auto/futgg.py` | Carte/prezzi: riusa `fetch.crawl` una pagina elenco alla volta, robots.txt letto una volta. |
+| `auto/runner.py` | Un'esecuzione completa in `auto_runs` (lock nel DB, passi indipendenti). |
+| `auto/scheduler.py` | `Scheduler.tick()` (orologio/lavoro iniettabili) + `AutoService` (thread demone, avvio manuale). |
+| `auto/config.py`, `config/auto.json`, `config/pros.json` | Parametri (default nel repo; personali in `auto.local.json`, ignorato dal controllo versioni), elenco pro. |
+| `auto/schema.py` | Migrazione idempotente: colonne `opinions.auto/confidence/src_date` + nuove tabelle. Richiamata da `db.connect`. |
+| `api_auto.py` | `/api/v1/auto/{status,run,config,opinions}`. CLI: `python -m eafcmeta.auto run|status|undo`. |
+
+Punti da sapere:
+- **Hunk nei file condivisi** (piccoli e additivi): `db.py` (una riga in `connect`, `upsert_opinion` azzera `auto/confidence/src_date`
+  così un parere corretto a mano diventa manuale, `opinions_by_card` aggiunge `automatic` e `confidence`), `api.py` (avvio/arresto
+  del servizio nel `lifespan` + una riga per il router), `tests/conftest.py` (variabili d'ambiente che spengono la raccolta nei test),
+  `requirements.txt` (yt-dlp), `.gitignore` (`auto.local.json`).
+- Lo scheduler parte solo se `enabled` **e** `EAFCMETA_AUTO != "0"`; `PUT /auto/config` con `enabled: true` lo avvia senza riavviare.
+- `undo` non rimette i video già letti in coda (restano in `processed_items`): l'annullamento è duraturo.
+- Un video senza trascrizione si riprova (per `retry_no_transcript_days`) perché i sottotitoli automatici compaiono dopo ore.
+- **NON verificato**: yt-dlp contro YouTube reale (il cloud blocca la rete: provati solo la sintassi delle opzioni e il comportamento
+  offline); la forma esatta del JSON di yt-dlp (`channel_follower_count`, `uploader_id`, `automatic_captions` con chiavi `xx-orig`,
+  `chapters`) è scritta dalla documentazione/memoria e testata con risposte finte; FUT.GG reale (URL elenco di default
+  `https://www.fut.gg/players/` e parametro `page` non verificati); calibrazione delle soglie (0,6 / 0,75) su dati veri; thread demone
+  dentro la finestra desktop su Windows. Primo passo in locale: `python -m eafcmeta.auto run`, guardare `status` e `GET /auto/opinions`.
+- Rischio noto: `crawl` (fetch.py) non intercetta errori HTTP diversi da 401/403/429/503: il passo li registra e passa alla pagina dopo.
 
 ---
 

@@ -9,6 +9,9 @@ def isolated_local_config(tmp_path, monkeypatch):
     """Calibrazione e stato delle regole (local.json, rules.local.json) in una cartella temporanea: i test non devono
     mai leggere o scrivere i file veri dell'utente né influenzarsi a vicenda."""
     monkeypatch.setenv("EAFCMETA_LOCAL_CONFIG", str(tmp_path / "local.json"))
+    monkeypatch.setenv("EAFCMETA_AUTO", "0")  # raccolta automatica spenta nei test (niente thread, niente rete)
+    monkeypatch.setenv("EAFCMETA_AUTO_LOCAL_CONFIG", str(tmp_path / "auto.local.json"))
+    monkeypatch.setenv("EAFCMETA_PROS_CONFIG", str(tmp_path / "pros.json"))
     scoring.load_config.cache_clear()
     yield
     scoring.load_config.cache_clear()

@@ -17,7 +17,9 @@ from .models import CardIn, ImportIn, OpinionIn, PagesIn, ProIn
 async def lifespan(_):
     scoring.load_config()  # fallisce subito se patch.json è rotto
     db.connect().close()
+    from .auto.scheduler import service as _auto; _auto.start_if_enabled()  # raccolta automatica (spenta nei test: EAFCMETA_AUTO=0)
     yield
+    _auto.stop()
 
 
 app = FastAPI(title="EA FC Meta", lifespan=lifespan)
@@ -273,6 +275,7 @@ def meta():
 
 
 from .api_research import build_router as _research_router; app.include_router(_research_router(require_token, get_conn))
+from .api_auto import build_router as _auto_router; app.include_router(_auto_router(require_token, get_conn))
 app.include_router(router)
 from .api_rules import router as _rules_router, criteria_notes as _criteria_notes; app.include_router(_rules_router)  # noqa: E402
 
