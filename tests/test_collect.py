@@ -152,22 +152,22 @@ def test_list_updates_known_prices_and_reports_unknown(client):
 
 def test_crawl_with_fake_site(client, tmp_path):
     from eafcmeta import db, fetch
-    pages = {"https://x/list": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CM", "4.9M")]),
+    pages = {"https://www.fut.gg/list": list_page([("Pelé", 95, "Base Icon", "CM", "6.8M"), ("Zico", 91, "Base Icon", "CM", "4.9M")]),
              "https://www.fut.gg/players/1-pelé/27-1/": gg_page(name="Pelé", rating=95, rarity="Base Icon"),
              "https://www.fut.gg/players/2-zico/27-2/": gg_page(name="Zico", rating=91, rarity="Base Icon")}
     conn = db.connect()
-    r = fetch.crawl(conn, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, log=lambda *_: None)
+    r = fetch.crawl(conn, ["https://www.fut.gg/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, log=lambda *_: None)
     assert (r["new"], r["stopped"]) == (2, None)
     assert conn.execute("select count(*) from cards").fetchone()[0] == 2
     # limite --max e blocco anti-bot
     conn2 = db.connect(str(tmp_path / "b.db"))
-    r = fetch.crawl(conn2, ["https://x/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, max_cards=1, log=lambda *_: None)
+    r = fetch.crawl(conn2, ["https://www.fut.gg/list"], fetch=lambda u: pages[u], delay=0, check_robots=False, max_cards=1, log=lambda *_: None)
     assert r["new"] == 1
 
     def blocked(u):
         raise fetch.Blocked("HTTP 403")
 
-    r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://x/list"], fetch=blocked, delay=0, check_robots=False)
+    r = fetch.crawl(db.connect(str(tmp_path / "c.db")), ["https://www.fut.gg/list"], fetch=blocked, delay=0, check_robots=False)
     assert r["stopped"] == "HTTP 403" and r["new"] == 0
 
 
