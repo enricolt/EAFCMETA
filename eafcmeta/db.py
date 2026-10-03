@@ -7,6 +7,9 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .catalog.schema import now_iso
+from .catalog.versions import rating_from_version
+
 ROOT = Path(__file__).parent.parent
 
 
@@ -64,6 +67,7 @@ def _prepare(conn: sqlite3.Connection) -> None:
         pass
     from .research.store import ensure_schema; ensure_schema(conn)  # tabelle proposals/criteria (ricerca pareri)
     from .auto.schema import ensure_schema as _auto_schema; _auto_schema(conn)  # raccolta automatica (colonne auto/confidence + tabelle)
+    from .catalog.schema import ensure_schema as _catalog_schema; _catalog_schema(conn)  # catalogo: released_at/first_seen/rating, cache valutazioni, collezione
 
 
 # Dati opzionali letti dai siti, dentro il JSON "data" (nessuna colonna in più). Carte vecchie: valgono None / [].
@@ -91,6 +95,15 @@ def row_to_card(r: sqlite3.Row) -> dict:
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+
+
+def pick_released(old: str | None, new: str | None) -> str | None:
+    """Data di uscita da tenere: la nuova se c'e'; ma una data senza ora (FUTBIN, mezzanotte) non sostituisce la stessa data con l'ora (FUT.GG)."""
+    if not new:
+        return old
+    if old and new.endswith("T00:00:00Z") and old[:10] == new[:10]:
+        return old
+    return new
 
 
 def _add_history(conn, card_id: int, price: int) -> None:
@@ -169,14 +182,20 @@ def upsert_card(conn, card) -> tuple[int, str]:
                        "weak_foot": card.weak_foot, "skill_moves": card.skill_moves,
                        "signals": {**old.get("signals", {}), **card.signals},  # i segnali dei due siti si sommano
                        **_merge_extra(old, card)})
+    rating = getattr(card, "rating", None) or rating_from_version(card.version)
+    released, url = getattr(card, "released_at", None), getattr(card, "url", None)
     if row is None:
-        cur = conn.execute("INSERT INTO cards (name, version, position, price, is_sbc, data) VALUES (?,?,?,?,?,?)",
-                           (card.name, card.version, card.position, card.price, int(card.is_sbc), data))
+        cur = conn.execute("INSERT INTO cards (name, version, position, price, is_sbc, data, released_at, first_seen, rating, url) "
+                           "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                           (card.name, card.version, card.position, card.price, int(card.is_sbc), data, released, now_iso(), rating, url))
         _add_history(conn, cur.lastrowid, card.price)
         return cur.lastrowid, "new"
     name = card.name if len(card.name) > len(row["name"]) else row["name"]  # tiene il nome più completo
     conn.execute("UPDATE cards SET name=?, price=?, is_sbc=?, data=? WHERE id=?",
                  (name, card.price, int(card.is_sbc), data, row["id"]))
+    prev = conn.execute("SELECT released_at FROM cards WHERE id=?", (row["id"],)).fetchone()["released_at"]
+    conn.execute("UPDATE cards SET released_at=?, rating=COALESCE(?, rating), url=COALESCE(?, url) WHERE id=?",
+                 (pick_released(prev, released), rating, url, row["id"]))
     if row["price"] != card.price:
         _add_history(conn, row["id"], card.price)
     return row["id"], "updated"
@@ -191,6 +210,8 @@ def update_card(conn, card_id: int, card) -> None:
                        **_merge_extra(json.loads(old["data"]) if old else {}, card)})  # la modifica non cancella i dati dei siti
     conn.execute("UPDATE cards SET name=?, version=?, position=?, price=?, is_sbc=?, data=? WHERE id=?",
                  (card.name, card.version, card.position, card.price, int(card.is_sbc), data, card_id))
+    conn.execute("UPDATE cards SET rating=COALESCE(?, rating), released_at=COALESCE(?, released_at) WHERE id=?",
+                 (getattr(card, "rating", None) or rating_from_version(card.version), getattr(card, "released_at", None), card_id))
     if old and old["price"] != card.price:
         _add_history(conn, card_id, card.price)
 

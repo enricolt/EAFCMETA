@@ -42,6 +42,30 @@ class CardIn(BaseModel):
     age: int | None = Field(None, ge=10, le=70)
     chem_style_top: str | None = Field(None, max_length=24)
     roles: list[RoleRating] = Field(default_factory=list, max_length=24)
+    # catalogo: data di uscita (ISO UTC o data/ora dei siti), valutazione numerica, pagina del giocatore; assenti = sconosciuti
+    released_at: str | None = Field(None, max_length=40)
+    rating: int | None = Field(None, ge=40, le=99)
+    url: str | None = Field(None, max_length=300)
+    in_collection: bool = False  # solo POST /cards: aggiunge la carta anche alla scheda «La mia collezione»
+
+    @field_validator("released_at")
+    @classmethod
+    def _released(cls, v):
+        if v is None or not v.strip():
+            return None
+        from .catalog.dates import parse_release_date
+        d = parse_release_date(v)
+        if d is None:
+            raise ValueError("data di uscita non riconosciuta (usa AAAA-MM-GG o AAAA-MM-GGTHH:MM:SSZ)")
+        return d
+
+    @field_validator("url")
+    @classmethod
+    def _page_url(cls, v):
+        v = (v or "").strip()
+        if v and not v.lower().startswith(("http://", "https://")):
+            raise ValueError("l'indirizzo della pagina deve iniziare con http:// o https://")
+        return v or None
 
     @field_validator("accelerate")
     @classmethod

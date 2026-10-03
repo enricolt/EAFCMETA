@@ -11,6 +11,7 @@ import re
 from bs4 import BeautifulSoup
 
 from . import scoring
+from .catalog.dates import parse_release_date
 
 STAT_LABELS = {
     "acceleration": "acceleration", "sprintspeed": "sprint_speed", "attposition": "positioning", "attpos": "positioning",
@@ -268,6 +269,24 @@ def extras_futbin(soup: BeautifulSoup, t: list[str]) -> dict:
     return _clean_extras(d)
 
 
+def release_futgg(t: list[str]) -> str | None:
+    """«Added On» + data ("Sep 25, 2026, 5:01 PM UTC") -> ISO UTC; None se manca o non e' leggibile."""
+    for i, x in enumerate(t[:-1]):
+        if x == "Added On" and (d := parse_release_date(t[i + 1])):
+            return d
+    return None
+
+
+def release_futbin(t: list[str]) -> str | None:
+    """«Release date:  2026-09-11» (un token solo, oppure etichetta e data in token separati) -> ISO UTC; spesso assente."""
+    for i, x in enumerate(t):
+        if re.match(r"\s*Release date\b", x, re.I):
+            d = parse_release_date(x) or (parse_release_date(t[i + 1]) if i + 1 < len(t) else None)
+            if d:
+                return d
+    return None
+
+
 def _page_url(soup: BeautifulSoup) -> str:
     for sc in soup.select('script[type="application/ld+json"]'):
         for x in _ld_items(sc):
@@ -342,7 +361,8 @@ def parse_futbin(html: str) -> dict:
     return {"site": "futbin", "name": name, "version": normalize_version(rarity, rating), "position": position,
             "price": price, "skill_moves": _int(_after(t, "Skills"), "skill moves"),
             "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"), "body_type": _body_type(_after(t, "B.Type"), warnings),
-            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url, "warnings": warnings, **extras_futbin(soup, t)}
+            "playstyles": plays, "stats": stats, "signals": signals_futbin(t), "url": page_url, "warnings": warnings,
+            "rating": rating, "released_at": release_futbin(t), **extras_futbin(soup, t)}
 
 
 def parse_futgg(html: str) -> dict:
@@ -382,7 +402,8 @@ def parse_futgg(html: str) -> dict:
     return {"site": "futgg", "name": name, "version": version, "position": position, "price": price,
             "skill_moves": _int(_after(t, "Skill Moves"), "skill moves"), "weak_foot": _int(_after(t, "Weak Foot"), "piede debole"),
             "body_type": _body_type(_after(t, "Body Type"), warnings), "playstyles": titles, "stats": _stats(t, s0, s1),
-            "signals": signals_futgg(t), "url": page_url, "warnings": warnings, **extras_futgg(t)}
+            "signals": signals_futgg(t), "url": page_url, "warnings": warnings,
+            "rating": rating, "released_at": release_futgg(t), **extras_futgg(t)}
 
 
 def parse_short_price(tok: str | None) -> int | None:
@@ -479,4 +500,5 @@ def to_card(d: dict):
     return CardIn(name=d["name"], version=d["version"], position=d["position"], price=d["price"], is_sbc=False,
                   stats=d["stats"], playstyles=d["playstyles"], body_type=d["body_type"],
                   weak_foot=d["weak_foot"], skill_moves=d["skill_moves"], signals=d.get("signals", {}),
+                  released_at=d.get("released_at"), rating=d.get("rating"), url=(d.get("url") or None),
                   **{k: d[k] for k in (*EXTRA_KEYS, "roles") if k in d})

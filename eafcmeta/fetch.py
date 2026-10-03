@@ -31,35 +31,38 @@ class PageTooBig(Exception):
     pass
 
 
-def validate_url(url: str) -> str:
-    """Solo https verso fut.gg / www.fut.gg (porta 443, niente credenziali nell'URL). ValueError se non consentito."""
+def validate_url(url: str, hosts: tuple = ALLOWED_HOSTS) -> str:
+    """Solo https verso fut.gg / www.fut.gg (porta 443, niente credenziali nell'URL). ValueError se non consentito.
+    `hosts` permette a chi lo chiede esplicitamente (il catalogo) di consentire anche altri siti noti."""
     try:
         u = urlparse(url)
         host, port = (u.hostname or "").lower(), u.port
     except ValueError as e:
         raise ValueError(f"indirizzo non consentito: {url!r}") from e
-    if u.scheme.lower() != "https" or host not in ALLOWED_HOSTS or port not in (None, 443) or u.username or u.password:
+    if u.scheme.lower() != "https" or host not in hosts or port not in (None, 443) or u.username or u.password:
         raise ValueError(f"indirizzo non consentito (solo https://www.fut.gg): {url[:120]}")
     return url
 
 
 class _SafeRedirect(urllib.request.HTTPRedirectHandler):
-    """Anche i reindirizzamenti devono restare su https://fut.gg."""
+    """Anche i reindirizzamenti devono restare sugli host consentiti (di default https://fut.gg)."""
+    hosts: tuple = ALLOWED_HOSTS
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        validate_url(urljoin(req.full_url, newurl))
+        validate_url(urljoin(req.full_url, newurl), self.hosts)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def _opener():
-    return urllib.request.build_opener(_SafeRedirect)
+def _opener(hosts: tuple = ALLOWED_HOSTS):
+    handler = _SafeRedirect if hosts == ALLOWED_HOSTS else type("_SafeRedirectHosts", (_SafeRedirect,), {"hosts": hosts})
+    return urllib.request.build_opener(handler)
 
 
-def http_get(url: str) -> str:
-    validate_url(url)
+def http_get(url: str, hosts: tuple = ALLOWED_HOSTS) -> str:
+    validate_url(url, hosts)
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "it,en;q=0.8"})
     try:
-        with _opener().open(req, timeout=TIMEOUT) as r:
+        with (_opener() if hosts == ALLOWED_HOSTS else _opener(hosts)).open(req, timeout=TIMEOUT) as r:  # _opener() senza argomenti: i test lo sostituiscono
             data = r.read(MAX_BYTES + 1)
     except urllib.error.HTTPError as e:
         if e.code in (401, 403, 429, 503):
@@ -111,40 +114,68 @@ class _Pacer:
         self.last = self.clock()
 
 
+class TooManyErrors(Exception):
+    """Troppi errori di fila: il sito e' irraggiungibile o l'elenco e' sbagliato, non si insiste."""
+
+
+class Fetcher:
+    """Scarico gentile di UNA pagina alla volta: https + host consentiti, robots.txt letto una volta, pausa tra le richieste
+    (robots incluso). `get(url)` ritorna l'HTML oppure None (errore registrato in `errors`); solleva Blocked (401/403/429/503) e,
+    se `max_consecutive_errors` e' impostato, TooManyErrors dopo quel numero di errori di fila. Usato da crawl() e dal catalogo."""
+
+    def __init__(self, fetch=http_get, delay: float = 2.5, check_robots: bool = True, sleep=time.sleep, clock=time.monotonic,
+                 robots_fetch=_robots_fetch, hosts: tuple = ALLOWED_HOSTS, max_consecutive_errors: int | None = None):
+        self.fetch, self.check_robots, self.robots_fetch, self.hosts = fetch, check_robots, robots_fetch, hosts
+        self.pacer, self.robots = _Pacer(delay, sleep, clock), {}
+        self.errors: list[dict] = []
+        self.max_consecutive_errors, self.streak, self.requests = max_consecutive_errors, 0, 0
+
+    def _paced_robots(self, url: str, timeout: float) -> str:
+        self.pacer.wait()
+        try:
+            return self.robots_fetch(url, timeout)
+        finally:
+            self.pacer.done()
+
+    def _fail(self, url: str, msg: str) -> None:
+        self.errors.append({"file": url, "error": msg})
+        self.streak += 1
+        if self.max_consecutive_errors and self.streak >= self.max_consecutive_errors:
+            raise TooManyErrors(f"{self.streak} errori di fila: mi fermo")
+
+    def get(self, url: str):
+        """HTML della pagina oppure None (errore gia' registrato). Solleva Blocked / TooManyErrors."""
+        try:
+            validate_url(url, self.hosts)
+            if self.check_robots:
+                if not allowed(url, self.robots, self._paced_robots):  # pacer solo se robots.txt viene davvero scaricato
+                    self._fail(url, "vietato da robots.txt")
+                    return None
+            self.pacer.wait()
+            self.requests += 1
+            try:
+                html = self.fetch(url)
+            finally:
+                self.pacer.done()
+            self.streak = 0
+            return html
+        except (Blocked, TooManyErrors):
+            raise
+        except ValueError as e:  # indirizzo non consentito
+            self._fail(url, str(e))
+        except Exception as e:  # noqa: BLE001 - 404/500/timeout/rete/troppo grande: solo questa pagina
+            self._fail(url, f"pagina non scaricata ({type(e).__name__}: {e})")
+        return None
+
+
 def crawl(conn, list_urls: list[str], fetch=http_get, max_cards: int = 30, delay: float = 2.5,
           check_robots: bool = True, log=print, sleep=time.sleep, clock=time.monotonic, robots_fetch=_robots_fetch) -> dict:
     """Ritorna {'new', 'updated', 'prices_updated', 'errors', 'stopped'}. Un errore su una singola pagina (404, 500,
     timeout, rete, troppo grande, indirizzo non consentito) e' registrato e il crawl continua; solo Blocked lo ferma."""
     total = {"new": 0, "updated": 0, "prices_updated": 0, "errors": [], "stopped": None}
-    pacer, robots = _Pacer(delay, sleep, clock), {}
-
-    def paced_robots(url: str, timeout: float) -> str:
-        pacer.wait()
-        try:
-            return robots_fetch(url, timeout)
-        finally:
-            pacer.done()
-
-    def get(url: str):
-        """HTML della pagina oppure None (errore gia' registrato). Solleva Blocked."""
-        try:
-            validate_url(url)
-            if check_robots:
-                if not allowed(url, robots, paced_robots):  # pacer solo se robots.txt viene davvero scaricato
-                    total["errors"].append({"file": url, "error": "vietato da robots.txt"})
-                    return None
-            pacer.wait()
-            try:
-                return fetch(url)
-            finally:
-                pacer.done()
-        except Blocked:
-            raise
-        except ValueError as e:  # indirizzo non consentito
-            total["errors"].append({"file": url, "error": str(e)})
-        except Exception as e:  # noqa: BLE001 - 404/500/timeout/rete/troppo grande: solo questa pagina
-            total["errors"].append({"file": url, "error": f"pagina non scaricata ({type(e).__name__}: {e})"})
-        return None
+    fetcher = Fetcher(fetch, delay, check_robots, sleep, clock, robots_fetch)
+    total["errors"] = fetcher.errors  # stessa lista: errori di scarico e di lettura si accodano nell'ordine in cui avvengono
+    get = fetcher.get
 
     todo: list[str] = []
     try:

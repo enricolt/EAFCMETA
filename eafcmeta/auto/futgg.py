@@ -11,17 +11,17 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from .. import fetch as F
 
 
+def page_url(u: str, n: int, param: str = "page") -> str:
+    """Indirizzo della pagina n (1 = quello dato) di un elenco: aggiunge/sostituisce il parametro `param`."""
+    if n == 1:
+        return u
+    p = urlparse(u)
+    q = [(k, v) for k, v in parse_qsl(p.query, keep_blank_values=True) if k != param] + [(param, str(n))]
+    return urlunparse(p._replace(query=urlencode(q, safe="[]")))
+
+
 def page_urls(list_urls: list[str], pages: int, param: str = "page") -> list[str]:
-    out = []
-    for u in list_urls:
-        for n in range(1, pages + 1):
-            if n == 1:
-                out.append(u)
-                continue
-            p = urlparse(u)
-            q = [(k, v) for k, v in parse_qsl(p.query, keep_blank_values=True) if k != param] + [(param, str(n))]
-            out.append(urlunparse(p._replace(query=urlencode(q, safe="[]"))))
-    return out
+    return [page_url(u, n, param) for u in list_urls for n in range(1, pages + 1)]
 
 
 class Robots:
