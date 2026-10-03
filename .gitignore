@@ -7,3 +7,7 @@ app.log
 .webview_failed
 local.json
 .claude/
+.app_profile/
+diagnosi.txt
+build/
+dist/

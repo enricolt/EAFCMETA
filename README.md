@@ -7,13 +7,37 @@ e parere dei pro (inserito a mano), e dice se una carta conviene rispetto al pre
 
 ## Avvio
     pip install -r requirements.txt
-    python start.py            # controlla gli aggiornamenti, poi apre l'app in una finestra nativa
+    python start.py            # controlla gli aggiornamenti, poi apre l'app in una finestra propria (vedi sotto)
     pip install -r requirements-dev.txt && pytest
 
 ## App desktop (senza browser)
-`python start.py` apre l'app in una **finestra nativa** (pywebview: su Windows usa Edge WebView2, già incluso in
-Windows 10/11). Su Windows puoi anche fare **doppio clic su `EAFCMETA.pyw`**: parte senza finestra di console
-(i messaggi vanno in `app.log`). Se la finestra nativa non è disponibile ripiega sul browser; `--browser` lo forza.
+`python start.py` apre l'app in una **finestra propria** provando in ordine tre livelli (ognuno stampa il motivo se fallisce):
+1. **pywebview** (finestra nativa; su Windows richiede pythonnet/WebView2, che su Python recenti può non installarsi);
+2. **finestra "app" di Microsoft Edge / Chrome / Chromium** già installati: `--app=URL` con profilo dedicato
+   (`.app_profile/`), senza barra degli indirizzi, sembra un'app nativa e **non richiede nessuna libreria**. Il server si
+   chiude quando chiudi la finestra (la pagina invia un battito al server, così funziona anche se Edge/Chrome riusano
+   un'istanza già aperta);
+3. **browser predefinito** (ultimo ripiego; il server resta attivo finché non chiudi il programma).
+
+Opzioni: `--window auto|pywebview|app|browser` forza un livello, `--browser` = `--window browser`, `--retry-app` riprova
+l'installazione di pywebview (tentativo con timeout di 90 s, mai bloccante). Su Windows puoi fare **doppio clic su
+`EAFCMETA.pyw`**: parte senza console (messaggi in `app.log`).
+
+**Se qualcosa non va:** `python start.py --diagnosi` stampa (e salva in `diagnosi.txt`) versione di Python, sistema,
+git, pywebview (e perché non si importa), browser trovati per l'app mode, porta, versione dell'app e ultimo commit:
+copia e incolla il testo per chiedere aiuto.
+
+> **Stato della verifica:** catena di ripiego, ricerca dei browser, riga di comando e diagnosi sono coperte da test
+> automatici (Linux, con percorsi e livelli finti). **Mai provato su Windows reale**: non so ancora quale livello
+> parta sul tuo PC; le righe `[app] ...` e `--diagnosi` lo dicono.
+
+### Eseguibile Windows (.exe) con PyInstaller — NON PROVATO
+`python build_windows.py` (su Windows) crea `dist/EAFCMETA.exe` partendo da `eafcmeta.spec` (include `eafcmeta/static` e
+`eafcmeta/config`; usa la finestra app mode di Edge/Chrome, pywebview non è incluso). Database e `local.json` stanno
+accanto all'.exe (o in `%LOCALAPPDATA%\EAFCMETA` se la cartella non è scrivibile). Il workflow GitHub Actions
+`.github/workflows/build-windows.yml` (avvio manuale: Actions, build-windows, Run workflow) costruisce l'.exe su
+`windows-latest` e lo allega come artefatto: nessuna release, nessun segreto. **Questo build non è mai stato eseguito**:
+potrebbero servire correzioni (import nascosti nello spec). Windows SmartScreen può avvisare per un .exe non firmato.
 
 ## Copia locale con aggiornamento automatico
 Prima volta (serve git e Python 3.11+):
@@ -24,7 +48,7 @@ Prima volta (serve git e Python 3.11+):
 
 Ogni avvio fa `git fetch` e, se ci sono novità, un aggiornamento fast-forward (solo se non hai modifiche locali);
 reinstalla le dipendenze se `requirements.txt` è cambiato. Offline usa la versione che hai. Il database
-`eafcmeta.db` è ignorato da git: gli aggiornamenti non lo toccano. Opzioni: `--check`, `--no-update`, `--port`, `--lan`, `--browser`, `--retry-app`.
+`eafcmeta.db` è ignorato da git: gli aggiornamenti non lo toccano. Opzioni: `--check`, `--no-update`, `--port`, `--lan`, `--browser`, `--window`, `--retry-app`, `--diagnosi`.
 
 ## Con gli amici (rete locale)
 `python start.py --lan` ascolta su tutta la rete e **richiede una chiave d'accesso** (creata in `.token`, ignorata da git).
